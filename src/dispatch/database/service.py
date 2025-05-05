@@ -38,6 +38,7 @@ from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
+from dispatch.tag_type.models import TagType
 from dispatch.task.models import Task
 
 from .core import Base, get_class_by_tablename, get_model_name_by_tablename
@@ -664,32 +665,40 @@ def search_filter_sort_paginate(
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
-
-            # Track joined table names after filtering/joins
-            joined_tables = set()
-            join_entities = []
-            if hasattr(query, "_join_entities"):
-                join_entities = query._join_entities
-            elif hasattr(query, "_legacy_joins"):
-                join_entities = query._legacy_joins
-            for entity in join_entities:
-                if hasattr(entity, "__tablename__"):
-                    joined_tables.add(entity.__tablename__.lower())
-                elif hasattr(entity, "name"):
-                    joined_tables.add(entity.name.lower())
-
             sorts = []
+            manual_order_bys = []
+
             for item in sort_spec:
-                # Do NOT replace item['model'] with an alias; keep as string
-                sorts.append(Sort(item))
+                model_name = item["model"]
+                field = item["field"]
+                direction = item["direction"]
+
+                # Special case: sorting on TagType.name
+                if model_name == "TagType" and field == "name":
+                    TagTypeAlias = aliased(TagType, name="tag_type_sort")
+                    # Only join if not already joined
+                    already_joined = False
+                    join_entities = []
+                    if hasattr(query, "_join_entities"):
+                        join_entities = query._join_entities
+                    elif hasattr(query, "_legacy_joins"):
+                        join_entities = query._legacy_joins
+                    for entity in join_entities:
+                        if hasattr(entity, "name") and entity.name == "tag_type_sort":
+                            already_joined = True
+                            break
+                    if not already_joined:
+                        query = query.join(TagTypeAlias, Tag.tag_type)
+                    col = getattr(TagTypeAlias, field)
+                    manual_order_bys.append(col.desc() if direction == "desc" else col.asc())
+                else:
+                    sorts.append(Sort(item))
 
             default_model = get_default_model(query)
-            sqlalchemy_sorts = [
-                sort.format_for_sqlalchemy(query, default_model) for sort in sorts
-            ]
+            sqlalchemy_sorts = [sort.format_for_sqlalchemy(query, default_model) for sort in sorts]
 
-            if sqlalchemy_sorts:
-                query = query.order_by(*sqlalchemy_sorts)
+            if sqlalchemy_sorts or manual_order_bys:
+                query = query.order_by(*(sqlalchemy_sorts + manual_order_bys))
 
     except FieldNotFound as e:
         raise ValidationError(
