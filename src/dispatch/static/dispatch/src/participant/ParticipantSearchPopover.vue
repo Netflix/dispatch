@@ -104,7 +104,6 @@ const fetchParticipantEmail = async (name) => {
 }
 
 onMounted(async () => {
-  console.log(`[DEBUG] onMounted - Initial participant from props: ${props.participant}`)
   await fetchParticipants()
 
   // If we have an initial participant from props, fetch their email
@@ -113,10 +112,8 @@ onMounted(async () => {
     props.participant !== "Select assignee" &&
     props.participant !== "Select reporter"
   ) {
-    console.log(`[DEBUG] Fetching email for initial participant: ${props.participant}`)
     const email = await fetchParticipantEmail(props.participant)
     selectedParticipantEmail.value = email
-    console.log(`[DEBUG] After fetch, selectedParticipantEmail: ${selectedParticipantEmail.value}`)
   }
 })
 
@@ -233,11 +230,6 @@ const filteredParticipants = computed(() => {
     .slice(0, 9) // Adjust this number if you want more items in the list
 
   return [...selectedParticipantItem, ...otherParticipants]
-})
-
-// Watch selectedParticipantEmail for changes
-watch(selectedParticipantEmail, (newVal) => {
-  console.log(`[DEBUG] selectedParticipantEmail changed to: ${newVal}`)
 })
 
 const toggleMenu = () => {
