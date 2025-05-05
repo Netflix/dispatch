@@ -81,7 +81,6 @@ const fetchParticipantEmail = async (name) => {
   }
 
   try {
-    console.log(`[DEBUG] Fetching email for participant: ${name}`)
     const response = await IndividualApi.getAll({
       filter: JSON.stringify([
         { and: [{ model: "IndividualContact", field: "name", op: "==", value: name }] },
@@ -163,18 +162,15 @@ watch(selectedParticipant, async (newValue: string) => {
 watch(
   () => props.participant,
   async (newVal) => {
-    console.log(`[DEBUG] props.participant changed to: ${newVal}`)
     if (newVal) {
       selectedParticipant.value = newVal
 
       // Directly fetch the email for this participant
       const email = await fetchParticipantEmail(newVal)
       selectedParticipantEmail.value = email
-      console.log(`[DEBUG] Set selectedParticipantEmail to: ${email}`)
     } else {
       selectedParticipant.value = props.type === "assignee" ? "Select assignee" : "Select reporter"
       selectedParticipantEmail.value = ""
-      console.log(`[DEBUG] Reset selectedParticipant and selectedParticipantEmail`)
     }
   },
   { immediate: true }

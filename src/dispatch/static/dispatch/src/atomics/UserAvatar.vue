@@ -57,8 +57,9 @@ const getAvatarUrlFromEmail = (email) => {
 
   const userId = email.split("@")[0]
   if (userId) {
-    const avatarTemplate = import.meta.env.VITE_DISPATCH_AVATAR_TEMPLATE
-    const stem = avatarTemplate.replace("*", userId)
+    const avatarTemplate = import.meta.env.VITE_DISPATCH_AVATAR_TEMPLATE || "/avatar/*/128x128.jpg"
+    // Use a regular expression with the global flag to replace all occurrences of "*"
+    const stem = avatarTemplate.replace(/\*/g, userId)
     const loc = `${window.location.protocol}//${window.location.host}${stem}`
     return loc
   }
