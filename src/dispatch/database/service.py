@@ -683,10 +683,7 @@ def search_filter_sort_paginate(
 
             sorts = []
             for item in sort_spec:
-                model_name = item["model"]
-                # Use the alias if it exists in alias_map
-                if model_name in alias_map:
-                    item["model"] = alias_map[model_name]
+                # Do NOT replace item['model'] with an alias; keep as string
                 sorts.append(Sort(item))
 
             default_model = get_default_model(query)
