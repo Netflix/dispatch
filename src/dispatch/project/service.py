@@ -104,7 +104,7 @@ def update(*, db_session, project: Project, project_in: ProjectUpdate) -> Projec
     """Updates a project."""
     project_data = project.dict()
 
-    update_data = project_in.dict(skip_defaults=True, exclude={})
+    update_data = project_in.dict(exclude_unset=True, exclude={})
 
     for field in project_data:
         if field in update_data:

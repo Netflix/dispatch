@@ -160,7 +160,7 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()
 
-    update_data = document_in.dict(skip_defaults=True, exclude={"filters", "tags"})
+    update_data = document_in.dict(exclude_unset=True, exclude={"filters", "tags"})
 
     tags = []
     for t in document_in.tags:

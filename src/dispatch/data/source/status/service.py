@@ -88,7 +88,7 @@ def update(
 ) -> SourceStatus:
     """Updates an existing status."""
     source_status_data = source_status.dict()
-    update_data = source_status_in.dict(skip_defaults=True, exclude={})
+    update_data = source_status_in.dict(exclude_unset=True, exclude={})
 
     for field in source_status_data:
         if field in update_data:

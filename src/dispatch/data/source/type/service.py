@@ -85,7 +85,7 @@ def update(
 ) -> SourceType:
     """Updates an existing source."""
     source_type_data = source_type.dict()
-    update_data = source_type_in.dict(skip_defaults=True, exclude={})
+    update_data = source_type_in.dict(exclude_unset=True, exclude={})
 
     for field in source_type_data:
         if field in update_data:

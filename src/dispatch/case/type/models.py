@@ -94,15 +94,15 @@ class Service(DispatchBase):
 
 class CaseTypeBase(DispatchBase):
     """Base Pydantic model for case types, used for shared fields."""
-    case_template_document: Document | None
-    conversation_target: str | None
+    case_template_document: Document | None = None
+    conversation_target: str | None = None
     default: bool | None = False
     description: str | None = None
     enabled: bool | None
     exclude_from_metrics: bool | None = False
-    incident_type: IncidentType | None
+    incident_type: IncidentType | None = None
     name: NameStr
-    oncall_service: Service | None
+    oncall_service: Service | None = None
     plugin_metadata: list[PluginMetadata] = []
     project: ProjectRead | None
     visibility: str | None = None

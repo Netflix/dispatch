@@ -65,7 +65,7 @@ def get_or_create(*, db_session, alert_in: AlertCreate) -> Alert:
 def update(*, db_session, alert: Alert, alert_in: AlertUpdate) -> Alert:
     """Updates an existing alert."""
     alert_data = alert.dict()
-    update_data = alert_in.dict(skip_defaults=True, exclude={})
+    update_data = alert_in.dict(exclude_unset=True, exclude={})
 
     for field in alert_data:
         if field in update_data:

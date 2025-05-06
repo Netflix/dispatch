@@ -126,7 +126,7 @@ def update(
     """Updates a case severity."""
     case_severity_data = case_severity.dict()
 
-    update_data = case_severity_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = case_severity_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in case_severity_data:
         if field in update_data:

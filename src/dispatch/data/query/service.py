@@ -89,7 +89,7 @@ def get_or_create(*, db_session, query_in: QueryCreate) -> Query:
 def update(*, db_session, query: Query, query_in: QueryUpdate) -> Query:
     """Updates an existing query."""
     query_data = query.dict()
-    update_data = query_in.dict(skip_defaults=True, exclude={})
+    update_data = query_in.dict(exclude_unset=True, exclude={})
 
     source = source_service.get_by_name_or_raise(
         db_session=db_session, project_id=query.project.id, source_in=query_in.source

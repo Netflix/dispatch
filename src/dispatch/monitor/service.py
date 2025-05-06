@@ -65,7 +65,7 @@ def create(*, db_session, monitor_in: MonitorCreate) -> Monitor:
 def update(*, db_session, monitor: Monitor, monitor_in: MonitorUpdate) -> Monitor:
     """Updates a monitor."""
     monitor_data = monitor.dict()
-    update_data = monitor_in.dict(skip_defaults=True)
+    update_data = monitor_in.dict(exclude_unset=True)
 
     for field in monitor_data:
         if field in update_data:

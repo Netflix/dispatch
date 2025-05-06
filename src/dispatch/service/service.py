@@ -182,7 +182,7 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     """Updates an existing service."""
     service_data = service.dict()
 
-    update_data = service_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = service_in.dict(exclude_unset=True, exclude={"filters"})
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)

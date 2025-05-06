@@ -58,7 +58,7 @@ def update(
 ) -> Forms:
     """Updates a form."""
     form_data = forms.dict()
-    update_data = forms_in.dict(skip_defaults=True)
+    update_data = forms_in.dict(exclude_unset=True)
 
     for field in form_data:
         if field in update_data:

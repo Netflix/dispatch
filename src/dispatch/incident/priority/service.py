@@ -135,7 +135,7 @@ def update(
     """Updates an incident priority."""
     incident_priority_data = incident_priority.dict()
 
-    update_data = incident_priority_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = incident_priority_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in incident_priority_data:
         if field in update_data:

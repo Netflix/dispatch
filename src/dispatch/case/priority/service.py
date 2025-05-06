@@ -130,7 +130,7 @@ def update(
     """Updates a case priority."""
     case_priority_data = case_priority.dict()
 
-    update_data = case_priority_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = case_priority_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in case_priority_data:
         if field in update_data:

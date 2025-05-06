@@ -102,7 +102,7 @@ def update(
 ) -> SourceEnvironment:
     """Updates an existing source."""
     source_environment_data = source_environment.dict()
-    update_data = source_environment_in.dict(skip_defaults=True, exclude={})
+    update_data = source_environment_in.dict(exclude_unset=True, exclude={})
 
     for field in source_environment_data:
         if field in update_data:

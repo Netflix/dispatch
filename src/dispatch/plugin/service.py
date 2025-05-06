@@ -134,7 +134,7 @@ def update_instance(
 ) -> PluginInstance:
     """Updates a plugin instance."""
     plugin_instance_data = plugin_instance.dict()
-    update_data = plugin_instance_in.dict(skip_defaults=True)
+    update_data = plugin_instance_in.dict(exclude_unset=True)
 
     if plugin_instance_in.enabled:  # user wants to enable the plugin
         if not plugin_instance.plugin.multiple:

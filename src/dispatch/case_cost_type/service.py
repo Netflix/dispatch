@@ -111,7 +111,7 @@ def update(
 ) -> CaseCostType:
     """Updates a case cost type."""
     case_cost_data = case_cost_type.dict()
-    update_data = case_cost_type_in.dict(skip_defaults=True)
+    update_data = case_cost_type_in.dict(exclude_unset=True)
 
     for field in case_cost_data:
         if field in update_data:

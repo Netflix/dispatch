@@ -95,7 +95,7 @@ def update(
 ) -> SourceDataFormat:
     """Updates an existing source."""
     source_data_format_data = source_data_format.dict()
-    update_data = source_data_format_in.dict(skip_defaults=True, exclude={})
+    update_data = source_data_format_in.dict(exclude_unset=True, exclude={})
 
     for field in source_data_format_data:
         if field in update_data:

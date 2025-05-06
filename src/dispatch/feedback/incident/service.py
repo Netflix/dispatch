@@ -78,7 +78,7 @@ def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
 def update(*, db_session, feedback: Feedback, feedback_in: FeedbackUpdate) -> Feedback:
     """Updates a piece of feedback."""
     feedback_data = feedback.dict()
-    update_data = feedback_in.dict(skip_defaults=True)
+    update_data = feedback_in.dict(exclude_unset=True)
 
     for field in feedback_data:
         if field in update_data:

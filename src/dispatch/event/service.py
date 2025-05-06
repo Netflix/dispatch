@@ -65,7 +65,7 @@ def create(*, db_session, event_in: EventCreate) -> Event:
 def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
     """Updates an event."""
     event_data = event.dict()
-    update_data = event_in.dict(skip_defaults=True)
+    update_data = event_in.dict(exclude_unset=True)
 
     for field in event_data:
         if field in update_data:

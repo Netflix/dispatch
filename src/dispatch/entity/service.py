@@ -147,7 +147,7 @@ def get_by_value_or_create(*, db_session: Session, entity_in: EntityCreate) -> E
 def update(*, db_session: Session, entity: Entity, entity_in: EntityUpdate) -> Entity:
     """Updates an existing entity."""
     entity_data = entity.dict()
-    update_data = entity_in.dict(skip_defaults=True, exclude={"entity_type"})
+    update_data = entity_in.dict(exclude_unset=True, exclude={"entity_type"})
 
     for field in entity_data:
         if field in update_data:

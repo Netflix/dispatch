@@ -46,7 +46,7 @@ def update(
 ) -> ServiceFeedback:
     """Updates a piece of service feedback."""
     service_feedback_data = service_feedback.dict()
-    update_data = service_feedback_in.dict(skip_defaults=True)
+    update_data = service_feedback_in.dict(exclude_unset=True)
 
     for field in service_feedback_data:
         if field in update_data:

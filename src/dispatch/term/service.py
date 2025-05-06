@@ -46,7 +46,7 @@ def update(*, db_session, term: Term, term_in: TermUpdate) -> Term:
         for d in term_in.definitions
     ]
 
-    update_data = term_in.dict(skip_defaults=True, exclude={"definitions"})
+    update_data = term_in.dict(exclude_unset=True, exclude={"definitions"})
 
     for field in term_data:
         if field in update_data:

@@ -150,7 +150,7 @@ def update(
 ) -> IndividualContact:
     """Updates an individual."""
     individual_contact_data = individual_contact.dict()
-    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = individual_contact_in.dict(exclude_unset=True, exclude={"filters"})
 
     for field in individual_contact_data:
         if field in update_data:

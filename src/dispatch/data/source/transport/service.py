@@ -93,7 +93,7 @@ def update(
 ) -> SourceTransport:
     """Updates an existing source transport."""
     source_transport_data = source_transport.dict()
-    update_data = source_transport_in.dict(skip_defaults=True, exclude={})
+    update_data = source_transport_in.dict(exclude_unset=True, exclude={})
 
     for field in source_transport_data:
         if field in update_data:

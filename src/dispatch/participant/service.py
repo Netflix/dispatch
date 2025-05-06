@@ -274,7 +274,7 @@ def update(
 ) -> Participant:
     """Updates an existing participant."""
     participant_data = participant.dict()
-    update_data = participant_in.dict(skip_defaults=True)
+    update_data = participant_in.dict(exclude_unset=True)
 
     for field in participant_data:
         if field in update_data:

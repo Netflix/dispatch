@@ -140,7 +140,7 @@ def update(
     """Updates an incident severity."""
     incident_severity_data = incident_severity.dict()
 
-    update_data = incident_severity_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = incident_severity_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in incident_severity_data:
         if field in update_data:

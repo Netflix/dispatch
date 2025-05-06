@@ -61,7 +61,7 @@ def update(
 ) -> FormsType:
     """Updates a form type."""
     form_data = forms_type.dict()
-    update_data = forms_type_in.dict(skip_defaults=True)
+    update_data = forms_type_in.dict(exclude_unset=True)
 
     for field in form_data:
         if field in update_data:
