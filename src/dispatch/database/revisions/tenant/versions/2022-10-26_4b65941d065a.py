@@ -18,7 +18,7 @@ from typing_extensions import Annotated
 
 
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
-NameStr = Annotated[str, StringConstraints(pattern=r"^(?!\s*$).+", strip_whitespace=True, min_length=3)]
+NameStr = Annotated[str, StringConstraints(pattern=r"^.*\S.*$", strip_whitespace=True, min_length=3)]
 
 Base = declarative_base()
 

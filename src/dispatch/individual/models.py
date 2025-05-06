@@ -1,7 +1,8 @@
 """Models for individual contact resources in the Dispatch application."""
 
 from datetime import datetime
-from pydantic import field_validator, AnyHttpUrl
+from pydantic import field_validator
+from urllib.parse import urlparse
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -66,7 +67,7 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
 
 class IndividualContactBase(ContactBase):
     """Base Pydantic model for individual contact resources."""
-    weblink: AnyHttpUrl | None | str = None
+    weblink: str | None = None
     mobile_phone: str | None = None
     office_phone: str | None = None
     title: str | None = None
@@ -74,11 +75,14 @@ class IndividualContactBase(ContactBase):
 
     @field_validator("weblink")
     @classmethod
-    def weblink_validator(cls, v: str | AnyHttpUrl | None) -> str | AnyHttpUrl | None:
-        """Validates the weblink field to be None, empty string, or a valid AnyHttpUrl."""
-        if v is None or isinstance(v, AnyHttpUrl) or v == "":
+    def weblink_validator(cls, v: str | None) -> str | None:
+        """Validates the weblink field to be None, empty string, or a valid URL (internal or external)."""
+        if v is None or v == "":
             return v
-        raise ValueError("weblink is not an empty string or a valid weblink")
+        result = urlparse(v)
+        if all([result.scheme, result.netloc]):
+            return v
+        raise ValueError("weblink must be empty or a valid URL")
 
 
 class IndividualContactCreate(IndividualContactBase):
@@ -98,6 +102,7 @@ class IndividualContactRead(IndividualContactBase):
     filters: list[SearchFilterRead] | None = []
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    external_id: str | None = None
 
 
 class IndividualContactReadMinimal(IndividualContactBase):
@@ -105,6 +110,7 @@ class IndividualContactReadMinimal(IndividualContactBase):
     id: PrimaryKey | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    external_id: str | None = None
 
 
 class IndividualContactPagination(Pagination):

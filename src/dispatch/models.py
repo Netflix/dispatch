@@ -1,6 +1,6 @@
 """Shared models and mixins for the Dispatch application."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import ClassVar, Any
 from typing_extensions import Annotated
 
@@ -16,7 +16,7 @@ from sqlalchemy.orm import relationship
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
-NameStr = Annotated[str, StringConstraints(pattern=r".*\\S.*", strip_whitespace=True, min_length=3)]
+NameStr = Annotated[str, StringConstraints(pattern=r".*\S.*", strip_whitespace=True, min_length=3)]
 OrganizationSlug = Annotated[str, StringConstraints(pattern=r"^[\w]+(?:_[\w]+)*$", min_length=3)]
 
 
@@ -38,15 +38,15 @@ class ProjectMixin(object):
 class TimeStampMixin(object):
     """Timestamping mixin for created_at and updated_at fields."""
 
-    created_at = Column(DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     created_at._creation_order = 9998
-    updated_at = Column(DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at._creation_order = 9998
 
     @staticmethod
     def _updated_at(mapper, connection, target):
         """Updates the updated_at field to the current UTC time."""
-        target.updated_at = datetime.now(datetime.timezone.utc)
+        target.updated_at = datetime.now(timezone.utc)
 
     @classmethod
     def __declare_last__(cls):
@@ -80,12 +80,12 @@ class EvergreenMixin(object):
     evergreen = Column(Boolean)
     evergreen_owner = Column(String)
     evergreen_reminder_interval = Column(Integer, default=90)  # number of days
-    evergreen_last_reminder_at = Column(DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    evergreen_last_reminder_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     @hybrid_property
     def overdue(self):
         """Returns True if the evergreen reminder is overdue."""
-        now = datetime.now(datetime.timezone.utc)
+        now = datetime.now(timezone.utc)
         next_reminder = self.evergreen_last_reminder_at + timedelta(
             days=self.evergreen_reminder_interval
         )
@@ -148,7 +148,7 @@ class ResourceBase(DispatchBase):
     """Base Pydantic model for resource-related fields."""
     resource_type: str | None = None
     resource_id: str | None = None
-    weblink: AnyHttpUrl | None = None
+    weblink: str | None = None
 
 
 class ContactBase(DispatchBase):
