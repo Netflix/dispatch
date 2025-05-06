@@ -28,22 +28,21 @@ def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[
 
 def get_by_name_or_raise(
     *, db_session: Session, project_id: int, entity_type_in=EntityTypeRead
-) -> EntityType:
+) -> EntityTypeRead:
     """Returns the entity type specified or raises ValidationError."""
     entity_type = get_by_name(
         db_session=db_session, project_id=project_id, name=entity_type_in.name
     )
 
     if not entity_type:
-        raise ValidationError(
-            [
-                {
-                    "msg": "Entity not found.",
-                    "entity_type": entity_type_in.name,
-                    "loc": "entity",
-                }
-            ]
-        )
+        raise ValidationError([
+            {
+                "msg": "Entity type not found.",
+                "entity_type": entity_type_in.name,
+                "loc": ("entity_type",),
+                "type": "value_error.not_found",
+            }
+        ])
 
     return entity_type
 

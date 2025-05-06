@@ -37,9 +37,11 @@ def get_default_or_raise(*, db_session, project_id: int) -> CasePriority:
             [
                 {
                     "msg": "No default case priority defined.",
-                    "loc": "case_priority",
+                    "loc": ("case_priority",),
+                    "type": "value_error.not_found",
                 }
-            ]
+            ],
+            CasePriority
         )
     return case_priority
 
@@ -68,9 +70,11 @@ def get_by_name_or_raise(
                 {
                     "msg": "Case priority not found.",
                     "case_priority": case_priority_in.name,
-                    "loc": "case_priority",
+                    "loc": ("case_priority",),
+                    "type": "value_error.not_found",
                 }
-            ]
+            ],
+            CasePriority
         )
 
     return case_priority

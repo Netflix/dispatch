@@ -28,14 +28,39 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
     signal_in = SignalCreate(
         name=name,
         owner=owner,
-        project=ProjectRead(**project.__dict__),
-        case_priority=CasePriorityRead(**case_priority.__dict__),
-        case_type=CaseTypeRead(**case_type.__dict__),
+        project=ProjectRead(
+            id=getattr(project, 'id', 1),
+            name=getattr(project, 'name', 'Test Project'),
+            display_name=getattr(project, 'display_name', ''),
+            owner_email=getattr(project, 'owner_email', None),
+            owner_conversation=getattr(project, 'owner_conversation', None),
+            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
+            business_year_hours=getattr(project, 'business_year_hours', 2080),
+            description=getattr(project, 'description', None),
+            default=getattr(project, 'default', False),
+            color=getattr(project, 'color', None),
+            send_daily_reports=getattr(project, 'send_daily_reports', True),
+            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
+            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
+            enabled=getattr(project, 'enabled', True),
+            storage_folder_one=getattr(project, 'storage_folder_one', None),
+            storage_folder_two=getattr(project, 'storage_folder_two', None),
+            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
+            storage_use_title=getattr(project, 'storage_use_title', False),
+            allow_self_join=getattr(project, 'allow_self_join', True),
+            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
+            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
+            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
+            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
+            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+        ),
+        case_priority=CasePriorityRead.from_orm(case_priority),
+        case_type=CaseTypeRead.from_orm(case_type),
         conversation_target=conversation_target,
         external_id=external_id,
         external_url=external_url,
         description=description,
-        oncall_service=Service(**service.__dict__),
+        oncall_service=Service.from_orm(service),
         source=None,
         variant=variant,
         lifecycle=lifecycle,
@@ -43,15 +68,15 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
         genai_model=genai_model,
         genai_system_message=genai_system_message,
         genai_prompt=genai_prompt,
-        tags=[TagRead(**tag.__dict__)],
-        entity_types=[EntityTypeRead(**entity_type.__dict__)]
+        tags=[TagRead.from_orm(tag)],
+        entity_types=[EntityTypeRead.from_orm(entity_type)]
     )
     signal = create(db_session=session, signal_in=signal_in)
     assert signal
 
 
 def test_update(session, project, signal, case_priority, case_type, service, tag, entity_type):
-    from dispatch.signal.models import SignalUpdate, Service, TagRead, EntityTypeRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import SignalUpdate, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
     from dispatch.signal.service import update
 
     name = "Updated name"
@@ -70,14 +95,39 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
         id=signal.id,
         name=name,
         owner=owner,
-        project=ProjectRead(**project.__dict__),
-        case_priority=CasePriorityRead(**case_priority.__dict__),
-        case_type=CaseTypeRead(**case_type.__dict__),
+        project=ProjectRead(
+            id=getattr(project, 'id', 1),
+            name=getattr(project, 'name', 'Test Project'),
+            display_name=getattr(project, 'display_name', ''),
+            owner_email=getattr(project, 'owner_email', None),
+            owner_conversation=getattr(project, 'owner_conversation', None),
+            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
+            business_year_hours=getattr(project, 'business_year_hours', 2080),
+            description=getattr(project, 'description', None),
+            default=getattr(project, 'default', False),
+            color=getattr(project, 'color', None),
+            send_daily_reports=getattr(project, 'send_daily_reports', True),
+            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
+            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
+            enabled=getattr(project, 'enabled', True),
+            storage_folder_one=getattr(project, 'storage_folder_one', None),
+            storage_folder_two=getattr(project, 'storage_folder_two', None),
+            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
+            storage_use_title=getattr(project, 'storage_use_title', False),
+            allow_self_join=getattr(project, 'allow_self_join', True),
+            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
+            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
+            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
+            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
+            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+        ),
+        case_priority=CasePriorityRead.from_orm(case_priority),
+        case_type=CaseTypeRead.from_orm(case_type),
         conversation_target=conversation_target,
         external_id=external_id,
         external_url=external_url,
         description="desc",
-        oncall_service=Service(**service.__dict__),
+        oncall_service=Service.from_orm(service),
         source=None,
         variant=variant,
         lifecycle=lifecycle,
@@ -85,8 +135,7 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
         genai_model=genai_model,
         genai_system_message=genai_system_message,
         genai_prompt=genai_prompt,
-        tags=[TagRead(**tag.__dict__)],
-        entity_types=[EntityTypeRead(**entity_type.__dict__)]
+        tags=[TagRead.from_orm(tag)],
     )
     signal = update(
         db_session=session,
@@ -97,7 +146,7 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
 
 
 def test_update__add_filter(session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type):
-    from dispatch.signal.models import SignalUpdate, SignalFilterRead, Service, TagRead, EntityTypeRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import SignalUpdate, SignalFilterRead, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
     from dispatch.signal.service import update
 
     signal_filter.project = signal.project
@@ -105,15 +154,40 @@ def test_update__add_filter(session, signal, signal_filter, project, case_priori
     signal_in = SignalUpdate(
         id=signal.id,
         name=signal.name,
-        project=ProjectRead(**project.__dict__),
+        project=ProjectRead(
+            id=getattr(project, 'id', 1),
+            name=getattr(project, 'name', 'Test Project'),
+            display_name=getattr(project, 'display_name', ''),
+            owner_email=getattr(project, 'owner_email', None),
+            owner_conversation=getattr(project, 'owner_conversation', None),
+            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
+            business_year_hours=getattr(project, 'business_year_hours', 2080),
+            description=getattr(project, 'description', None),
+            default=getattr(project, 'default', False),
+            color=getattr(project, 'color', None),
+            send_daily_reports=getattr(project, 'send_daily_reports', True),
+            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
+            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
+            enabled=getattr(project, 'enabled', True),
+            storage_folder_one=getattr(project, 'storage_folder_one', None),
+            storage_folder_two=getattr(project, 'storage_folder_two', None),
+            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
+            storage_use_title=getattr(project, 'storage_use_title', False),
+            allow_self_join=getattr(project, 'allow_self_join', True),
+            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
+            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
+            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
+            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
+            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+        ),
         owner="example.com",
         external_id="foo",
-        case_priority=CasePriorityRead(**case_priority.__dict__),
-        case_type=CaseTypeRead(**case_type.__dict__),
+        case_priority=CasePriorityRead.from_orm(case_priority),
+        case_type=CaseTypeRead.from_orm(case_type),
         conversation_target="#general",
         description="desc",
         external_url="http://example.com",
-        oncall_service=Service(**service.__dict__),
+        oncall_service=Service.from_orm(service),
         source=None,
         variant="v1",
         lifecycle="active",
@@ -121,8 +195,7 @@ def test_update__add_filter(session, signal, signal_filter, project, case_priori
         genai_model="gpt-4",
         genai_system_message="system",
         genai_prompt="prompt",
-        tags=[TagRead(**tag.__dict__)],
-        entity_types=[EntityTypeRead(**entity_type.__dict__)],
+        tags=[TagRead.from_orm(tag)],
         filters=[SignalFilterRead.from_orm(signal_filter)],
     )
     signal = update(
@@ -134,7 +207,7 @@ def test_update__add_filter(session, signal, signal_filter, project, case_priori
 
 
 def test_update__delete_filter(session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type):
-    from dispatch.signal.models import SignalUpdate, Service, TagRead, EntityTypeRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import SignalUpdate, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
     from dispatch.signal.service import update
 
     # Set up conditions to delete a signal filter.
@@ -146,15 +219,40 @@ def test_update__delete_filter(session, signal, signal_filter, project, case_pri
     signal_in = SignalUpdate(
         id=signal.id,
         name=signal.name,
-        project=ProjectRead(**project.__dict__),
+        project=ProjectRead(
+            id=getattr(project, 'id', 1),
+            name=getattr(project, 'name', 'Test Project'),
+            display_name=getattr(project, 'display_name', ''),
+            owner_email=getattr(project, 'owner_email', None),
+            owner_conversation=getattr(project, 'owner_conversation', None),
+            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
+            business_year_hours=getattr(project, 'business_year_hours', 2080),
+            description=getattr(project, 'description', None),
+            default=getattr(project, 'default', False),
+            color=getattr(project, 'color', None),
+            send_daily_reports=getattr(project, 'send_daily_reports', True),
+            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
+            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
+            enabled=getattr(project, 'enabled', True),
+            storage_folder_one=getattr(project, 'storage_folder_one', None),
+            storage_folder_two=getattr(project, 'storage_folder_two', None),
+            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
+            storage_use_title=getattr(project, 'storage_use_title', False),
+            allow_self_join=getattr(project, 'allow_self_join', True),
+            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
+            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
+            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
+            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
+            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+        ),
         owner="example.com",
         external_id="foo",
-        case_priority=CasePriorityRead(**case_priority.__dict__),
-        case_type=CaseTypeRead(**case_type.__dict__),
+        case_priority=CasePriorityRead.from_orm(case_priority),
+        case_type=CaseTypeRead.from_orm(case_type),
         conversation_target="#general",
         description="desc",
         external_url="http://example.com",
-        oncall_service=Service(**service.__dict__),
+        oncall_service=Service.from_orm(service),
         source=None,
         variant="v1",
         lifecycle="active",
@@ -162,8 +260,7 @@ def test_update__delete_filter(session, signal, signal_filter, project, case_pri
         genai_model="gpt-4",
         genai_system_message="system",
         genai_prompt="prompt",
-        tags=[TagRead(**tag.__dict__)],
-        entity_types=[EntityTypeRead(**entity_type.__dict__)],
+        tags=[TagRead.from_orm(tag)],
         filters=[],
     )
     signal = update(

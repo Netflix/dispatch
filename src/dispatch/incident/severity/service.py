@@ -40,7 +40,8 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentSeverity:
         raise ValidationError([
             {
                 "msg": "No default incident severity defined.",
-                "loc": "incident_severity",
+                "loc": ("incident_severity",),
+                "type": "value_error.not_found",
             }
         ])
 
@@ -69,7 +70,8 @@ def get_by_name_or_raise(
         raise ValidationError([
             {
                 "msg": "Incident severity not found.",
-                "loc": "incident_severity",
+                "loc": ("incident_severity",),
+                "type": "value_error.not_found",
                 "incident_severity": incident_severity_in.name,
             }
         ])

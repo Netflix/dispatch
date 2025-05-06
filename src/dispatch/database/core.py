@@ -188,10 +188,11 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     if not mapped_class:
         raise ValidationError(
             [
-                ValidationError(
-                    msg="Model not found. Check the name of your model.",
-                    loc="filter",
-                )
+                {
+                    "type": "value_error",
+                    "loc": ("filter",),
+                    "msg": "Model not found. Check the name of your model.",
+                }
             ],
             model=BaseModel,
         )

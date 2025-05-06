@@ -34,6 +34,7 @@ def test_create(session, project, document):
         name=name,
         template_document=document,
         project=project,
+        enabled=True,
     )
 
     case_type = create(db_session=session, case_type_in=case_type_in)
@@ -46,7 +47,11 @@ def test_update(session, case_type):
 
     name = "Updated case type name"
 
-    case_type_in = CaseTypeUpdate(name=name)
+    case_type_in = CaseTypeUpdate(
+        name=name,
+        enabled=True,
+        project=case_type.project,
+    )
 
     case_type = update(
         db_session=session,

@@ -42,11 +42,12 @@ def get_by_name_or_raise(
 
     if not entity:
         raise ValidationError(
-            [
+            model=EntityRead,
+            errors=[
                 {
                     "msg": "Entity not found.",
                     "entity": entity_in.name,
-                    "loc": "entity",
+                    "loc": ("entity",),
                 }
             ]
         )

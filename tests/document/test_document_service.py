@@ -40,6 +40,10 @@ def test_update(session, document):
 
     document_in = DocumentUpdate(
         name=name,
+        resource_id=document.resource_id,
+        resource_type=document.resource_type,
+        weblink=document.weblink,
+        filters=[]
     )
     document = update(
         db_session=session,
