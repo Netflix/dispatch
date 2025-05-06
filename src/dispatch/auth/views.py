@@ -301,18 +301,21 @@ def login_user(
             )
         return {"projects": projects, "token": user.token}
 
-    raise ValidationError(
-        [
+    # Pydantic v2 compatible error handling
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=[
             {
                 "msg": "Invalid username.",
-                "loc": "username",
+                "loc": ["username"],
+                "type": "value_error",
             },
             {
                 "msg": "Invalid password.",
-                "loc": "password",
+                "loc": ["password"],
+                "type": "value_error",
             },
         ],
-        model=UserLogin,
     )
 
 
@@ -323,13 +326,16 @@ def register_user(
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user:
-        raise ValidationError(
-            [
+        # Pydantic v2 compatible error handling
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
                 {
                     "msg": "A user with this email already exists.",
-                    "loc": "email",
+                    "loc": ["email"],
+                    "type": "value_error",
                 }
-            ]
+            ],
         )
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)
