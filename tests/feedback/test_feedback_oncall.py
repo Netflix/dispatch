@@ -5,6 +5,11 @@ from dispatch.feedback.service.enums import ServiceFeedbackRating
 from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.project.models import ProjectRead
 
+from datetime import datetime, timezone
+from dispatch.feedback.service.enums import ServiceFeedbackRating
+from dispatch.individual.models import IndividualContactReadMinimal
+from dispatch.project.models import ProjectRead
+
 
 def test_create(session, participant, project):
     from dispatch.feedback.service.service import create
@@ -12,6 +17,7 @@ def test_create(session, participant, project):
 
     feedback = "Not a difficult shift"
     hours = 5
+    rating = ServiceFeedbackRating.no_effort
     rating = ServiceFeedbackRating.no_effort
 
     feedback_in = ServiceFeedbackCreate(

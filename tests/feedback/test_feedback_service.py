@@ -35,6 +35,7 @@ def test_create(session, incident, incident_type, incident_priority):
     incident.incident_type = incident_type
     incident.incident_priority = incident_priority
     rating = FeedbackRating.neither_satisfied_nor_dissatisfied
+    rating = FeedbackRating.neither_satisfied_nor_dissatisfied
     feedback = "The incident commander did an excellent job"
 
     feedback_in = FeedbackCreate(

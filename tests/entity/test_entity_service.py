@@ -1,12 +1,17 @@
 from dispatch.entity_type.models import EntityType, EntityTypeCreate, EntityTypeUpdate, EntityScopeEnum
+from dispatch.entity_type.models import EntityType, EntityTypeCreate, EntityTypeUpdate, EntityScopeEnum
 from dispatch.entity import service as entity_service
 from tests.factories import SignalInstanceFactory
+from dispatch.project.models import ProjectRead
 from dispatch.project.models import ProjectRead
 
 
 def test_get(session, entity):
     from dispatch.entity.service import get
 
+    if not hasattr(entity, 'id') or entity.id is None:
+        import pytest
+        pytest.skip("Entity fixture does not have a valid id.")
     if not hasattr(entity, 'id') or entity.id is None:
         import pytest
         pytest.skip("Entity fixture does not have a valid id.")
