@@ -25,9 +25,10 @@ class Project(Base):
     display_name = Column(String, nullable=False, server_default="")
 
     @hybrid_property
-    def display_name(self):
+    def display_name_or_name(self):
+        """Returns the display_name if it exists, otherwise returns the name."""
         try:
-            return self.display_name
+            return self.display_name if self.display_name else self.name
         except:
             return self.name
 
