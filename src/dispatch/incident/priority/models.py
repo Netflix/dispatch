@@ -1,6 +1,5 @@
 """Models for incident priority resources in the Dispatch application."""
 from pydantic import StrictBool
-from pydantic_extra_types.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -56,7 +55,7 @@ class IncidentPriorityBase(DispatchBase):
     default: bool | None = None
     enabled: bool | None = None
     view_order: int | None = None
-    color: Color | None = None
+    color: str | None = None
     disable_delayed_message_warning: bool | None = None
 
 
@@ -86,7 +85,7 @@ class IncidentPriorityReadMinimal(DispatchBase):
     default: bool | None = None
     enabled: bool | None = None
     view_order: int | None = None
-    color: Color | None = None
+    color: str | None = None
 
 
 class IncidentPriorityPagination(Pagination):

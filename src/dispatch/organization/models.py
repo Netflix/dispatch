@@ -2,8 +2,6 @@
 
 from slugify import slugify
 
-from pydantic_extra_types.color import Color
-
 from sqlalchemy.event import listen
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType
@@ -46,7 +44,7 @@ class OrganizationBase(DispatchBase):
     description: str | None = None
     default: bool | None = False
     banner_enabled: bool | None = False
-    banner_color: Color | None = None
+    banner_color: str | None = None
     banner_text: NameStr | None = None
 
 
@@ -61,7 +59,7 @@ class OrganizationUpdate(DispatchBase):
     description: str | None = None
     default: bool | None = False
     banner_enabled: bool | None = False
-    banner_color: Color | None = None
+    banner_color: str | None = None
     banner_text: NameStr | None = None
 
 

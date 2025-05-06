@@ -18,7 +18,6 @@ from sqlalchemy.sql.schema import UniqueConstraint
 
 from dispatch.incident.severity import service as incident_severity_service
 from typing_extensions import Annotated
-from pydantic_extra_types.color import Color
 
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
 NameStr = Annotated[str, StringConstraints(pattern=r"^(?!\s*$).+", strip_whitespace=True, min_length=3)]
@@ -77,7 +76,7 @@ class ProjectRead(DispatchBase):
 
 
 class IncidentSeverityCreate(DispatchBase):
-    color: Color
+    color: str
     default: bool
     description: str
     enabled: bool

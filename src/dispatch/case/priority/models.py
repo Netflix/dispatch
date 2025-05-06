@@ -1,6 +1,5 @@
 """Models and schemas for the Dispatch case priority system."""
 from pydantic import Field
-from pydantic_extra_types.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -38,7 +37,7 @@ listen(CasePriority.default, "set", ensure_unique_default_per_project)
 # Pydantic models
 class CasePriorityBase(DispatchBase):
     """Base Pydantic model for case priority data."""
-    color: Color | None = Field(None, nullable=True)
+    color: str | None = Field(None, nullable=True)
     default: bool | None
     page_assignee: bool | None
     description: str | None = Field(None, nullable=True)

@@ -1,7 +1,5 @@
 """Models for incident severity resources in the Dispatch application."""
 
-from pydantic_extra_types.color import Color
-
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.event import listen
@@ -41,7 +39,7 @@ listen(IncidentSeverity.default, "set", ensure_unique_default_per_project)
 # Pydantic models
 class IncidentSeverityBase(DispatchBase):
     """Base Pydantic model for incident severity resources."""
-    color: Color | None = None
+    color: str | None = None
     default: bool | None = None
     description: str | None = None
     enabled: bool | None = None
@@ -69,7 +67,7 @@ class IncidentSeverityRead(IncidentSeverityBase):
 class IncidentSeverityReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal incident severity resource."""
     id: PrimaryKey
-    color: Color | None = None
+    color: str | None = None
     default: bool | None = None
     description: str | None = None
     enabled: bool | None = None

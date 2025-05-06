@@ -10,7 +10,7 @@ boto3
 cachetools
 chardet
 click
-cryptography<45,>=41.0.5
+cryptography<42,>=38.0.0
 duo-client
 email-validator
 emails
@@ -31,11 +31,10 @@ oauth2client
 openai
 pandas
 pdpyras
-protobuf<6.0dev,>=5.26.1
+protobuf<5.0dev,>=4.21.6
 psycopg2-binary
 pyarrow
-pydantic
-pydantic_extra_types
+pydantic==2.11.4
 pyparsing
 python-dateutil
 python-jose
