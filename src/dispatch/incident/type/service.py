@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -35,12 +35,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
 
     if not incident_type:
         raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default incident type defined."),
-                    loc="incident_type",
-                )
-            ],
+            "No default incident type defined.",
             model=IncidentTypeRead,
         )
     return incident_type
@@ -67,12 +62,9 @@ def get_by_name_or_raise(
     if not incident_type:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident type not found.", incident_type=incident_type_in.name
-                    ),
-                    loc="incident_type",
-                )
+                NotFoundError(
+                    msg="Incident type not found.", incident_type=incident_type_in.name
+                ),
             ],
             model=IncidentTypeRead,
         )
@@ -207,9 +199,10 @@ def update(
         db_session=db_session, incident_type_id=incident_type.id
     )
     for incident in incidents:
-        incident_cost_service.calculate_incident_response_cost(
-            incident_id=incident.id, db_session=db_session, incident_review=False
-        )
+        if incident is not None:
+            incident_cost_service.calculate_incident_response_cost(
+                incident_id=incident.id, db_session=db_session, incident_review=False
+            )
 
     if incident_type_in.incident_template_document:
         incident_template_document = document_service.get(

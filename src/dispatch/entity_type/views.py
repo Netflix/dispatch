@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.case.service import get as get_case
@@ -48,9 +48,13 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
         entity_type = create(db_session=db_session, entity_type_in=entity_type_in)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
-            model=EntityTypeCreate,
-        ) from None
+            [
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
+        )
     return entity_type
 
 
@@ -63,9 +67,13 @@ def create_entity_type_with_case(
         entity_type = create(db_session=db_session, entity_type_in=entity_type_in, case_id=case_id)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
-            model=EntityTypeCreate,
-        ) from None
+            [
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
+        )
     return entity_type
 
 
@@ -131,12 +139,12 @@ def update_entity_type(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A entity type with this name already exists."), loc="name"
-                )
-            ],
-            model=EntityTypeUpdate,
-        ) from None
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
+        )
     return entity_type
 
 
@@ -161,12 +169,12 @@ def process_entity_type(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A entity type with this name already exists."), loc="name"
-                )
-            ],
-            model=EntityTypeUpdate,
-        ) from None
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
+        )
     return entity_type
 
 

@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
@@ -40,18 +40,12 @@ def get_by_name_or_raise(
     )
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceTransport not found.",
-                        source=source_transport_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceTransportRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "SourceTransport not found.",
+                "loc": "source",
+            }
+        ])
 
     return source
 

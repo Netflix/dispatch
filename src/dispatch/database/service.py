@@ -6,7 +6,7 @@ from itertools import chain
 
 from fastapi import Depends, Query
 from pydantic import BaseModel, StringConstraints
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from pydantic import Json
 from six import string_types
 from sortedcontainers import SortedSet
@@ -622,13 +622,20 @@ def search_filter_sort_paginate(
     except FieldNotFound as e:
         raise ValidationError(
             [
-                ErrorWrapper(FieldNotFoundError(msg=str(e)), loc="filter"),
-            ],
-            model=BaseModel,
+                {
+                    "msg": str(e),
+                    "loc": "filter",
+                }
+            ]
         ) from None
     except BadFilterFormat as e:
         raise ValidationError(
-            [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=BaseModel
+            [
+                {
+                    "msg": str(e),
+                    "loc": "filter",
+                }
+            ]
         ) from None
 
     if items_per_page == -1:

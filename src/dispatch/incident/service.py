@@ -9,7 +9,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
@@ -97,18 +97,12 @@ def get_by_name_or_raise(
     incident = get_by_name(db_session=db_session, project_id=project_id, name=incident_in.name)
 
     if not incident:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident not found.",
-                        query=incident_in.name,
-                    ),
-                    loc="incident",
-                )
-            ],
-            model=IncidentRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Incident not found.",
+                "loc": "name",
+            }
+        ])
     return incident
 
 

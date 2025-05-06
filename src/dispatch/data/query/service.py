@@ -31,15 +31,12 @@ def get_by_name_or_raise(*, db_session, query_in: QueryRead, project_id: int) ->
     if not query:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Query not found.",
-                        query=query_in.name,
-                    ),
-                    loc="query",
-                )
-            ],
-            model=QueryRead,
+                {
+                    "msg": "Query not found.",
+                    "query": query_in.name,
+                    "loc": "query",
+                }
+            ]
         )
 
     return query

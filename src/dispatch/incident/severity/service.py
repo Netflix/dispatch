@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -38,15 +38,12 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentSeverity:
     incident_severity = get_default(db_session=db_session, project_id=project_id)
 
     if not incident_severity:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default incident severity defined."),
-                    loc="incident_severity",
-                )
-            ],
-            model=IncidentSeverityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "No default incident severity defined.",
+                "loc": "incident_severity",
+            }
+        ])
 
     return incident_severity
 
@@ -70,18 +67,13 @@ def get_by_name_or_raise(
     )
 
     if not incident_severity:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident severity not found.",
-                        incident_severity=incident_severity_in.name,
-                    ),
-                    loc="incident_severity",
-                )
-            ],
-            model=IncidentSeverityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Incident severity not found.",
+                "loc": "incident_severity",
+                "incident_severity": incident_severity_in.name,
+            }
+        ])
 
     return incident_severity
 

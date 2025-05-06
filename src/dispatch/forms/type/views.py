@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import (
@@ -51,11 +51,11 @@ def create_forms_type(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A form type with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A form type with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=FormsTypeRead,
         ) from None
 
 
@@ -83,11 +83,11 @@ def update_forms_type(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A form type with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A form type with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=FormsTypeUpdate,
         ) from None
     return forms_type
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
@@ -31,8 +31,12 @@ def create_team(db_session: DbSession, team_contact_in: TeamContactCreate):
     )
     if team:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A team with this name already exists."), loc="name")],
-            model=TeamContactCreate,
+            [
+                {
+                    "msg": "A team with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         )
     return create(db_session=db_session, team_contact_in=team_contact_in)
 

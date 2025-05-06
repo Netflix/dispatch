@@ -36,15 +36,12 @@ def get_by_name_or_raise(
     if not status:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceStatus not found.",
-                        status=source_status_in.name,
-                    ),
-                    loc="status",
-                )
-            ],
-            model=SourceStatusRead,
+                {
+                    "msg": "SourceStatus not found.",
+                    "status": source_status_in.name,
+                    "loc": "status",
+                }
+            ]
         )
 
     return status

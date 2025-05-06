@@ -34,18 +34,12 @@ def get_by_name_or_raise(
     source = get_by_name(db_session=db_session, project_id=project_id, name=source_type_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceType not found.",
-                        source=source_type_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceTypeRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "SourceType not found.",
+                "loc": "source",
+            }
+        ])
 
     return source
 

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -36,12 +36,11 @@ def get_default_or_raise(*, db_session, project_id: int) -> CasePriority:
     if not case_priority:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="No default case priority defined."),
-                    loc="case_priority",
-                )
-            ],
-            model=CasePriorityRead,
+                {
+                    "msg": "No default case priority defined.",
+                    "loc": "case_priority",
+                }
+            ]
         )
     return case_priority
 
@@ -67,15 +66,12 @@ def get_by_name_or_raise(
     if not case_priority:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Case priority not found.",
-                        case_priority=case_priority_in.name,
-                    ),
-                    loc="case_priority",
-                )
-            ],
-            model=CasePriorityRead,
+                {
+                    "msg": "Case priority not found.",
+                    "case_priority": case_priority_in.name,
+                    "loc": "case_priority",
+                }
+            ]
         )
 
     return case_priority

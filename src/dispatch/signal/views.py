@@ -369,8 +369,12 @@ def update_signal(
         )
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A signal with this name already exists."), loc="name")],
-            model=SignalUpdate,
+            [
+                {
+                    "msg": "A signal with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         ) from None
 
     return signal

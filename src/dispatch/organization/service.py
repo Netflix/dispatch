@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization
@@ -29,10 +29,10 @@ def get_default_or_raise(*, db_session) -> Organization:
     if not organization:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="No default organization defined."),
-                    loc="organization",
-                )
+                {
+                    "msg": "No default organization defined.",
+                    "loc": "organization",
+                }
             ],
             model=OrganizationRead,
         )
@@ -51,10 +51,11 @@ def get_by_name_or_raise(*, db_session, organization_in: OrganizationRead) -> Or
     if not organization:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Organization not found.", organization=organization_in.name),
-                    loc="organization",
-                )
+                {
+                    "msg": "Organization not found.",
+                    "organization": organization_in.name,
+                    "loc": "organization",
+                }
             ],
             model=OrganizationRead,
         )
@@ -74,10 +75,11 @@ def get_by_slug_or_raise(*, db_session, organization_in: OrganizationRead) -> Or
     if not organization:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Organization not found.", organization=organization_in.name),
-                    loc="organization",
-                )
+                {
+                    "msg": "Organization not found.",
+                    "organization": organization_in.name,
+                    "loc": "organization",
+                }
             ],
             model=OrganizationRead,
         )

@@ -1,5 +1,5 @@
 import logging
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
@@ -154,17 +154,12 @@ def update_instance(
                 db_session=db_session, service_type=plugin_instance.plugin.slug, is_active=True
             )
             if oncall_services:
-                raise ValidationError(
-                    [
-                        ErrorWrapper(
-                            InvalidConfigurationError(
-                                msg=f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
-                            ),
-                            loc="plugin_instance",
-                        )
-                    ],
-                    model=PluginInstanceUpdate,
-                )
+                raise ValidationError([
+                    {
+                        "msg": "Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. ",
+                        "loc": "plugin_instance",
+                    }
+                ])
 
     for field in plugin_instance_data:
         if field in update_data:

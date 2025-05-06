@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
@@ -25,6 +24,8 @@ from .models import (
     WorkflowUpdate,
 )
 
+from pydantic import ValidationError
+
 
 def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
     """Returns a workflow based on the given workflow id."""
@@ -40,15 +41,12 @@ def get_by_name_or_raise(*, db_session: Session, workflow_in: WorkflowRead) -> W
     workflow = get_by_name(db_session=db_session, name=workflow_in.name)
 
     if not workflow:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="Workflow not found.", workflow=workflow_in.name),
-                    loc="workflow",
-                )
-            ],
-            model=WorkflowRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Workflow not found.",
+                "loc": "workflow",
+            }
+        ])
     return workflow
 
 

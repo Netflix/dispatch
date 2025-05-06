@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -70,8 +70,12 @@ def create_workflow(db_session: DbSession, workflow_in: WorkflowCreate):
     )
     if not plugin_instance:
         raise ValidationError(
-            [ErrorWrapper(NotFoundError(msg="No plugin instance found."), loc="plugin_instance")],
-            model=WorkflowCreate,
+            [
+                {
+                    "msg": "No plugin instance found.",
+                    "loc": "plugin_instance",
+                }
+            ]
         )
 
     return create(db_session=db_session, workflow_in=workflow_in)

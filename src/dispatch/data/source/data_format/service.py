@@ -40,18 +40,12 @@ def get_by_name_or_raise(
     )
 
     if not data_format:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceDataFormat not found.",
-                        source=source_data_format_in.name,
-                    ),
-                    loc="dataFormat",
-                )
-            ],
-            model=SourceDataFormatRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "SourceDataFormat not found.",
+                "loc": "dataFormat",
+            }
+        ])
 
     return data_format
 

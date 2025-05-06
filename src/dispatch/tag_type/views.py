@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
@@ -44,11 +44,11 @@ def create_tag_type(db_session: DbSession, tag_type_in: TagTypeCreate):
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A tag type with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A tag type with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=TagTypeCreate,
         ) from None
     return tag_type
 
@@ -68,11 +68,11 @@ def update_tag_type(db_session: DbSession, tag_type_id: PrimaryKey, tag_type_in:
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A tag type with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A tag type with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=TagTypeUpdate,
         ) from None
     return tag_type
 

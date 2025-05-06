@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.error_wrappers import ValidationError
 from datetime import datetime
 
 from dispatch.enums import DocumentResourceReferenceTypes, DocumentResourceTemplateTypes
@@ -91,18 +91,12 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
             .one_or_none()
         )
         if faq_doc:
-            raise ValidationError(
-                [
-                    ErrorWrapper(
-                        ExistsError(
-                            msg="FAQ document already defined for this project.",
-                            document=faq_doc.name,
-                        ),
-                        loc="document",
-                    )
-                ],
-                model=DocumentCreate,
-            )
+            raise ValidationError([
+                {
+                    "msg": "FAQ document already defined for this project.",
+                    "loc": "document",
+                }
+            ])
 
     if document_in.resource_type == DocumentResourceTemplateTypes.forms:
         forms_doc = (
@@ -112,18 +106,12 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
             .one_or_none()
         )
         if forms_doc:
-            raise ValidationError(
-                [
-                    ErrorWrapper(
-                        ExistsError(
-                            msg="Forms export template document already defined for this project.",
-                            document=forms_doc.name,
-                        ),
-                        loc="document",
-                    )
-                ],
-                model=DocumentCreate,
-            )
+            raise ValidationError([
+                {
+                    "msg": "Forms export template document already defined for this project.",
+                    "loc": "document",
+                }
+            ])
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)

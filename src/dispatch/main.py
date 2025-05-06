@@ -7,7 +7,7 @@ from uuid import uuid1
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from sentry_asgi import SentryMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded

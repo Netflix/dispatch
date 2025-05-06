@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.exceptions import InvalidConfigurationError, NotFoundError
 from dispatch.plugin import service as plugin_service
@@ -43,15 +43,12 @@ def get_by_name_or_raise(*, db_session, project_id, service_in: ServiceRead) -> 
     if not source:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Service not found.",
-                        source=service_in.name,
-                    ),
-                    loc="service",
-                )
-            ],
-            model=ServiceRead,
+                {
+                    "msg": "Service not found.",
+                    "source": service_in.name,
+                    "loc": "service",
+                }
+            ]
         )
 
     return source
@@ -80,13 +77,10 @@ def get_by_external_id_and_project_id_or_raise(
     if not service:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Service not found.",
-                        incident_priority=service.external_id,
-                    ),
-                    loc="service",
-                )
+                {
+                    "msg": "Service not found.",
+                    "incident_priority": service.external_id,
+                }
             ],
             model=ServiceRead,
         )
@@ -203,15 +197,10 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
         if not oncall_plugin_instance.enabled:
             raise ValidationError(
                 [
-                    ErrorWrapper(
-                        InvalidConfigurationError(
-                            (
-                                f"Cannot enable service {service.name}. Its associated plugin ",
-                                f"{oncall_plugin_instance.plugin.title} is not enabled.",
-                            )
-                        ),
-                        loc="type",
-                    )
+                    {
+                        "msg": "Cannot enable service. Its associated plugin is not enabled.",
+                        "loc": "type",
+                    }
                 ],
                 model=ServiceUpdate,
             )

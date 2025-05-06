@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.exceptions import ExistsError
@@ -24,8 +24,12 @@ def create_term(db_session: DbSession, term_in: TermCreate):
     term = get_by_text(db_session=db_session, text=term_in.text)
     if term:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A term with this name already exists."), loc="name")],
-            model=TermCreate,
+            [
+                {
+                    "msg": "A term with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         )
     term = create(db_session=db_session, term_in=term_in)
     return term

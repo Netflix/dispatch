@@ -50,15 +50,12 @@ def create_individual(db_session: DbSession, individual_contact_in: IndividualCo
         project_id=individual_contact_in.project.id,
     )
     if individual:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="An individual with this email already exists."),
-                    loc="email",
-                )
-            ],
-            model=IndividualContactRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "An individual with this email already exists.",
+                "loc": "email",
+            }
+        ])
     return create(db_session=db_session, individual_contact_in=individual_contact_in)
 
 

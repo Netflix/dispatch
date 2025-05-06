@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Query, Session
 from jsonpath_ng import parse
 from dispatch.exceptions import NotFoundError
@@ -38,12 +38,12 @@ def get_by_name_or_raise(
     if not entity_type:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Entity not found.", entity_type=entity_type_in.name),
-                    loc="entity",
-                )
-            ],
-            model=EntityTypeRead,
+                {
+                    "msg": "Entity not found.",
+                    "entity_type": entity_type_in.name,
+                    "loc": "entity",
+                }
+            ]
         )
 
     return entity_type

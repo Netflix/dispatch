@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -35,15 +35,12 @@ def get_default_or_raise(*, db_session, project_id: int) -> CaseType:
     case_type = get_default(db_session=db_session, project_id=project_id)
 
     if not case_type:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default case type defined."),
-                    loc="case_type",
-                )
-            ],
-            model=CaseTypeRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "No default case type defined.",
+                "loc": "case_type",
+            }
+        ])
     return case_type
 
 
@@ -62,15 +59,13 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_type_in=CaseTypeRe
     case_type = get_by_name(db_session=db_session, project_id=project_id, name=case_type_in.name)
 
     if not case_type:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="Case type not found.", case_type=case_type_in.name),
-                    loc="case_type",
-                )
-            ],
-            model=CaseTypeRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Case type not found.",
+                "loc": "case_type",
+                "case_type": case_type_in.name
+            }
+        ])
 
     return case_type
 

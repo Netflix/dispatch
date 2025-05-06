@@ -24,15 +24,12 @@ def get_by_name_or_raise(*, db_session, alert_in: AlertRead) -> AlertRead:
     if not alert:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Alert not found.",
-                        alert=alert_in.name,
-                    ),
-                    loc="alert",
-                )
-            ],
-            model=AlertRead,
+                {
+                    "msg": "Alert not found.",
+                    "alert": alert_in.name,
+                    "loc": "alert",
+                }
+            ]
         )
 
     return alert

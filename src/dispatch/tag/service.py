@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
@@ -29,18 +29,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead) -> Tag
     tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 
     if not tag:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Tag not found.",
-                        tag=tag_in.name,
-                    ),
-                    loc="tag",
-                )
-            ],
-            model=TagRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Tag not found.",
+                "loc": "tag",
+            }
+        ])
 
     return tag
 

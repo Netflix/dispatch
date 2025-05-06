@@ -90,18 +90,12 @@ def get_signal_engagement_by_name_or_raise(
     )
 
     if not signal_engagement:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Signal engagement not found.",
-                        signal_engagement=signal_engagement_in.name,
-                    ),
-                    loc="signalEngagement",
-                )
-            ],
-            model=SignalEngagementRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Signal engagement not found.",
+                "loc": "signalEngagement",
+            }
+        ])
     return signal_engagement
 
 
@@ -263,17 +257,12 @@ def get_signal_filter_by_name_or_raise(
     )
 
     if not signal_filter:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Signal Filter not found.", entity_type=signal_filter_in.name
-                    ),
-                    loc="signalFilter",
-                )
-            ],
-            model=SignalFilterRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Signal Filter not found.",
+                "loc": "signalFilter",
+            }
+        ])
     return signal_filter
 
 

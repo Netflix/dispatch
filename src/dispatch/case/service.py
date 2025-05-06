@@ -2,7 +2,7 @@ import logging
 
 from datetime import datetime, timedelta
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session, joinedload, load_only
 from typing import List, Optional
 
@@ -55,15 +55,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> C
     if not case:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Case not found.",
-                        query=case_in.name,
-                    ),
-                    loc="case",
-                )
-            ],
-            model=CaseRead,
+                {
+                    "msg": "Case not found.",
+                    "query": case_in.name,
+                    "loc": "case",
+                }
+            ]
         )
     return case
 

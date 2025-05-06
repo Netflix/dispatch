@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.config import DISPATCH_AUTH_REGISTRATION_ENABLED
 
@@ -99,12 +99,11 @@ def create_user(
     if user:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    InvalidConfigurationError(msg="A user with this email already exists."),
-                    loc="email",
-                )
-            ],
-            model=UserCreate,
+                {
+                    "msg": "A user with this email already exists.",
+                    "loc": "email",
+                }
+            ]
         )
 
     current_user_organization_role = current_user.get_organization_role(organization)
@@ -304,14 +303,14 @@ def login_user(
 
     raise ValidationError(
         [
-            ErrorWrapper(
-                InvalidUsernameError(msg="Invalid username."),
-                loc="username",
-            ),
-            ErrorWrapper(
-                InvalidPasswordError(msg="Invalid password."),
-                loc="password",
-            ),
+            {
+                "msg": "Invalid username.",
+                "loc": "username",
+            },
+            {
+                "msg": "Invalid password.",
+                "loc": "password",
+            },
         ],
         model=UserLogin,
     )
@@ -326,12 +325,11 @@ def register_user(
     if user:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    InvalidConfigurationError(msg="A user with this email already exists."),
-                    loc="email",
-                )
-            ],
-            model=UserRegister,
+                {
+                    "msg": "A user with this email already exists.",
+                    "loc": "email",
+                }
+            ]
         )
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)

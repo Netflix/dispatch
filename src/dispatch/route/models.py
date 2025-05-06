@@ -29,13 +29,13 @@ class Recommendation(Base):
 
 # Pydantic models...
 class RecommendationMatchBase(DispatchBase):
-    correct = bool
-    resource_type = str
-    resource_state = dict
+    correct: bool
+    resource_type: str
+    resource_state: dict
 
 
 class RecommendationBase(DispatchBase):
-    matches = Optional[List[RecommendationMatchBase]]
+    matches: Optional[list[RecommendationMatchBase]]
 
 
 class RouteBase(DispatchBase):

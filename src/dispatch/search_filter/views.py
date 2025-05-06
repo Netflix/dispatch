@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
@@ -43,11 +43,11 @@ def create_search_filter(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A search filter with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A search filter with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=SearchFilterRead,
         ) from None
 
 
@@ -75,11 +75,11 @@ def update_search_filter(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A search filter with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A search filter with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=SearchFilterUpdate,
         ) from None
     return search_filter
 

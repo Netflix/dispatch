@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -34,15 +34,12 @@ def get_default_or_raise(*, db_session, project_id: int) -> CaseSeverity:
     case_severity = get_default(db_session=db_session, project_id=project_id)
 
     if not case_severity:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default case severity defined."),
-                    loc="case_severity",
-                )
-            ],
-            model=CaseSeverityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "No default case severity defined.",
+                "loc": "case_severity",
+            }
+        ])
     return case_severity
 
 
@@ -65,18 +62,13 @@ def get_by_name_or_raise(
     )
 
     if not case_severity:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Case severity not found.",
-                        case_severity=case_severity_in.name,
-                    ),
-                    loc="case_severity",
-                )
-            ],
-            model=CaseSeverityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Case severity not found.",
+                "loc": "case_severity",
+                "case_severity": case_severity_in.name,
+            }
+        ])
 
     return case_severity
 
