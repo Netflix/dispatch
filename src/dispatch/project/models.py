@@ -24,14 +24,6 @@ class Project(Base):
     name = Column(String)
     display_name = Column(String, nullable=False, server_default="")
 
-    @hybrid_property
-    def display_name_or_name(self):
-        """Returns the display_name if it exists, otherwise returns the name."""
-        try:
-            return self.display_name if self.display_name else self.name
-        except Exception:
-            return self.name
-
     description = Column(String)
     default = Column(Boolean, default=False)
     color = Column(String)
@@ -48,6 +40,7 @@ class Project(Base):
     dispatch_user_project = relationship(
         "DispatchUserProject",
         cascade="all, delete-orphan",
+        overlaps="users"
     )
 
     enabled = Column(Boolean, default=True, server_default="t")
