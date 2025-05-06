@@ -4,6 +4,7 @@ from contextvars import ContextVar
 from os import path
 from typing import Final, Optional
 from uuid import uuid1
+import warnings
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
@@ -31,6 +32,9 @@ from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
 from .rate_limiter import limiter
+
+# Filter out Pydantic migration warnings
+warnings.filterwarnings("ignore", message=".*has been moved to.*")
 
 log = logging.getLogger(__name__)
 
