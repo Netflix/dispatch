@@ -104,7 +104,6 @@ def remove_member(client: Any, group_key: str, email: str):
 
 def list_members(client: Any, group_key: str, **kwargs):
     """Lists all members of google group."""
-
     try:
         return make_call(client.members(), "list", groupKey=group_key, **kwargs)
     except HttpError as e:
