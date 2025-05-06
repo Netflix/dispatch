@@ -40,15 +40,14 @@ def get_by_name_or_raise(*, db_session, project_id, service_in: ServiceRead) -> 
     source = get_by_name(db_session=db_session, project_id=project_id, name=service_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                {
-                    "msg": "Service not found.",
-                    "source": service_in.name,
-                    "loc": "service",
-                }
-            ]
-        )
+        raise ValidationError([
+            {
+                "loc": ("service",),
+                "msg": f"Service not found: {service_in.name}",
+                "type": "value_error",
+                "input": service_in.name,
+            }
+        ])
 
     return source
 

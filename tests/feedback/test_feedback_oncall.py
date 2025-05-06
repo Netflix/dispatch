@@ -22,7 +22,6 @@ def test_create(session, participant, project):
 
     feedback_in = ServiceFeedbackCreate(
         individual=IndividualContactReadMinimal(id=participant.individual.id),
-        individual=IndividualContactReadMinimal(id=participant.individual.id),
         rating=rating,
         feedback=feedback,
         hours=hours,

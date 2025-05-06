@@ -37,12 +37,17 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in: TagTypeRea
     tag_type = get_by_name(db_session=db_session, project_id=project_id, name=tag_type_in.name)
 
     if not tag_type:
-        raise ValidationError([
-            {
-                "msg": "TagType not found.",
-                "loc": "tag_type",
-            }
-        ])
+        raise ValidationError.from_exception_data(
+            "TagTypeRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("tag_type",),
+                    "msg": f"Tag type not found.",
+                    "input": tag_type_in.name,
+                }
+            ]
+        )
 
     return tag_type
 

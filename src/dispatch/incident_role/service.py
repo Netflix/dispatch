@@ -74,12 +74,17 @@ def create_or_update(
             role_policy = get(db_session=db_session, incident_role_id=role_policy_in.id)
 
             if not role_policy:
-                raise ValidationError([
-                    {
-                        "msg": "Role policy not found.",
-                        "loc": "id",
-                    }
-                ])
+                raise ValidationError.from_exception_data(
+                    "IncidentRoleRead",
+                    [
+                        {
+                            "type": "value_error",
+                            "loc": ("incident_role",),
+                            "msg": f"Incident role not found.",
+                            "input": role_policy_in.name,
+                        }
+                    ]
+                )
 
         else:
             role_policy = IncidentRole(role=role, project=project)

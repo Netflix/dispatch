@@ -27,9 +27,16 @@ def get_individual(db_session: DbSession, individual_contact_id: PrimaryKey):
     """Gets an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An individual with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "IndividualContactRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("individual",),
+                    "msg": f"Individual not found.",
+                    "input": individual_contact_id,
+                }
+            ]
         )
     return individual
 
@@ -72,9 +79,16 @@ def update_individual(
     """Updates an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An individual with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "IndividualContactRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("individual",),
+                    "msg": f"Individual not found.",
+                    "input": individual_contact_id,
+                }
+            ]
         )
     return update(
         db_session=db_session,
@@ -93,8 +107,15 @@ def delete_individual(db_session: DbSession, individual_contact_id: PrimaryKey):
     """Deletes an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An individual with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "IndividualContactRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("individual",),
+                    "msg": f"Individual not found.",
+                    "input": individual_contact_id,
+                }
+            ]
         )
     delete(db_session=db_session, individual_contact_id=individual_contact_id)

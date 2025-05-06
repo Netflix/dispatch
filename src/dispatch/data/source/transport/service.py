@@ -41,8 +41,10 @@ def get_by_name_or_raise(
     if not source:
         raise ValidationError([
             {
-                "msg": "SourceTransport not found.",
-                "loc": "source",
+                "loc": ("source",),
+                "msg": f"SourceTransport not found: {source_transport_in.name}",
+                "type": "value_error",
+                "input": source_transport_in.name,
             }
         ])
 

@@ -38,8 +38,10 @@ def get_by_name_or_raise(*, db_session, project_id, source_in: SourceRead) -> So
     if not source:
         raise ValidationError([
             {
-                "msg": "Source not found.",
-                "loc": "source",
+                "loc": ("source",),
+                "msg": f"Source not found: {source_in.name}",
+                "type": "value_error",
+                "input": source_in.name,
             }
         ])
 

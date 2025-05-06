@@ -28,15 +28,14 @@ def get_by_name_or_raise(*, db_session, query_in: QueryRead, project_id: int) ->
     query = get_by_name(db_session=db_session, name=query_in.name, project_id=project_id)
 
     if not query:
-        raise ValidationError(
-            [
-                {
-                    "msg": "Query not found.",
-                    "query": query_in.name,
-                    "loc": ["query"],
-                }
-            ]
-        )
+        raise ValidationError([
+            {
+                "loc": ("query",),
+                "msg": f"Query not found: {query_in.name}",
+                "type": "value_error",
+                "input": query_in.name,
+            }
+        ])
 
     return query
 

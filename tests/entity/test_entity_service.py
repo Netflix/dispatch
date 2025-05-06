@@ -99,75 +99,10 @@ def test_create(session, entity_type, project):
 
     entity_in = EntityCreate(
         id=None,
-        id=None,
         name=name,
         source="test-source",
         value="test-value",
-        source="test-source",
-        value="test-value",
         description=description,
-        entity_type=EntityTypeCreate(
-            id=None,
-            name=entity_type.name,
-            description=entity_type.description,
-            jpath=entity_type.jpath,
-            regular_expression=entity_type.regular_expression,
-            enabled=entity_type.enabled,
-            scope=EntityScopeEnum.single,
-            signals=[],
-            project=ProjectRead(
-                id=project.id,
-                name=project.name,
-                display_name=getattr(project, 'display_name', ''),
-                owner_email=getattr(project, 'owner_email', None),
-                owner_conversation=getattr(project, 'owner_conversation', None),
-                annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-                business_year_hours=getattr(project, 'business_year_hours', 2080),
-                description=getattr(project, 'description', None),
-                default=getattr(project, 'default', False),
-                color=getattr(project, 'color', None),
-                send_daily_reports=getattr(project, 'send_daily_reports', True),
-                send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-                weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-                enabled=getattr(project, 'enabled', True),
-                storage_folder_one=getattr(project, 'storage_folder_one', None),
-                storage_folder_two=getattr(project, 'storage_folder_two', None),
-                storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-                storage_use_title=getattr(project, 'storage_use_title', False),
-                allow_self_join=getattr(project, 'allow_self_join', True),
-                select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-                report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-                report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-                report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-                snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
-            ),
-        ),
-        project=ProjectRead(
-            id=project.id,
-            name=project.name,
-            display_name=getattr(project, 'display_name', ''),
-            owner_email=getattr(project, 'owner_email', None),
-            owner_conversation=getattr(project, 'owner_conversation', None),
-            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-            business_year_hours=getattr(project, 'business_year_hours', 2080),
-            description=getattr(project, 'description', None),
-            default=getattr(project, 'default', False),
-            color=getattr(project, 'color', None),
-            send_daily_reports=getattr(project, 'send_daily_reports', True),
-            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-            enabled=getattr(project, 'enabled', True),
-            storage_folder_one=getattr(project, 'storage_folder_one', None),
-            storage_folder_two=getattr(project, 'storage_folder_two', None),
-            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-            storage_use_title=getattr(project, 'storage_use_title', False),
-            allow_self_join=getattr(project, 'allow_self_join', True),
-            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
-        ),
         entity_type=EntityTypeCreate(
             id=None,
             name=entity_type.name,
@@ -278,16 +213,18 @@ def test_delete(session, entity):
 def test_find_entities_with_field_only(session, signal_instance, project):
     from dispatch.entity.service import find_entities
 
+    # The default SignalInstanceFactory raw has asset[0].id and asset[1].id
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            jpath="$.raw.id",
+            jpath="asset[0].id",
             regular_expression=None,
             project=project,
         ),
     ]
     entities = find_entities(session, signal_instance, entity_types)
     assert len(entities) == 1
+    assert str(entities[0].value) == "arn:aws:iam::123456789012:role/Test"
 
     # An entire obj which is not valid
     entity_types = [
@@ -301,7 +238,7 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     entities = find_entities(session, signal_instance, entity_types)
     assert len(entities) == 0
 
-    # Two matches
+    # Two matches (asset[*].id)
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
@@ -311,7 +248,10 @@ def test_find_entities_with_field_only(session, signal_instance, project):
         ),
     ]
     entities = find_entities(session, signal_instance, entity_types)
-    assert len(entities) == 0
+    assert len(entities) == 2
+    values = {getattr(e, "value", None) for e in entities if hasattr(e, "value") and isinstance(e.value, str)}
+    assert "arn:aws:iam::123456789012:role/Test" in values
+    assert "arn:aws:s3:::ap-northeast-3-123456789012-s3-server-access-logs" in values
 
 
 def test_find_entities_with_no_regex_or_field(session, signal_instance, project):
@@ -364,17 +304,20 @@ def test_find_entities_multiple_entity_types(session, signal_instance, project):
     entity_types = [
         EntityType(
             name="AWS IAM Role ARN",
-            jpath="$.raw.id",
+            jpath="asset[0].id",
             regular_expression=None,
             project=project,
         ),
         EntityType(
             name="Another Entity Type",
-            jpath="asset[*].id",
+            jpath="asset[1].id",
             regular_expression=None,
             project=project,
         ),
     ]
 
     entities = find_entities(session, signal_instance, entity_types)
-    assert len(entities) == 1
+    assert len(entities) == 2
+    values = {getattr(e, "value", None) for e in entities if hasattr(e, "value") and isinstance(e.value, str)}
+    assert "arn:aws:iam::123456789012:role/Test" in values
+    assert "arn:aws:s3:::ap-northeast-3-123456789012-s3-server-access-logs" in values

@@ -26,15 +26,13 @@ def get_default_or_raise(*, db_session) -> Organization:
     organization = get_default(db_session=db_session)
 
     if not organization:
-        raise ValidationError(
-            [
-                {
-                    "msg": "No default organization defined.",
-                    "loc": "organization",
-                }
-            ],
-            model=OrganizationRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("organization",),
+                "msg": "No default organization defined.",
+                "type": "value_error",
+            }
+        ])
     return organization
 
 

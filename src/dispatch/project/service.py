@@ -23,14 +23,13 @@ def get_default_or_raise(*, db_session: Session) -> Project:
     project = get_default(db_session=db_session)
 
     if not project:
-        raise ValidationError(
-            [
-                {
-                    "msg": "No default project defined.",
-                    "loc": "project",
-                }
-            ]
-        )
+        raise ValidationError([
+            {
+                "loc": ("project",),
+                "msg": "No default project defined.",
+                "type": "value_error",
+            }
+        ])
     return project
 
 

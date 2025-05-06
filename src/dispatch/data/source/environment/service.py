@@ -41,15 +41,14 @@ def get_by_name_or_raise(
     )
 
     if not source:
-        raise ValidationError(
-            [
-                {
-                    "msg": "Source environment not found.",
-                    "source": source_environment_in.name,
-                    "loc": "source",
-                }
-            ]
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"Source environment not found: {source_environment_in.name}",
+                "type": "value_error",
+                "input": source_environment_in.name,
+            }
+        ])
 
     return source
 

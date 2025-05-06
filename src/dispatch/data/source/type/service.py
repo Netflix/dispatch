@@ -35,8 +35,10 @@ def get_by_name_or_raise(
     if not source:
         raise ValidationError([
             {
-                "msg": "SourceType not found.",
-                "loc": "source",
+                "loc": ("source",),
+                "msg": f"SourceType not found: {source_type_in.name}",
+                "type": "value_error",
+                "input": source_type_in.name,
             }
         ])
 

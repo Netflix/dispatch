@@ -5,7 +5,6 @@ from pydantic import field_validator, Field, ConfigDict
 from urllib.parse import urlparse
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table, UniqueConstraint
-from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -25,16 +24,13 @@ from dispatch.models import (
 # Association tables for many to many relationships
 assoc_individual_filters = Table(
     "assoc_individual_filters",
-    "assoc_individual_filters",
     Base.metadata,
-    Column("individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")),
     Column("individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")),
     Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("individual_contact_id", "search_filter_id"),
 )
 
 
-class IndividualContact(Base, ContactMixin, ProjectMixin, TimeStampMixin):
 class IndividualContact(Base, ContactMixin, ProjectMixin, TimeStampMixin):
     """SQLAlchemy model for individual contact resources."""
     __table_args__ = (UniqueConstraint("email", "project_id"),)

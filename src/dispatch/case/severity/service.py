@@ -35,8 +35,9 @@ def get_default_or_raise(*, db_session, project_id: int) -> CaseSeverity:
     if not case_severity:
         raise ValidationError([
             {
+                "loc": ("case_severity",),
                 "msg": "No default case severity defined.",
-                "loc": "case_severity",
+                "type": "value_error",
             }
         ])
     return case_severity
@@ -63,8 +64,9 @@ def get_by_name_or_raise(
     if not case_severity:
         raise ValidationError([
             {
+                "loc": ("case_severity",),
                 "msg": "Case severity not found.",
-                "loc": "case_severity",
+                "type": "value_error",
                 "case_severity": case_severity_in.name,
             }
         ])

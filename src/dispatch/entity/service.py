@@ -41,17 +41,14 @@ def get_by_name_or_raise(
     entity = get_by_name(db_session=db_session, project_id=project_id, name=entity_in.name)
 
     if not entity:
-        raise ValidationError.from_exception_data(
-            "EntityRead",
-            [
-                {
-                    "type": "value_error",
-                    "loc": ("entity",),
-                    "msg": f"Entity not found: {entity_in.name}",
-                    "input": entity_in.name,
-                }
-            ]
-        )
+        raise ValidationError([
+            {
+                "loc": ("entity",),
+                "msg": f"Entity not found: {entity_in.name}",
+                "type": "value_error",
+                "input": entity_in.name,
+            }
+        ])
 
     return entity
 
