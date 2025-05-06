@@ -22,6 +22,8 @@ from dispatch.incident.priority.models import (
 class Project(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    display_name = Column(String, nullable=False, server_default="")
+
     description = Column(String)
     default = Column(Boolean, default=False)
     color = Column(String)
@@ -39,8 +41,6 @@ class Project(Base):
         "DispatchUserProject",
         cascade="all, delete-orphan",
     )
-
-    display_name = Column(String, nullable=False, server_default="")
 
     enabled = Column(Boolean, default=True, server_default="t")
     allow_self_join = Column(Boolean, default=True, server_default="t")
