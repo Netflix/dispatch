@@ -5,7 +5,7 @@ alembic
 atlassian-python-api==3.32.0
 attrs>=22.2.0  # Required by referencing; conflicts with dispatch's requirement
 bcrypt
-blockkit
+blockkit==1.9.2
 boto3
 cachetools
 chardet
