@@ -58,7 +58,10 @@ def run_migrations_online():
         # get the schema names
         for schema in get_tenant_schemas(connection):
             log.info(f"Migrating {schema}...")
-            connection.execute(text(f'set search_path to "{schema}"'))
+            print(f"Migrating {schema}...")
+            set_search_path = text(f'set search_path to "{schema}"')
+            print(set_search_path)
+            connection.execute(set_search_path)
             connection.dialect.default_schema_name = schema
 
             context.configure(
