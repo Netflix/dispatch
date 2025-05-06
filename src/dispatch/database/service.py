@@ -36,6 +36,7 @@ from dispatch.incident.type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 from dispatch.plugin.models import Plugin, PluginInstance
+from dispatch.project.models import Project
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
@@ -153,7 +154,6 @@ class Filter(object):
             return function(sqlalchemy_field, value)
 
 
-
 def get_model_from_spec(spec, query, default_model=None):
     """Determine the model to which a spec applies on a given query.
     A spec that does not specify a model may be applied to a query that
@@ -190,6 +190,7 @@ def get_model_from_spec(spec, query, default_model=None):
             raise BadSpec("Ambiguous spec. Please specify a model.")
 
     return model
+
 
 class BooleanFilter(object):
     def __init__(self, function, *filters):
@@ -230,8 +231,9 @@ def build_filters(filter_spec):
 
                 if not _is_iterable_filter(fn_args):
                     raise BadFilterFormat(
-                        "`{}` value must be an iterable across the function "
-                        "arguments".format(boolean_function.key)
+                        "`{}` value must be an iterable across the function arguments".format(
+                            boolean_function.key
+                        )
                     )
                 if boolean_function.only_one_arg and len(fn_args) != 1:
                     raise BadFilterFormat(
@@ -418,7 +420,6 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Feedback, "Incident"): (Incident, False),
         (Feedback, "Case"): (Case, False),
         (Task, "Project"): (Incident, False),
-        (Tag, "Project"): (Tag.project, False),
         (Task, "Incident"): (Incident, False),
         (Task, "IncidentPriority"): (Incident, False),
         (Task, "IncidentType"): (Incident, False),
@@ -440,11 +441,12 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
         (Tag, "TagType"): (Tag.tag_type, False),
-        (CaseType, "Project"): (CaseType.project, False),
-        (CaseSeverity, "Project"): (CaseSeverity.project, False),
-        (CasePriority, "Project"): (CasePriority.project, False),
-        (IndividualContact, "Project"): (IndividualContact.project, False),
-        (Case, "IndividualContact"): (Case.assignee, False), # noqa: F601
+        (Tag, "Project"): (Project, False),
+        (CaseType, "Project"): (Project, False),
+        (CaseSeverity, "Project"): (Project, False),
+        (CasePriority, "Project"): (Project, False),
+        (IndividualContact, "Project"): (Project, False),
+        (Case, "IndividualContact"): (Case.assignee, False),  # noqa: F601
         (Case, "Assignee"): (Case.assignee, False),
         (Case, "Project"): (Case.project, False),
     }

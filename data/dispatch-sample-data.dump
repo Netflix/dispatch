@@ -3090,6 +3090,7 @@ CREATE TABLE dispatch_organization_default.event (
     search_vector tsvector,
     updated_at timestamp without time zone,
     created_at timestamp without time zone,
+    signal_id integer,
     dispatch_user_id integer,
     case_id integer,
     type character varying,
@@ -4274,6 +4275,7 @@ CREATE TABLE dispatch_organization_default.service (
     updated_at timestamp without time zone,
     created_at timestamp without time zone,
     evergreen boolean,
+    shift_hours_type integer,
     evergreen_owner character varying,
     evergreen_reminder_interval integer,
     evergreen_last_reminder_at timestamp without time zone,
@@ -4556,8 +4558,10 @@ CREATE TABLE dispatch_organization_default.signal_instance (
     created_at timestamp without time zone,
     filter_action character varying,
     engagement_thread_ts character varying,
+    conversation_target character varying,
     case_type_id integer,
     case_priority_id integer,
+    oncall_service_id integer,
     canary boolean
 );
 
@@ -13124,6 +13128,12 @@ ALTER TABLE ONLY dispatch_organization_default.event
 ALTER TABLE ONLY dispatch_organization_default.event
     ADD CONSTRAINT event_individual_id_fkey FOREIGN KEY (individual_id) REFERENCES dispatch_organization_default.individual_contact(id) ON DELETE CASCADE;
 
+--
+-- Name: event event_signal_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.event
+    ADD CONSTRAINT event_signal_id_fkey FOREIGN KEY (signal_id) REFERENCES dispatch_organization_default.signal(id) ON DELETE CASCADE;
 
 --
 -- Name: feedback feedback_incident_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
@@ -13860,6 +13870,12 @@ ALTER TABLE ONLY dispatch_organization_default.signal_instance
 ALTER TABLE ONLY dispatch_organization_default.signal_instance
     ADD CONSTRAINT signal_instance_signal_id_fkey FOREIGN KEY (signal_id) REFERENCES dispatch_organization_default.signal(id);
 
+--
+-- Name: signal_instance signal_instance_oncall_service_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
+--
+
+ALTER TABLE ONLY dispatch_organization_default.signal_instance
+    ADD CONSTRAINT signal_instance_oncall_service_id_fkey FOREIGN KEY (oncall_service_id) REFERENCES dispatch_organization_default.service(id);
 
 --
 -- Name: signal signal_oncall_service_id_fkey; Type: FK CONSTRAINT; Schema: dispatch_organization_default; Owner: postgres
