@@ -78,7 +78,7 @@ class ParticipantCreate(ParticipantBase):
     location: Optional[str] = Field(None, nullable=True)
     team: Optional[str] = Field(None, nullable=True)
     department: Optional[str] = Field(None, nullable=True)
-    service: Optional[ServiceRead]
+    service: Optional[ServiceRead] = None
 
 
 class ParticipantUpdate(ParticipantBase):

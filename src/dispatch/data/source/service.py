@@ -165,7 +165,7 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     source_data = source.dict()
 
     update_data = source_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "project",
             "owner",

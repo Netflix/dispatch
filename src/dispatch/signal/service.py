@@ -133,7 +133,7 @@ def update_signal_engagement(
     """Updates an existing signal engagement."""
     signal_engagement_data = signal_engagement.dict()
     update_data = signal_engagement_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={},
     )
 
@@ -227,7 +227,7 @@ def update_signal_filter(
 
     signal_filter_data = signal_filter.dict()
     update_data = signal_filter_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={},
     )
 
@@ -481,7 +481,7 @@ def update(
     """Updates a signal."""
     signal_data = signal.dict()
     update_data = signal_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude=excluded_attributes,
     )
 
@@ -744,7 +744,8 @@ def update_instance(
 
 
 def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
-    """Filters a signal instance for snoozing.
+    """
+    Apply snooze filter actions to the signal instance.
 
     Args:
         db_session (Session): Database session.
@@ -795,7 +796,8 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> Si
 
 
 def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
-    """Filters a signal instance for deduplication.
+    """
+    Apply deduplication filter actions to the signal instance.
 
     Args:
         db_session (Session): Database session.

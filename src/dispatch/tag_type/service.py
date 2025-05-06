@@ -86,7 +86,7 @@ def get_or_create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
 def update(*, db_session, tag_type: TagType, tag_type_in: TagTypeUpdate) -> TagType:
     """Updates a tag type."""
     tag_type_data = tag_type.dict()
-    update_data = tag_type_in.dict(skip_defaults=True)
+    update_data = tag_type_in.dict(exclude_unset=True)
 
     for field in tag_type_data:
         if field in update_data:

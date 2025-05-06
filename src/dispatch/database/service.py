@@ -213,7 +213,17 @@ def get_query_models(query):
                     A dictionary with all the models included in the query.
     """
     models = [col_desc["entity"] for col_desc in query.column_descriptions]
-    models.extend(mapper.class_ for mapper in query._join_entities)
+
+    # Handle joint entities - adapt to SQLAlchemy 2.0 style
+    # In SQLAlchemy 2.0, _join_entities is no longer available
+    # Check if the attribute exists before trying to access it
+    if hasattr(query, "_join_entities"):
+        models.extend(mapper.class_ for mapper in query._join_entities)
+    elif hasattr(query, "_legacy_setup_joins"):
+        # For newer SQLAlchemy versions
+        for join in getattr(query, "_legacy_setup_joins", []):
+            if hasattr(join, "target") and hasattr(join.target, "class_"):
+                models.append(join.target.class_)
 
     # account also query.select_from entities
     if hasattr(query, "_select_from_entity") and (query._select_from_entity is not None):

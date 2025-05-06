@@ -76,6 +76,7 @@ def test_update(session, workflow):
     resource_id = "resource_id_updated"
 
     workflow_in = WorkflowUpdate(
+        id=workflow.id,
         name=name,
         plugin_instance=workflow.plugin_instance,
         resource_id=resource_id,

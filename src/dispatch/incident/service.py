@@ -387,7 +387,7 @@ def update(*, db_session: Session, incident: Incident, incident_in: IncidentUpda
             )
 
     update_data = incident_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "cases",
             "commander",

@@ -52,8 +52,9 @@ def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> Inci
         db_session=db_session, project_in=incident_cost_type_in.project
     )
     incident_cost_type = IncidentCostType(
-        **incident_cost_type_in.dict(exclude={"project"}), project=project
+        **incident_cost_type_in.dict(exclude={"project"})
     )
+    incident_cost_type.project = project  # type: ignore[attr-defined]
     db_session.add(incident_cost_type)
     db_session.commit()
     return incident_cost_type
@@ -66,12 +67,11 @@ def update(
     incident_cost_type_in: IncidentCostTypeUpdate,
 ) -> IncidentCostType:
     """Updates an incident cost type."""
-    incident_cost_data = incident_cost_type.dict()
     update_data = incident_cost_type_in.dict(exclude_unset=True)
 
-    for field in incident_cost_data:
-        if field in update_data:
-            setattr(incident_cost_type, field, update_data[field])
+    for field, value in update_data.items():
+        if hasattr(incident_cost_type, field):
+            setattr(incident_cost_type, field, value)
 
     db_session.commit()
     return incident_cost_type

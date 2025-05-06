@@ -262,7 +262,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
 def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser) -> Case:
     """Updates an existing case."""
     update_data = case_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "assignee",
             "case_costs",

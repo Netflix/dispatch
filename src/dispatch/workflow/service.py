@@ -191,11 +191,11 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
     """Updates an existing workflow instance."""
     instance_data = instance.dict()
     update_data = instance_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={"incident", "case", "signal", "workflow", "creator", "artifacts"},
     )
 
-    for a in instance_in.artifacts:
+    for a in instance_in.artifacts or []:
         artifact_document = document_service.get_or_create(db_session=db_session, document_in=a)
         instance.artifacts.append(artifact_document)
 

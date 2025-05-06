@@ -124,7 +124,7 @@ def update(
 ) -> EntityType:
     """Updates an entity type."""
     entity_type_data = entity_type.dict()
-    update_data = entity_type_in.dict(exclude={"jpath"}, skip_defaults=True)
+    update_data = entity_type_in.dict(exclude={"jpath"}, exclude_unset=True)
 
     for field in entity_type_data:
         if field in update_data:

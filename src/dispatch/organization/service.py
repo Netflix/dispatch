@@ -133,7 +133,7 @@ def update(
     """Updates an organization."""
     organization_data = organization.dict()
 
-    update_data = organization_in.dict(skip_defaults=True, exclude={"banner_color"})
+    update_data = organization_in.dict(exclude_unset=True, exclude={"banner_color"})
 
     for field in organization_data:
         if field in update_data:

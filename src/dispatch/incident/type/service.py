@@ -238,7 +238,7 @@ def update(
     incident_type_data = incident_type.dict()
 
     update_data = incident_type_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "incident_template_document",
             "executive_template_document",

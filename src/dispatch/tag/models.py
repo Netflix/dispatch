@@ -45,14 +45,14 @@ class TagBase(DispatchBase):
 
 
 class TagCreate(TagBase):
-    id: Optional[PrimaryKey]
+    id: Optional[PrimaryKey] = None
     tag_type: TagTypeCreate
     project: ProjectRead
 
 
 class TagUpdate(TagBase):
-    id: Optional[PrimaryKey]
-    tag_type: Optional[TagTypeUpdate]
+    id: Optional[PrimaryKey] = None
+    tag_type: Optional[TagTypeUpdate] = None
 
 
 class TagRead(TagBase):

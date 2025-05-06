@@ -87,7 +87,7 @@ def create_or_update(
 
         role_policy_data = role_policy.dict()
         update_data = role_policy_in.dict(
-            skip_defaults=True,
+            exclude_unset=True,
             exclude={
                 "role",  # we don't allow role to be updated
                 "tags",

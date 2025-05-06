@@ -184,9 +184,7 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
                 user_email=task_in.owner.individual.email,
             )
 
-    update_data = task_in.dict(
-        skip_defaults=True, exclude={"assignees", "owner", "creator", "incident"}
-    )
+    update_data = task_in.dict(exclude_unset=True, exclude={"assignees", "owner", "creator", "incident"})
 
     for field in update_data.keys():
         setattr(task, field, update_data[field])
