@@ -34,7 +34,8 @@ pdpyras
 protobuf<6.0dev,>=5.26.1
 psycopg2-binary
 pyarrow
-pydantic==1.*
+pydantic
+pydantic_extra_types
 pyparsing
 python-dateutil
 python-jose

@@ -323,9 +323,12 @@ pydantic==1.10.21
     #   confection
     #   fastapi
     #   openai
+    #   pydantic-extra-types
     #   spacy
     #   thinc
     #   weasel
+pydantic-extra-types==0.0.1
+    # via -r requirements-base.in
 pygments==2.19.1
     # via rich
 pyjwt[crypto]==2.10.1
