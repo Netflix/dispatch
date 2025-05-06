@@ -449,7 +449,6 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Case, "Project"): (Case.project, False),
     }
     filters = build_filters(filter_spec)
-    print(f"Filters post build: {filters}")
 
     # Replace mapping if looking for commander
     if "Commander" in str(filter_spec):
@@ -458,7 +457,6 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         model_map.update({(Case, "IndividualContact"): (Case.assignee, True)})
 
     filter_models = get_named_models(filters)
-    print(f"Filter models: {filter_models}")
     joined_models = []
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
@@ -470,7 +468,6 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
             except Exception as e:
                 log.exception(e)
 
-    print(f"Query after filter specific joins: {query}")
     return query
 
 
