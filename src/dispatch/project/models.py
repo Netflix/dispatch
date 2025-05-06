@@ -24,6 +24,13 @@ class Project(Base):
     name = Column(String)
     display_name = Column(String, nullable=False, server_default="")
 
+    @hybrid_property
+    def display_name(self):
+        try:
+            return self.display_name
+        except:
+            return self.name
+
     description = Column(String)
     default = Column(Boolean, default=False)
     color = Column(String)
