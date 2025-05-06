@@ -17,7 +17,6 @@ from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
-from sqlalchemy_filters.sorting import Sort
 from typing_extensions import Annotated
 
 from .core import Base, get_class_by_tablename, get_model_name_by_tablename
