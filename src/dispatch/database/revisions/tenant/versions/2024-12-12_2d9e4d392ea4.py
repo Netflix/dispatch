@@ -23,6 +23,8 @@ def upgrade():
         "project", sa.Column("display_name", sa.String(), server_default="", nullable=False)
     )
 
+    print("Copying data from 'name' column to 'display_name' column")
+
     # Copy data from 'name' column to 'display_name' column
     op.execute("UPDATE project SET display_name = name")
 
