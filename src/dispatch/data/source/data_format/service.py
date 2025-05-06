@@ -42,7 +42,7 @@ def get_by_name_or_raise(
         raise ValidationError([
             {
                 "msg": "SourceDataFormat not found.",
-                "loc": "dataFormat",
+                "loc": ["dataFormat"],
             }
         ])
 
