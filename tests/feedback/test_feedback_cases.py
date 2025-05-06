@@ -1,13 +1,24 @@
+from datetime import datetime, timezone
+from dispatch.feedback.incident.enums import FeedbackRating
+from dispatch.project.models import ProjectRead
+from dispatch.case.models import CaseReadMinimal
+from dispatch.participant.models import ParticipantRead
+
 def test_create(session, case, case_type, case_priority):
     from dispatch.feedback.incident.service import create
     from dispatch.feedback.incident.models import FeedbackCreate
 
     case.incident_type = case_type
     case.incident_priority = case_priority
-    rating = "Neither satisfied nor dissatisfied"
+    rating = FeedbackRating.neither_satisfied_nor_dissatisfied
     feedback = "The incident commander did an excellent job"
 
-    feedback_in = FeedbackCreate(rating=rating, feedback=feedback, case=case)
+    feedback_in = FeedbackCreate(
+        rating=rating,
+        feedback=feedback,
+        case=CaseReadMinimal(id=case.id, name=getattr(case, 'name', 'Test Case')),
+        participant=ParticipantRead(id=getattr(case, 'participant_id', 1)),
+    )
     feedback = create(db_session=session, feedback_in=feedback_in)
     assert feedback
 
@@ -30,10 +41,15 @@ def test_update(session, feedback):
     from dispatch.feedback.incident.service import update
     from dispatch.feedback.incident.models import FeedbackUpdate
 
-    rating = "Very satisfied"
+    rating = FeedbackRating.very_satisfied
     feedback_text = "The incident commander did an excellent job"
 
-    feedback_in = FeedbackUpdate(rating=rating, feedback=feedback_text)
+    feedback_in = FeedbackUpdate(
+        rating=rating,
+        feedback=feedback_text,
+        case=CaseReadMinimal(id=feedback.case.id, name=getattr(feedback.case, 'name', 'Test Case')) if feedback.case else None,
+        participant=ParticipantRead(id=getattr(feedback, 'participant_id', 1)),
+    )
     feedback = update(db_session=session, feedback=feedback, feedback_in=feedback_in)
 
     assert feedback.rating == rating

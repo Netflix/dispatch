@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 def test_get(session, case_cost_type):
     from dispatch.case_cost_type.service import get
 
@@ -31,6 +33,7 @@ def test_create(session, project):
         default=default,
         editable=editable,
         project=project,
+        created_at=datetime.now(timezone.utc),
     )
     case_cost_type = create(db_session=session, case_cost_type_in=case_cost_type_in)
     assert case_cost_type
@@ -44,6 +47,8 @@ def test_update(session, case_cost_type):
 
     case_cost_type_in = CaseCostTypeUpdate(
         name=name,
+        created_at=case_cost_type.created_at,
+        editable=case_cost_type.editable,
     )
     case_cost_type = update(
         db_session=session,

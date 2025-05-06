@@ -12,7 +12,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, Foreig
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
@@ -25,12 +25,12 @@ class ProjectMixin(object):
     """Project mixin for adding project relationships to models."""
 
     @declared_attr
-    def project_id(self):  # noqa
+    def project_id(cls) -> Mapped[int]:  # noqa
         """Returns the project_id column."""
         return Column(Integer, ForeignKey("project.id", ondelete="CASCADE"))
 
     @declared_attr
-    def project(self) -> Any:  # noqa
+    def project(cls) -> Mapped["Project"]:
         """Returns the project relationship."""
         return relationship("Project")
 

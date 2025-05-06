@@ -12,6 +12,7 @@ from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pag
 
 class IncidentPriority(Base, ProjectMixin):
     """SQLAlchemy model for incident priority resources."""
+    __allow_unmapped__ = True
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)

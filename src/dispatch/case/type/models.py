@@ -98,13 +98,13 @@ class CaseTypeBase(DispatchBase):
     conversation_target: str | None = None
     default: bool | None = False
     description: str | None = None
-    enabled: bool | None
+    enabled: bool | None = True
     exclude_from_metrics: bool | None = False
     incident_type: IncidentType | None = None
     name: NameStr
     oncall_service: Service | None = None
     plugin_metadata: list[PluginMetadata] = []
-    project: ProjectRead | None
+    project: ProjectRead | None = None
     visibility: str | None = None
     cost_model: CostModelRead | None = None
     auto_close: bool | None = False

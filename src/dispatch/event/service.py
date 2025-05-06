@@ -150,6 +150,8 @@ def log_case_event(
     ended_at: datetime | None = None,
     details: dict | None = None,
     type: str = EventType.other,
+    owner: str = "",
+    pinned: bool = False,
 ) -> Event:
     """Logs an event in the case timeline."""
     uuid = uuid4()
@@ -168,6 +170,8 @@ def log_case_event(
         description=description,
         details=details,
         type=type,
+        owner=owner,
+        pinned=pinned,
     )
     event = create(db_session=db_session, event_in=event_in)
 
