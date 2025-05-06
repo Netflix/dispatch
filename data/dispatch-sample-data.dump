@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 14.6 (Debian 14.6-1.pgdg110+1)
--- Dumped by pg_dump version 14.13 (Homebrew)
+-- Dumped by pg_dump version 14.17 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -2420,7 +2420,8 @@ CREATE TABLE dispatch_organization_default."case" (
     signal_thread_ts character varying,
     reporter_id integer,
     dedicated_channel boolean,
-    genai_analysis jsonb DEFAULT '{}'::jsonb NOT NULL
+    genai_analysis jsonb DEFAULT '{}'::jsonb NOT NULL,
+    event boolean
 );
 
 
@@ -3325,6 +3326,7 @@ CREATE TABLE dispatch_organization_default.incident (
     reporter_id integer,
     liaison_id integer,
     scribe_id integer,
+    summary character varying,
     incident_document_id integer,
     incident_review_document_id integer,
     tactical_group_id integer,
@@ -3450,6 +3452,7 @@ CREATE TABLE dispatch_organization_default.incident_priority (
     name character varying,
     description character varying,
     page_commander boolean,
+    disable_delayed_message_warning boolean,
     tactical_report_reminder integer DEFAULT 24,
     executive_report_reminder integer DEFAULT 24,
     enabled boolean,
@@ -3619,6 +3622,8 @@ CREATE TABLE dispatch_organization_default.incident_type (
     "default" boolean,
     visibility character varying,
     plugin_metadata json,
+    exclude_from_reminders boolean,
+    exclude_from_review boolean,
     incident_template_document_id integer,
     executive_template_document_id integer,
     review_template_document_id integer,
@@ -4004,6 +4009,7 @@ ALTER SEQUENCE dispatch_organization_default.plugin_instance_id_seq OWNED BY dis
 CREATE TABLE dispatch_organization_default.project (
     id integer NOT NULL,
     name character varying,
+    display_name character varying,
     description character varying,
     "default" boolean,
     color character varying,
@@ -4026,7 +4032,8 @@ CREATE TABLE dispatch_organization_default.project (
     weekly_report_notification_id integer,
     report_incident_instructions character varying,
     report_incident_title_hint character varying,
-    report_incident_description_hint character varying
+    report_incident_description_hint character varying,
+    snooze_extension_oncall_service_id integer
 );
 
 
@@ -7665,7 +7672,7 @@ COPY dispatch_core.plugin_event (id, name, slug, description, plugin_id, search_
 --
 
 COPY dispatch_organization_default.alembic_version (version_num) FROM stdin;
-928b725d64f6
+8f324b0f365a
 \.
 
 
@@ -15009,4 +15016,3 @@ ALTER TABLE ONLY public.workflow_term
 --
 -- PostgreSQL database dump complete
 --
-
