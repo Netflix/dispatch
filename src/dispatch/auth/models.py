@@ -120,7 +120,7 @@ class DispatchUserProject(Base, TimeStampMixin):
     dispatch_user = relationship(DispatchUser, backref="projects")
 
     project_id = Column(Integer, ForeignKey(Project.id), primary_key=True)
-    project = relationship(Project, backref="users")
+    project = relationship(Project, backref="users", overlaps="dispatch_user_project")
 
     default = Column(Boolean, default=False)
 

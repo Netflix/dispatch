@@ -836,7 +836,13 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id
         )
-        query = apply_filter_specific_joins(SignalInstance, f.expression, query)
+        # First join entities
+        query = query.join(SignalInstance.entities)
+
+        # Then join entity_type through entities
+        query = query.join(Entity.entity_type)
+
+        # Now apply filters
         query = apply_filters(query, f.expression)
 
         window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
@@ -1027,10 +1033,8 @@ def get_signal_stats(
 
     query = (
         select(
-            [
-                count_with_snooze.label("count_with_snooze"),
-                count_without_snooze.label("count_without_snooze"),
-            ]
+            count_with_snooze.label("count_with_snooze"),
+            count_without_snooze.label("count_without_snooze"),
         )
         .select_from(
             assoc_signal_instance_entities.join(

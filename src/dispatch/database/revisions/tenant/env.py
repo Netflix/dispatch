@@ -1,5 +1,5 @@
 from alembic import context
-from sqlalchemy import engine_from_config, pool, inspect
+from sqlalchemy import engine_from_config, pool, inspect, text
 
 
 from dispatch.logging import logging
@@ -58,7 +58,8 @@ def run_migrations_online():
         # get the schema names
         for schema in get_tenant_schemas(connection):
             log.info(f"Migrating {schema}...")
-            connection.execute(f'set search_path to "{schema}"')
+            set_search_path = text(f'set search_path to "{schema}"')
+            connection.execute(set_search_path)
             connection.dialect.default_schema_name = schema
 
             context.configure(

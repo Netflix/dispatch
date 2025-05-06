@@ -14,8 +14,7 @@ from fastapi import Depends
 from pydantic import BaseModel, ValidationError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine.url import make_url
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import Session, object_session, sessionmaker
+from sqlalchemy.orm import Session, object_session, sessionmaker, DeclarativeBase, declared_attr
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
@@ -94,13 +93,14 @@ def resolve_attr(obj, attr, default=None):
         return default
 
 
-class CustomBase:
+class Base(DeclarativeBase):
+    """Base class for all SQLAlchemy models."""
     __repr_attrs__ = []
     __repr_max_length__ = 15
 
-    @declared_attr
-    def __tablename__(self):
-        return resolve_table_name(self.__name__)
+    @declared_attr.directive
+    def __tablename__(cls):
+        return resolve_table_name(cls.__name__)
 
     def dict(self):
         """Returns a dict representation of a model."""
@@ -147,9 +147,6 @@ class CustomBase:
             id_str,
             " " + self._repr_attrs_str if self._repr_attrs_str else "",
         )
-
-
-Base = declarative_base(cls=CustomBase)
 make_searchable(Base.metadata)
 
 
@@ -175,10 +172,11 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     """Return class reference mapped to table."""
 
     def _find_class(name):
-        for c in Base._decl_class_registry.values():
-            if hasattr(c, "__table__"):
-                if c.__table__.fullname.lower() == name.lower():
-                    return c
+        for mapper in Base.registry.mappers:
+            cls = mapper.class_
+            if hasattr(cls, "__table__"):
+                if cls.__table__.fullname.lower() == name.lower():
+                    return cls
 
     mapped_name = resolve_table_name(table_fullname)
     mapped_class = _find_class(mapped_name)

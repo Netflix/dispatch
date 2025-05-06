@@ -54,7 +54,7 @@ slowapi
 spacy==3.8.5
 sqlalchemy-filters
 sqlalchemy-utils
-sqlalchemy<1.4  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
+sqlalchemy==2.0.8
 statsmodels
 tabulate
 tenacity

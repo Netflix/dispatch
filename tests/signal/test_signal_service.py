@@ -339,6 +339,7 @@ def test_filter_actions_deduplicate(session, signal, project):
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
+    signal.entity_types.append(entity_type)
 
     entity = EntityFactory(entity_type=entity_type, project=project)
     session.add(entity)
@@ -360,6 +361,7 @@ def test_filter_actions_deduplicate(session, signal, project):
     )
     session.add(signal_instance_2)
     session.commit()
+
     # create deduplicate signal filter
     signal_filter = SignalFilterFactory(
         name="dedupe1",
