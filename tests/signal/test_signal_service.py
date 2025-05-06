@@ -54,8 +54,13 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
             report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
             snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
         ),
+<<<<<<< HEAD
         case_priority=CasePriorityRead.from_orm(case_priority),
         case_type=CaseTypeRead.from_orm(case_type),
+=======
+        case_priority=CasePriorityRead(**case_priority.__dict__),
+        case_type=CaseTypeRead(**case_type.__dict__),
+>>>>>>> d4d9c2898cb03fc4727ea2719b38f823ffa2b658
         conversation_target=conversation_target,
         external_id=external_id,
         external_url=external_url,
@@ -121,8 +126,13 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
             report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
             snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
         ),
+<<<<<<< HEAD
         case_priority=CasePriorityRead.from_orm(case_priority),
         case_type=CaseTypeRead.from_orm(case_type),
+=======
+        case_priority=CasePriorityRead(**case_priority.__dict__),
+        case_type=CaseTypeRead(**case_type.__dict__),
+>>>>>>> d4d9c2898cb03fc4727ea2719b38f823ffa2b658
         conversation_target=conversation_target,
         external_id=external_id,
         external_url=external_url,

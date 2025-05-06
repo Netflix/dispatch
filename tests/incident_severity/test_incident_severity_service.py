@@ -127,6 +127,8 @@ def test_create(session, incident_severity):
         project=ProjectRead.from_orm(incident_severity.project),
         enabled=True,
         default=False,
+        enabled=True,
+        default=False,
     )
 
     assert create(db_session=session, incident_severity_in=incident_severity_in)
@@ -139,6 +141,8 @@ def test_update(session, incident_severity):
     expected_name = incident_severity.name + "_updated"
     incident_severity_in = IncidentSeverityUpdate.from_orm(incident_severity)
     incident_severity_in.name = expected_name
+    incident_severity_in.enabled = True
+    incident_severity_in.default = False
     incident_severity_in.enabled = True
     incident_severity_in.default = False
 
