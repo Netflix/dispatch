@@ -122,7 +122,7 @@ def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> Incid
         **incident_priority_in.dict(exclude={"project", "color"}), project=project
     )
     if incident_priority_in.color:
-        incident_priority.color = incident_priority_in.color.as_hex()
+        incident_priority.color = incident_priority_in.color
 
     db_session.add(incident_priority)
     db_session.commit()
@@ -142,7 +142,7 @@ def update(
             setattr(incident_priority, field, update_data[field])
 
     if incident_priority_in.color:
-        incident_priority.color = incident_priority_in.color.as_hex()
+        incident_priority.color = incident_priority_in.color
 
     db_session.commit()
     return incident_priority

@@ -126,7 +126,7 @@ def create(*, db_session, incident_severity_in: IncidentSeverityCreate) -> Incid
         **incident_severity_in.dict(exclude={"project", "color"}), project=project
     )
     if incident_severity_in.color:
-        incident_severity.color = incident_severity_in.color.as_hex()
+        incident_severity.color = incident_severity_in.color
 
     db_session.add(incident_severity)
     db_session.commit()
@@ -147,7 +147,7 @@ def update(
             setattr(incident_severity, field, update_data[field])
 
     if incident_severity_in.color:
-        incident_severity.color = incident_severity_in.color.as_hex()
+        incident_severity.color = incident_severity_in.color
 
     db_session.commit()
 

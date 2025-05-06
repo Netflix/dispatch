@@ -117,7 +117,7 @@ def create(*, db_session, case_priority_in: CasePriorityCreate) -> CasePriority:
         **case_priority_in.dict(exclude={"project", "color"}), project=project
     )
     if case_priority_in.color:
-        case_priority.color = case_priority_in.color.as_hex()
+        case_priority.color = case_priority_in.color
 
     db_session.add(case_priority)
     db_session.commit()
@@ -137,7 +137,7 @@ def update(
             setattr(case_priority, field, update_data[field])
 
     if case_priority_in.color:
-        case_priority.color = case_priority_in.color.as_hex()
+        case_priority.color = case_priority_in.color
 
     db_session.commit()
     return case_priority

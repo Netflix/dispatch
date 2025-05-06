@@ -113,7 +113,7 @@ def create(*, db_session, case_severity_in: CaseSeverityCreate) -> CaseSeverity:
         **case_severity_in.dict(exclude={"project", "color"}), project=project
     )
     if case_severity_in.color:
-        case_severity.color = case_severity_in.color.as_hex()
+        case_severity.color = case_severity_in.color
 
     db_session.add(case_severity)
     db_session.commit()
@@ -133,7 +133,7 @@ def update(
             setattr(case_severity, field, update_data[field])
 
     if case_severity_in.color:
-        case_severity.color = case_severity_in.color.as_hex()
+        case_severity.color = case_severity_in.color
 
     db_session.commit()
     return case_severity

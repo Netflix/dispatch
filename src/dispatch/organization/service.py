@@ -106,7 +106,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     )
 
     if organization_in.banner_color:
-        organization.banner_color = organization_in.banner_color.as_hex()
+        organization.banner_color = organization_in.banner_color
 
     # we let the new schema session create the organization
     organization = init_schema(engine=engine, organization=organization)
@@ -140,7 +140,7 @@ def update(
             setattr(organization, field, update_data[field])
 
     if organization_in.banner_color:
-        organization.banner_color = organization_in.banner_color.as_hex()
+        organization.banner_color = organization_in.banner_color
 
     db_session.commit()
     return organization
