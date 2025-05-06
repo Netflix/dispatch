@@ -1,50 +1,50 @@
-from typing import List, Optional
+"""Models for search functionality in the Dispatch application."""
 
-from pydantic import Field
+from typing import ClassVar
+from pydantic import ConfigDict, Field
 
-from dispatch.models import DispatchBase
-
+from dispatch.case.models import CaseRead
+from dispatch.data.query.models import QueryRead
+from dispatch.data.source.models import SourceRead
 from dispatch.definition.models import DefinitionRead
 from dispatch.document.models import DocumentRead
 from dispatch.incident.models import IncidentRead
-from dispatch.case.models import CaseRead
 from dispatch.individual.models import IndividualContactRead
+from dispatch.models import DispatchBase
 from dispatch.service.models import ServiceRead
 from dispatch.tag.models import TagRead
 from dispatch.task.models import TaskRead
 from dispatch.team.models import TeamContactRead
 from dispatch.term.models import TermRead
-from dispatch.data.source.models import SourceRead
-from dispatch.data.query.models import QueryRead
-
 
 # Pydantic models...
 class SearchBase(DispatchBase):
-    query: Optional[str] = Field(None, nullable=True)
+    """Base model for search queries."""
+    query: str | None = None
 
 
 class SearchRequest(SearchBase):
-    pass
+    """Model for a search request."""
 
 
 class ContentResponse(DispatchBase):
-    documents: Optional[List[DocumentRead]] = Field([], alias="Document")
-    incidents: Optional[List[IncidentRead]] = Field([], alias="Incident")
-    tasks: Optional[List[TaskRead]] = Field([], alias="Task")
-    tags: Optional[List[TagRead]] = Field([], alias="Tag")
-    terms: Optional[List[TermRead]] = Field([], alias="Term")
-    definitions: Optional[List[DefinitionRead]] = Field([], alias="Definition")
-    sources: Optional[List[SourceRead]] = Field([], alias="Source")
-    queries: Optional[List[QueryRead]] = Field([], alias="Query")
-    teams: Optional[List[TeamContactRead]] = Field([], alias="TeamContact")
-    individuals: Optional[List[IndividualContactRead]] = Field([], alias="IndividualContact")
-    services: Optional[List[ServiceRead]] = Field([], alias="Service")
-    cases: Optional[List[CaseRead]] = Field([], alias="Case")
-
-    class Config:
-        allow_population_by_field_name = True
+    """Model for search content response."""
+    documents: list[DocumentRead] | None = Field(default_factory=list, alias="Document")
+    incidents: list[IncidentRead] | None = Field(default_factory=list, alias="Incident")
+    tasks: list[TaskRead] | None = Field(default_factory=list, alias="Task")
+    tags: list[TagRead] | None = Field(default_factory=list, alias="Tag")
+    terms: list[TermRead] | None = Field(default_factory=list, alias="Term")
+    definitions: list[DefinitionRead] | None = Field(default_factory=list, alias="Definition")
+    sources: list[SourceRead] | None = Field(default_factory=list, alias="Source")
+    queries: list[QueryRead] | None = Field(default_factory=list, alias="Query")
+    teams: list[TeamContactRead] | None = Field(default_factory=list, alias="TeamContact")
+    individuals: list[IndividualContactRead] | None = Field(default_factory=list, alias="IndividualContact")
+    services: list[ServiceRead] | None = Field(default_factory=list, alias="Service")
+    cases: list[CaseRead] | None = Field(default_factory=list, alias="Case")
+    model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True)
 
 
 class SearchResponse(DispatchBase):
-    query: Optional[str] = Field(None, nullable=True)
+    """Model for a search response."""
+    query: str | None = None
     results: ContentResponse

@@ -1,6 +1,7 @@
+"""Models for individual contact resources in the Dispatch application."""
+
 from datetime import datetime
-from typing import List, Optional, Union
-from pydantic import Field, AnyHttpUrl, validator
+from pydantic import field_validator, AnyHttpUrl
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -31,6 +32,7 @@ assoc_individual_filters = Table(
 
 
 class IndividualContact(Base, ContactMixin, ProjectMixin):
+    """SQLAlchemy model for individual contact resources."""
     __table_args__ = (UniqueConstraint("email", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -63,40 +65,48 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
 
 
 class IndividualContactBase(ContactBase):
-    weblink: Union[AnyHttpUrl, None, str] = Field(None, nullable=True)
-    mobile_phone: Optional[str] = Field(None, nullable=True)
-    office_phone: Optional[str] = Field(None, nullable=True)
-    title: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
+    """Base Pydantic model for individual contact resources."""
+    weblink: AnyHttpUrl | None | str = None
+    mobile_phone: str | None = None
+    office_phone: str | None = None
+    title: str | None = None
+    external_id: str | None = None
 
-    @validator("weblink")
-    def weblink_validator(cls, v):
+    @field_validator("weblink")
+    @classmethod
+    def weblink_validator(cls, v: str | AnyHttpUrl | None) -> str | AnyHttpUrl | None:
+        """Validates the weblink field to be None, empty string, or a valid AnyHttpUrl."""
         if v is None or isinstance(v, AnyHttpUrl) or v == "":
             return v
         raise ValueError("weblink is not an empty string or a valid weblink")
 
 
 class IndividualContactCreate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]]
+    """Pydantic model for creating an individual contact resource."""
+    filters: list[SearchFilterRead] | None = None
     project: ProjectRead
 
 
 class IndividualContactUpdate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]]
+    """Pydantic model for updating an individual contact resource."""
+    filters: list[SearchFilterRead] | None = None
 
 
 class IndividualContactRead(IndividualContactBase):
-    id: Optional[PrimaryKey]
-    filters: Optional[List[SearchFilterRead]] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    """Pydantic model for reading an individual contact resource."""
+    id: PrimaryKey | None = None
+    filters: list[SearchFilterRead] | None = []
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class IndividualContactReadMinimal(IndividualContactBase):
-    id: Optional[PrimaryKey]
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    """Pydantic model for reading a minimal individual contact resource."""
+    id: PrimaryKey | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class IndividualContactPagination(Pagination):
-    items: List[IndividualContactRead] = []
+    """Pydantic model for paginated individual contact results."""
+    items: list[IndividualContactRead] = []

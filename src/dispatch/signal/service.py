@@ -6,7 +6,7 @@ from typing import Optional, Union
 from collections import defaultdict
 
 from fastapi import HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy import asc, desc, or_, func, and_, select, cast
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query

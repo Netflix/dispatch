@@ -1,6 +1,6 @@
-from typing import List, Optional
-from pydantic import Field
-from pydantic.color import Color
+"""Models for incident severity resources in the Dispatch application."""
+
+from pydantic_extra_types.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -11,8 +11,8 @@ from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead
 
-
 class IncidentSeverity(Base, ProjectMixin):
+    """SQLAlchemy model for incident severity resources."""
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -40,37 +40,43 @@ listen(IncidentSeverity.default, "set", ensure_unique_default_per_project)
 
 # Pydantic models
 class IncidentSeverityBase(DispatchBase):
-    color: Optional[Color] = Field(None, nullable=True)
-    default: Optional[bool]
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    """Base Pydantic model for incident severity resources."""
+    color: Color | None = None
+    default: bool | None = None
+    description: str | None = None
+    enabled: bool | None = None
     name: NameStr
-    project: Optional[ProjectRead]
-    view_order: Optional[int]
-    allowed_for_stable_incidents: Optional[bool]
+    project: ProjectRead | None = None
+    view_order: int | None = None
+    allowed_for_stable_incidents: bool | None = None
 
 
 class IncidentSeverityCreate(IncidentSeverityBase):
+    """Pydantic model for creating an incident severity resource."""
     pass
 
 
 class IncidentSeverityUpdate(IncidentSeverityBase):
+    """Pydantic model for updating an incident severity resource."""
     pass
 
 
 class IncidentSeverityRead(IncidentSeverityBase):
+    """Pydantic model for reading an incident severity resource."""
     id: PrimaryKey
 
 
 class IncidentSeverityReadMinimal(DispatchBase):
+    """Pydantic model for reading a minimal incident severity resource."""
     id: PrimaryKey
-    color: Optional[Color] = Field(None, nullable=True)
-    default: Optional[bool]
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    color: Color | None = None
+    default: bool | None = None
+    description: str | None = None
+    enabled: bool | None = None
     name: NameStr
-    allowed_for_stable_incidents: Optional[bool]
+    allowed_for_stable_incidents: bool | None = None
 
 
 class IncidentSeverityPagination(Pagination):
-    items: List[IncidentSeverityRead] = []
+    """Pydantic model for paginated incident severity results."""
+    items: list[IncidentSeverityRead] = []

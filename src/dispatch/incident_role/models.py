@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic.types import PositiveInt
+from pydantic import PositiveInt
 
 from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, Table, ForeignKey
 from sqlalchemy.orm import relationship

@@ -11,7 +11,7 @@ from fastapi import (
     Response,
     status,
 )
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission

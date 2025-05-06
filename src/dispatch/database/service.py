@@ -1,15 +1,13 @@
-import json
 import logging
 from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import Annotated, List
 
 from fastapi import Depends, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.types import Json, constr
+from pydantic import Json
 from six import string_types
 from sortedcontainers import SortedSet
 from sqlalchemy import and_, desc, func, not_, or_, orm
@@ -18,7 +16,11 @@ from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
+from sqlalchemy_filters.sorting import Sort
+from typing import Annotated
+from typing_extensions import Annotated
 
+from .core import Base, get_class_by_tablename, get_model_name_by_tablename
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
@@ -38,12 +40,10 @@ from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
 
-from .core import Base, get_class_by_tablename, get_model_name_by_tablename
-
 log = logging.getLogger(__file__)
 
 # allows only printable characters
-QueryStr = constr(regex=r"^[ -~]+$", min_length=1)
+QueryStr = Annotated[str, StringConstraints(pattern=r"^[ -~]+$", min_length=1)]
 
 BooleanFunction = namedtuple("BooleanFunction", ("key", "sqlalchemy_fn", "only_one_arg"))
 BOOLEAN_FUNCTIONS = [

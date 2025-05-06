@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.auth.permissions import (
     PermissionsDependency,

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.exceptions import NotFoundError
 

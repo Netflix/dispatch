@@ -1,19 +1,19 @@
-from slugify import slugify
-from pydantic import Field
-from pydantic.color import Color
+"""Models for organization resources in the Dispatch application."""
 
-from typing import List, Optional
+from slugify import slugify
+
+from pydantic_extra_types.color import Color
 
 from sqlalchemy.event import listen
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType
-
 
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, NameStr, OrganizationSlug, PrimaryKey, Pagination
 
 
 class Organization(Base):
+    """SQLAlchemy model for organization resources."""
     __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
@@ -40,32 +40,37 @@ listen(Organization.name, "set", generate_slug)
 
 
 class OrganizationBase(DispatchBase):
-    id: Optional[PrimaryKey]
+    """Base Pydantic model for organization resources."""
+    id: PrimaryKey | None = None
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    default: Optional[bool] = Field(False, nullable=True)
-    banner_enabled: Optional[bool] = Field(False, nullable=True)
-    banner_color: Optional[Color] = Field(None, nullable=True)
-    banner_text: Optional[NameStr] = Field(None, nullable=True)
+    description: str | None = None
+    default: bool | None = False
+    banner_enabled: bool | None = False
+    banner_color: Color | None = None
+    banner_text: NameStr | None = None
 
 
 class OrganizationCreate(OrganizationBase):
+    """Pydantic model for creating an organization resource."""
     pass
 
 
 class OrganizationUpdate(DispatchBase):
-    id: Optional[PrimaryKey]
-    description: Optional[str] = Field(None, nullable=True)
-    default: Optional[bool] = Field(False, nullable=True)
-    banner_enabled: Optional[bool] = Field(False, nullable=True)
-    banner_color: Optional[Color] = Field(None, nullable=True)
-    banner_text: Optional[NameStr] = Field(None, nullable=True)
+    """Pydantic model for updating an organization resource."""
+    id: PrimaryKey | None = None
+    description: str | None = None
+    default: bool | None = False
+    banner_enabled: bool | None = False
+    banner_color: Color | None = None
+    banner_text: NameStr | None = None
 
 
 class OrganizationRead(OrganizationBase):
-    id: Optional[PrimaryKey]
-    slug: Optional[OrganizationSlug]
+    """Pydantic model for reading an organization resource."""
+    id: PrimaryKey | None = None
+    slug: OrganizationSlug | None = None
 
 
 class OrganizationPagination(Pagination):
-    items: List[OrganizationRead] = []
+    """Pydantic model for paginated organization results."""
+    items: list[OrganizationRead] = []

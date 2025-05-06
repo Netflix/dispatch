@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service

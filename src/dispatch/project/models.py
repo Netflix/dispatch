@@ -1,4 +1,4 @@
-from pydantic.networks import EmailStr
+from pydantic import EmailStr
 from slugify import slugify
 from typing import List, Optional
 from pydantic import Field

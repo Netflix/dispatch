@@ -7,9 +7,8 @@ Create Date: 2022-10-19 13:13:17.581202
 """
 from alembic import op
 
-from pydantic import BaseModel
-from pydantic.color import Color
-from pydantic.types import constr, conint
+from pydantic import Field, StringConstraints, ConfigDict, BaseModel
+from pydantic import constr, conint
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -18,9 +17,11 @@ from sqlalchemy.sql.expression import true
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from dispatch.incident.severity import service as incident_severity_service
+from typing_extensions import Annotated
+from pydantic_extra_types.color import Color
 
-PrimaryKey = conint(gt=0, lt=2147483647)
-NameStr = constr(regex=r"^(?!\s*$).+", strip_whitespace=True, min_length=3)
+PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
+NameStr = Annotated[str, StringConstraints(pattern=r"^(?!\s*$).+", strip_whitespace=True, min_length=3)]
 
 Base = declarative_base()
 
@@ -67,11 +68,7 @@ class Incident(Base):
 
 
 class DispatchBase(BaseModel):
-    class Config:
-        orm_mode = True
-        validate_assignment = True
-        arbitrary_types_allowed = True
-        anystr_strip_whitespace = True
+    model_config = ConfigDict(from_attributes=True, validate_assignment=True, arbitrary_types_allowed=True, str_strip_whitespace=True)
 
 
 class ProjectRead(DispatchBase):

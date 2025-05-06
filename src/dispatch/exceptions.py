@@ -1,4 +1,4 @@
-from pydantic.errors import PydanticValueError
+from pydantic import PydanticValueError
 
 
 class DispatchException(Exception):
