@@ -2,12 +2,13 @@
 Originally authored by:
 https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searchable
 """
-
 import os
 from functools import reduce
+from typing import Any
 
 from sqlalchemy import event, inspect, func, desc, text, MetaData, Table, Index, orm
 from sqlalchemy.dialects.postgresql.base import RESERVED_WORDS
+from sqlalchemy.engine import Connection
 from sqlalchemy.schema import DDL
 from sqlalchemy_utils import TSVectorType
 
@@ -232,7 +233,7 @@ class SearchManager:
     def search_function_ddl(self, column):
         def after_create(target, connection, **kw):
             clause = CreateSearchFunctionSQL(column, conn=connection)
-            connection.execute(str(clause), **clause.params)
+            connection.exec_driver_sql(str(clause), clause.params)
 
         return after_create
 
@@ -296,7 +297,14 @@ class SearchManager:
 search_manager = SearchManager()
 
 
-def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, options=None):
+def sync_trigger(
+    conn: Connection,
+    table: Table,
+    tsvector_column: str,
+    indexed_columns: list[str],
+    metadata: MetaData | None = None,
+    options: dict[str, Any] | None = None,
+) -> None:
     """
     Synchronizes search trigger and trigger function for given table and given
     search index column. Internally this function executes the following SQL
@@ -403,12 +411,18 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
     ]
     for class_ in classes:
         sql = class_(**params)
-        conn.execute(str(sql), **sql.params)
+        conn.exec_driver_sql(str(sql), sql.params)
     update_sql = table.update().values({indexed_columns[0]: text(indexed_columns[0])})
     conn.execute(update_sql)
 
 
-def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None):
+def drop_trigger(
+    conn: Connection,
+    table_name: str,
+    tsvector_column: str,
+    metadata: MetaData | None = None,
+    options: dict[str, Any] | None = None,
+) -> None:
     """
     * Drops search trigger for given table (if it exists)
     * Drops search function for given table (if it exists)
@@ -451,7 +465,7 @@ def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None)
     ]
     for class_ in classes:
         sql = class_(**params)
-        conn.execute(str(sql), **sql.params)
+        conn.exec_driver_sql(str(sql), sql.params)
 
 
 path = os.path.dirname(os.path.abspath(__file__))
