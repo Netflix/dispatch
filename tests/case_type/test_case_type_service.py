@@ -47,7 +47,6 @@ def test_update(session, case_type):
     name = "Updated case type name"
 
     case_type_in = CaseTypeUpdate(name=name)
-    current_time = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
 
     case_type = update(
         db_session=session,

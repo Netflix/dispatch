@@ -56,7 +56,6 @@ def test_update(session, incident_type):
     name = "Updated incident type name"
 
     incident_type_in = IncidentTypeUpdate(name=name)
-    current_time = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
 
     incident_type = update(
         db_session=session,
