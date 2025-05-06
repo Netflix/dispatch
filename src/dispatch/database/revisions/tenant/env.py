@@ -73,8 +73,6 @@ def run_migrations_online():
             with context.begin_transaction():
                 context.run_migrations()
 
-            Base.metadata.clear()
-            Base.metadata.reflect(connectable)
             if context.config.cmd_opts:
                 if context.config.cmd_opts.cmd == "revision":
                     break
