@@ -78,7 +78,7 @@ export class ReportIncidentPage {
 
   async selectProject(project: string) {
     await this.projectDropdown.click()
-    await this.page.getByText(project, { exact: true }).first().click()
+    await this.page.getByLabel('Project-list').locator('div').filter({ hasText: 'Default dispatch project.' }).first().click();
   }
 
   async selectType(type: string) {

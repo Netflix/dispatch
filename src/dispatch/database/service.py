@@ -40,6 +40,7 @@ from dispatch.project.models import Project
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
+from dispatch.tag_type.models import TagType
 from dispatch.task.models import Task
 
 from .core import Base, get_class_by_tablename, get_model_name_by_tablename
@@ -440,7 +441,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Signal, "TagType"): (Signal.tags, True),
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
-        (Tag, "TagType"): (Tag.tag_type, False),
+        (Tag, "TagType"): (TagType, False),
         (Tag, "Project"): (Project, False),
         (CaseType, "Project"): (Project, False),
         (CaseSeverity, "Project"): (Project, False),
