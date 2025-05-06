@@ -29,7 +29,7 @@ class Project(Base):
         """Returns the display_name if it exists, otherwise returns the name."""
         try:
             return self.display_name if self.display_name else self.name
-        except:
+        except Exception:
             return self.name
 
     description = Column(String)
