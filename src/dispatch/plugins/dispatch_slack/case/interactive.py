@@ -186,7 +186,7 @@ def handle_escalate_case_command(
             view=modal,
         )
 
-    default_title = case.name
+    default_title = case.title
     default_description = case.description
     default_project = {"text": case.project.display_name, "value": case.project.id}
 
@@ -760,19 +760,20 @@ def snooze_button_click(
 
     if entity_select_block:
         blocks.append(entity_select_block)
-        if case_url:
-            blocks.append(
-                Actions(
-                    elements=[
-                        Button(
-                            text="➕   Add entities",
-                            action_id="button-link",
-                            style="primary",
-                            url=case_url,
-                        )
-                    ]
-                ),
-            )
+
+    if case_url:
+        blocks.append(
+            Actions(
+                elements=[
+                    Button(
+                        text="➕   Add entities",
+                        action_id="button-link",
+                        style="primary",
+                        url=case_url,
+                    )
+                ]
+            ),
+        )
         blocks.append(
             Context(
                 elements=[
