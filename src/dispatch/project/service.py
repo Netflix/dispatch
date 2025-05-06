@@ -17,7 +17,17 @@ def get(*, db_session: Session, project_id: int) -> Project | None:
 
 def get_default(*, db_session: Session) -> Optional[Project]:
     """Returns the default project."""
-    return db_session.query(Project).filter(Project.default == true()).one_or_none()
+    print("Getting default project")
+    print(f"Project class columns: {[c.name for c in Project.__table__.columns]}")
+    print(f"Project table schema: {Project.__table__.schema}")
+
+    try:
+        result = db_session.query(Project).filter(Project.default == true()).one_or_none()
+        return result
+    except Exception as e:
+        print(f"Error getting default project: {e}")
+        print(f"SQL: {db_session.query(Project).filter(Project.default == true()).statement.compile(compile_kwargs={'literal_binds': True})}")
+        raise
 
 
 def get_default_or_raise(*, db_session: Session) -> Project:
