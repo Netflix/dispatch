@@ -397,7 +397,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     return query
 
 
-def composite_search(*, db_session, query_str: str, models: List[Base], current_user: DispatchUser):
+def composite_search(*, db_session, query_str: str, models: list[Base], current_user: DispatchUser):
     """Perform a multi-table search based on the supplied query."""
     s = CompositeSearch(db_session, models)
     query = s.build_query(query_str, sort=True)
@@ -481,8 +481,8 @@ def common_parameters(
     items_per_page: int = Query(5, alias="itemsPerPage", gt=-2, lt=2147483647),
     query_str: QueryStr = Query(None, alias="q"),
     filter_spec: QueryStr = Query(None, alias="filter"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
+    sort_by: list[str] = Query([], alias="sortBy[]"),
+    descending: list[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
 ):
     return {
@@ -499,12 +499,12 @@ def common_parameters(
 
 
 CommonParameters = Annotated[
-    dict[str, int | CurrentUser | DbSession | QueryStr | Json | List[str] | List[bool] | UserRoles],
+    dict[str, int | CurrentUser | DbSession | QueryStr | Json | list[str] | list[bool] | UserRoles],
     Depends(common_parameters),
 ]
 
 
-def has_filter_model(model: str, filter_spec: List[dict]):
+def has_filter_model(model: str, filter_spec: list[dict]):
     """Checks if the filter spec has a TagAll filter."""
 
     if isinstance(filter_spec, list):
@@ -519,11 +519,11 @@ def has_filter_model(model: str, filter_spec: List[dict]):
     return False
 
 
-def has_tag_all(filter_spec: List[dict]):
+def has_tag_all(filter_spec: list[dict]):
     return has_filter_model("TagAll", filter_spec)
 
 
-def has_not_case_type(filter_spec: List[dict]):
+def has_not_case_type(filter_spec: list[dict]):
     return has_filter_model("NotCaseType", filter_spec)
 
 
@@ -565,8 +565,8 @@ def search_filter_sort_paginate(
     filter_spec: str | dict | None = None,
     page: int = 1,
     items_per_page: int = 5,
-    sort_by: List[str] = None,
-    descending: List[bool] = None,
+    sort_by: list[str] = None,
+    descending: list[bool] = None,
     current_user: DispatchUser = None,
     role: UserRoles = UserRoles.member,
 ):
