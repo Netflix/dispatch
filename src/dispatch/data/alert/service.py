@@ -26,7 +26,7 @@ def get_by_name_or_raise(*, db_session, alert_in: AlertRead) -> AlertRead:
                 {
                     "msg": "Alert not found.",
                     "alert": alert_in.name,
-                    "loc": "alert",
+                    "loc": ["alert"],
                 }
             ]
         )
