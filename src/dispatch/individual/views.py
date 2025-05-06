@@ -8,7 +8,6 @@ from dispatch.auth.permissions import (
 )
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
-from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import (

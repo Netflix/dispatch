@@ -3,7 +3,6 @@ from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (

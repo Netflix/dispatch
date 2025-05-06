@@ -2,7 +2,6 @@ from typing import Optional
 
 from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 
 from .models import Alert, AlertCreate, AlertRead, AlertUpdate
 

@@ -14,7 +14,6 @@ from dispatch.database.core import DbSession
 from dispatch.auth.service import CurrentUser
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 from dispatch.models import PrimaryKey
-from dispatch.exceptions import ExistsError
 from dispatch.forms.type.service import send_email_to_service
 
 from .models import FormsRead, FormsUpdate, FormsPagination

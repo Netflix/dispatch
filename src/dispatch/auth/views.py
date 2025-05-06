@@ -10,11 +10,6 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
 )
 from dispatch.auth.service import CurrentUser
-from dispatch.exceptions import (
-    InvalidConfigurationError,
-    InvalidPasswordError,
-    InvalidUsernameError,
-)
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.enums import UserRoles

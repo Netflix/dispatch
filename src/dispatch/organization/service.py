@@ -7,7 +7,6 @@ from dispatch.auth.models import DispatchUser, DispatchUserOrganization
 from dispatch.database.core import engine
 from dispatch.database.manage import init_schema
 from dispatch.enums import UserRoles
-from dispatch.exceptions import NotFoundError
 
 from .models import Organization, OrganizationCreate, OrganizationRead, OrganizationUpdate
 

@@ -23,7 +23,6 @@ from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityType
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.individual import service as individual_service
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service

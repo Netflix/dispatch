@@ -15,7 +15,6 @@ from sqlalchemy.orm import Session
 from dispatch.case import service as case_service
 from dispatch.decorators import timer
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
 from dispatch.incident.type import service as incident_type_service

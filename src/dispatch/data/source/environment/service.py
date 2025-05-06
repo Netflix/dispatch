@@ -1,7 +1,6 @@
 from typing import Optional, List
 from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (

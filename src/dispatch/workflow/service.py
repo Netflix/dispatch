@@ -6,7 +6,6 @@ from sqlalchemy.sql.expression import true
 from dispatch.case import service as case_service
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.document import service as document_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service

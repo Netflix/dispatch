@@ -10,7 +10,6 @@ from dispatch.auth.permissions import (
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
-from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import FormsTypeRead, FormsTypeCreate, FormsTypeUpdate, FormsTypePagination

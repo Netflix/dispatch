@@ -3,7 +3,6 @@ from pydantic.error_wrappers import ValidationError
 from datetime import datetime
 
 from dispatch.enums import DocumentResourceReferenceTypes, DocumentResourceTemplateTypes
-from dispatch.exceptions import ExistsError
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 from dispatch.tag import service as tag_service

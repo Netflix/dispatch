@@ -4,7 +4,6 @@ from typing import Optional
 from pydantic import ValidationError
 from sqlalchemy.orm import Query, Session
 from jsonpath_ng import parse
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
 from .models import EntityType, EntityTypeCreate, EntityTypeRead, EntityTypeUpdate

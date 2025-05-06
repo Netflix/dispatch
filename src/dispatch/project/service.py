@@ -4,7 +4,6 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
-from dispatch.exceptions import NotFoundError
 
 from .models import Project, ProjectCreate, ProjectRead, ProjectUpdate
 

@@ -3,7 +3,6 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
-from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 

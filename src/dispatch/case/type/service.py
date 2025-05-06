@@ -7,7 +7,6 @@ from dispatch.case import service as case_service
 from dispatch.case_cost import service as case_cost_service
 from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.type import service as incident_type_service
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service

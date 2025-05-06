@@ -4,7 +4,6 @@ from pydantic import ValidationError
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
-from dispatch.exceptions import NotFoundError
 from dispatch.models import PrimaryKey
 from dispatch.plugin import service as plugin_service
 

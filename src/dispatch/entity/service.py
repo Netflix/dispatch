@@ -8,7 +8,6 @@ from pydantic import ValidationError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.case.models import Case
 from dispatch.entity.models import Entity, EntityCreate, EntityUpdate, EntityRead

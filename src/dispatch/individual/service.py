@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from dispatch.plugin.models import PluginInstance
 from dispatch.project.models import Project
-from dispatch.exceptions import NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service

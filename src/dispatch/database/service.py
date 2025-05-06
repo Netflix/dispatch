@@ -6,7 +6,7 @@ from inspect import signature
 from itertools import chain
 
 from fastapi import Depends, Query
-from pydantic import BaseModel, StringConstraints
+from pydantic import StringConstraints
 from pydantic import ValidationError
 from pydantic import Json
 from six import string_types
@@ -18,7 +18,6 @@ from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, get_model_from_spec
 from sqlalchemy_filters.sorting import Sort
-from typing import Annotated
 from typing_extensions import Annotated
 
 from .core import Base, get_class_by_tablename, get_model_name_by_tablename
@@ -29,7 +28,6 @@ from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.database.core import DbSession
 from dispatch.enums import UserRoles, Visibility
-from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
 from dispatch.feedback.incident.models import Feedback
 from dispatch.incident.models import Incident
 from dispatch.incident.type.models import IncidentType

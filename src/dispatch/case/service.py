@@ -12,7 +12,6 @@ from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case_cost import service as case_cost_service
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import Participant
 from dispatch.participant import flows as participant_flows

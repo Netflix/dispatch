@@ -4,7 +4,6 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugins.bases import OncallPlugin
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service

@@ -1,6 +1,5 @@
 """Models for group resources in the Dispatch application."""
 from pydantic import field_validator, EmailStr
-from pydantic.networks import EmailStr
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 

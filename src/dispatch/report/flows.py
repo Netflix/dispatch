@@ -9,7 +9,6 @@ from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
-from dispatch.exceptions import InvalidConfigurationError
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service

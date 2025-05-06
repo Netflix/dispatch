@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from dispatch.exceptions import InvalidConfigurationError, NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.project.models import ProjectRead

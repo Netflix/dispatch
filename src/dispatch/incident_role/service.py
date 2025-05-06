@@ -4,7 +4,6 @@ from typing import List, Optional
 from operator import attrgetter
 from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.models import Incident, ProjectRead
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.type import service as incident_type_service

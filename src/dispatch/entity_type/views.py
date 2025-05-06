@@ -6,7 +6,6 @@ from sqlalchemy.exc import IntegrityError
 
 from dispatch.case.service import get as get_case
 from dispatch.database.core import DbSession
-from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 from dispatch.signal.models import SignalInstanceRead
@@ -54,7 +53,7 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
                     "loc": "name",
                 }
             ]
-        )
+        ) from None
     return entity_type
 
 
@@ -73,7 +72,7 @@ def create_entity_type_with_case(
                     "loc": "name",
                 }
             ]
-        )
+        ) from None
     return entity_type
 
 
@@ -144,7 +143,7 @@ def update_entity_type(
                     "loc": "name",
                 }
             ]
-        )
+        ) from None
     return entity_type
 
 
@@ -174,7 +173,7 @@ def process_entity_type(
                     "loc": "name",
                 }
             ]
-        )
+        ) from None
     return entity_type
 
 

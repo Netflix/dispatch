@@ -21,7 +21,6 @@ from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
 from dispatch import config
-from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 from dispatch.database.logging import SessionTracker
 

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import ClassVar, Any
 from typing_extensions import Annotated
 
-from pydantic import EmailStr, AnyHttpUrl
+from pydantic import EmailStr
 from pydantic import Field, StringConstraints, ConfigDict, BaseModel
 from pydantic import SecretStr
 

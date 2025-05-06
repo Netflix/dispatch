@@ -1,5 +1,5 @@
 """Models for case types and related entities in the Dispatch application."""
-from pydantic import field_validator, AnyHttpUrl, Field
+from pydantic import field_validator, AnyHttpUrl
 
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.event import listen

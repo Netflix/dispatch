@@ -8,7 +8,6 @@ Create Date: 2022-10-19 13:13:17.581202
 from alembic import op
 
 from pydantic import Field, StringConstraints, ConfigDict, BaseModel
-from pydantic import constr, conint
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
