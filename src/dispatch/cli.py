@@ -337,7 +337,7 @@ def restore_database(dump_file):
     )
 
     if not prompt_for_confirmation("restore"):
-        click.secho("Aborting database initialization.", fg="red")
+        click.secho("Aborting database restore.", fg="red")
         return
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
