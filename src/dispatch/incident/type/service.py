@@ -34,9 +34,16 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
     incident_type = get_default(db_session=db_session, project_id=project_id)
 
     if not incident_type:
-        raise ValidationError(
-            "No default incident type defined.",
-            model=IncidentTypeRead,
+        raise ValidationError.from_exception_data(
+            "IncidentTypeRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("incident_type",),
+                    "input": None,
+                    "ctx": {"error": ValueError("No default incident type defined.")},
+                }
+            ]
         )
     return incident_type
 
@@ -60,13 +67,16 @@ def get_by_name_or_raise(
     )
 
     if not incident_type:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "IncidentTypeRead",
             [
-                NotFoundError(
-                    msg="Incident type not found.", incident_type=incident_type_in.name
-                ),
-            ],
-            model=IncidentTypeRead,
+                {
+                    "type": "value_error",
+                    "loc": ("incident_type",),
+                    "input": incident_type_in.name,
+                    "ctx": {"error": ValueError("Incident type not found.")},
+                }
+            ]
         )
 
     return incident_type

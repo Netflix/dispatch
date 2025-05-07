@@ -316,8 +316,8 @@ def return_single_signal_stats(
                 {
                     "type": "value_error",
                     "loc": ("signal",),
-                    "msg": f"Signal not found.",
                     "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
                 }
             ]
         )
@@ -343,8 +343,8 @@ def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
                 {
                     "type": "value_error",
                     "loc": ("signal",),
-                    "msg": f"Signal not found.",
                     "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
                 }
             ]
         )
@@ -377,8 +377,8 @@ def update_signal(
                 {
                     "type": "value_error",
                     "loc": ("signal",),
-                    "msg": f"Signal not found.",
                     "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
                 }
             ]
         )
@@ -415,8 +415,8 @@ def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
                 {
                     "type": "value_error",
                     "loc": ("signal",),
-                    "msg": f"Signal not found.",
                     "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
                 }
             ]
         )

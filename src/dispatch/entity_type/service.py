@@ -35,14 +35,18 @@ def get_by_name_or_raise(
     )
 
     if not entity_type:
-        raise ValidationError([
-            {
-                "msg": "Entity type not found.",
-                "entity_type": entity_type_in.name,
-                "loc": ("entity_type",),
-                "type": "value_error.not_found",
-            }
-        ])
+        from dispatch.entity_type.models import EntityTypeRead
+        raise ValidationError.from_exception_data(
+            "EntityTypeRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("entity_type",),
+                    "input": entity_type_in.name,
+                    "ctx": {"error": ValueError("Entity type not found.")},
+                }
+            ],
+        )
 
     return entity_type
 

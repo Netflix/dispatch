@@ -18,6 +18,7 @@ def test_create(session, user, project):
         description=description,
         expression=expression,
         project=project,
+        enabled=True,
     )
     search_filter = create(db_session=session, creator=user, search_filter_in=search_filter_in)
     assert search_filter

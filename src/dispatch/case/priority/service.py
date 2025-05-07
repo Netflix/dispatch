@@ -33,15 +33,16 @@ def get_default_or_raise(*, db_session, project_id: int) -> CasePriority:
     case_priority = get_default(db_session=db_session, project_id=project_id)
 
     if not case_priority:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "CasePriority",
             [
                 {
-                    "msg": "No default case priority defined.",
+                    "type": "value_error",
                     "loc": ("case_priority",),
-                    "type": "value_error.not_found",
+                    "input": None,
+                    "ctx": {"error": ValueError("No default case priority defined.")},
                 }
-            ],
-            CasePriority
+            ]
         )
     return case_priority
 
@@ -65,16 +66,17 @@ def get_by_name_or_raise(
     )
 
     if not case_priority:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "CasePriority",
             [
                 {
-                    "msg": "Case priority not found.",
-                    "case_priority": case_priority_in.name,
+                    "type": "value_error",
                     "loc": ("case_priority",),
-                    "type": "value_error.not_found",
+                    "input": case_priority_in.name,
+                    "msg": f"Value error, Case priority not found.",
+                    "ctx": {"error": ValueError(f"Case priority not found: {case_priority_in.name}")}
                 }
-            ],
-            CasePriority
+            ]
         )
 
     return case_priority
@@ -96,14 +98,14 @@ def get_by_name_or_default(
 
 def get_all(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
     """Returns all case priorities."""
-    if project_id:
+    if project_id is not None:
         return db_session.query(CasePriority).filter(CasePriority.project_id == project_id)
     return db_session.query(CasePriority)
 
 
 def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
     """Returns all enabled case priorities."""
-    if project_id:
+    if project_id is not None:
         return (
             db_session.query(CasePriority)
             .filter(CasePriority.project_id == project_id)

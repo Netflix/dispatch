@@ -30,16 +30,11 @@ def get_default(*, db_session, project_id: int):
 
 
 def get_default_or_raise(*, db_session, project_id: int) -> CaseType:
-    """Returns the default case type or raises a ValidationError if one doesn't exist."""
+    """Returns the default case type or raises a ValueError if one doesn't exist."""
     case_type = get_default(db_session=db_session, project_id=project_id)
 
     if not case_type:
-        raise ValidationError([
-            {
-                "msg": "No default case type defined.",
-                "loc": "case_type",
-            }
-        ])
+        raise ValueError("No default case type defined.")
     return case_type
 
 
@@ -54,17 +49,11 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[CaseType]
 
 
 def get_by_name_or_raise(*, db_session, project_id: int, case_type_in=CaseTypeRead) -> CaseType:
-    """Returns the case type specified or raises a ValidationError."""
+    """Returns the case type specified or raises a ValueError."""
     case_type = get_by_name(db_session=db_session, project_id=project_id, name=case_type_in.name)
 
     if not case_type:
-        raise ValidationError([
-            {
-                "msg": "Case type not found.",
-                "loc": "case_type",
-                "case_type": case_type_in.name
-            }
-        ])
+        raise ValueError(f"Case type not found: {case_type_in.name}")
 
     return case_type
 

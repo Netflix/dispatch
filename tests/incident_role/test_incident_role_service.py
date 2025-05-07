@@ -22,16 +22,17 @@ def test_get_all_by_role(session, project, incident_role):
     assert len(t_incident_roles) >= 1
 
 
-def test_create_update(session, incident_type, project_fixture):
+def test_create_update(session, incident_type, project):
     from dispatch.incident_role.service import create_or_update
     from dispatch.incident_role.models import IncidentRoleCreateUpdate
     from dispatch.participant_role.models import ParticipantRoleType
     from dispatch.project.models import ProjectRead
     from dispatch.incident.type.models import IncidentTypeRead
+    from tests.factories import IncidentTypeFactory
 
-    # Ensure incident_type.project is the same as project_fixture if used interchangeably
-    # For clarity, using project_fixture where ProjectRead is needed by service.
-    project_read_in = ProjectRead.model_validate(project_fixture)
+    # Ensure incident_type.project is the same as project if used interchangeably
+    # For clarity, using project where ProjectRead is needed by service.
+    project_read_in = ProjectRead.model_validate(project)
 
     # test create (no id)
     incident_role_in_create = IncidentRoleCreateUpdate(
@@ -54,7 +55,14 @@ def test_create_update(session, incident_type, project_fixture):
 
     assert len(created_roles) == 1
     assert created_roles[0].role == ParticipantRoleType.incident_commander
-    assert created_roles[0].project.id == project_fixture.id
+    assert created_roles[0].project.id == project.id
+
+    # Ensure incident_type is present in the database for the update, with the correct project
+    incident_type = IncidentTypeFactory(project=project)
+    session.add(incident_type)
+    session.commit()
+    # Fetch the committed incident_type from the DB
+    db_incident_type = session.query(incident_type.__class__).filter_by(id=incident_type.id).one()
 
     # test update (with id)
     incident_role_in_update = IncidentRoleCreateUpdate(
@@ -62,7 +70,7 @@ def test_create_update(session, incident_type, project_fixture):
         enabled=True,
         tags=[],
         order=2,
-        incident_types=[IncidentTypeRead.model_validate(incident_type)],
+        incident_types=[IncidentTypeRead.model_validate(db_incident_type)],
         incident_priorities=[],
         service=None,
         individual=None,

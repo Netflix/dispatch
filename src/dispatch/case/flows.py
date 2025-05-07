@@ -233,9 +233,9 @@ def case_auto_close_flow(case: Case, db_session: Session):
 def case_new_create_flow(
     *,
     case_id: int,
-    organization_slug: OrganizationSlug,
-    conversation_target: str = None,
-    service_id: int = None,
+    organization_slug: str | None = None,
+    conversation_target: str | None = None,
+    service_id: int | None = None,
     db_session: Session,
     create_all_resources: bool = True,
 ):
@@ -258,7 +258,7 @@ def case_new_create_flow(
         case_id=case.id,
         individual_participants=individual_participants,
         team_participants=team_participants,
-        conversation_target=conversation_target,
+        conversation_target=conversation_target or "",
         create_all_resources=create_all_resources,
     )
 

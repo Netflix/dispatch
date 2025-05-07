@@ -94,13 +94,10 @@ class IndividualContactUpdate(IndividualContactBase):
     """Pydantic model for updating an individual contact resource."""
     filters: list[SearchFilterRead] | None = None
     project: ProjectRead | None = None
-    project: ProjectRead | None = None
 
 
 class IndividualContactRead(IndividualContactBase):
     """Pydantic model for reading an individual contact resource."""
-    id: PrimaryKey
-    filters: list[SearchFilterRead] = []
     id: PrimaryKey
     filters: list[SearchFilterRead] = []
     created_at: datetime | None = None
@@ -110,7 +107,6 @@ class IndividualContactRead(IndividualContactBase):
 # Creating a more minimal version that doesn't inherit from ContactBase to avoid email validation issues in tests
 class IndividualContactReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal individual contact resource."""
-    id: PrimaryKey
     id: PrimaryKey
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -140,6 +136,5 @@ class IndividualContactReadMinimal(DispatchBase):
 
 class IndividualContactPagination(Pagination):
     """Pydantic model for paginated individual contact results."""
-    total: int
     total: int
     items: list[IndividualContactRead] = []

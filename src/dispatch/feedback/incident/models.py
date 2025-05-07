@@ -42,12 +42,12 @@ class Feedback(TimeStampMixin, FeedbackMixin, ProjectMixin, Base):
 
 # Pydantic models
 class FeedbackBase(DispatchBase):
-    created_at: Optional[datetime]
+    created_at: Optional[datetime] = None
     rating: FeedbackRating = FeedbackRating.very_satisfied
     feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadBasic]
-    case: Optional[CaseReadMinimal]
-    participant: Optional[ParticipantRead]
+    incident: Optional[IncidentReadBasic] = None
+    case: Optional[CaseReadMinimal] = None
+    participant: Optional[ParticipantRead] = None
 
 
 class FeedbackCreate(FeedbackBase):

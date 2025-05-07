@@ -57,6 +57,7 @@ def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
         )
         project = incident.project
         case = None
+        participant = feedback_in.participant
     else:
         case = case_service.get(
             db_session=db_session,
@@ -64,11 +65,23 @@ def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
         )
         project = case.project
         incident = None
+        # Get the participant from the database if it's provided as a dict/model
+        participant = None
+        if feedback_in.participant:
+            from dispatch.participant.service import get as get_participant
+            participant = get_participant(
+                db_session=db_session,
+                participant_id=feedback_in.participant.id
+            )
+
+    # Create feedback with the actual ORM objects, not the Pydantic models
     feedback = Feedback(
-        **feedback_in.dict(exclude={"incident", "case", "project"}),
+        rating=feedback_in.rating,
+        feedback=feedback_in.feedback,
         incident=incident,
         case=case,
         project=project,
+        participant=participant
     )
     db_session.add(feedback)
     db_session.commit()

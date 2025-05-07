@@ -42,6 +42,7 @@ def test_create(session, case, individual_contact, participant_role):
             title=case.title,
             description=case.description,
             resolution=case.resolution,
+            resolution_reason=case.resolution_reason or "Resolved successfully",  # Add default value if None
             status=case.status,
             visibility=case.visibility,
             closed_at=case.closed_at,
@@ -134,6 +135,9 @@ def test_update(session, feedback, individual_contact, case):  # Added case fixt
             resolution=(
                 feedback.case.resolution if feedback.case is not None else None
             ),
+            resolution_reason=(
+                feedback.case.resolution_reason if feedback.case is not None else "Resolved successfully"
+            ),  # Add resolution_reason with default value if None
             status=feedback.case.status if feedback.case is not None else None,
             visibility=(
                 feedback.case.visibility if feedback.case is not None else None

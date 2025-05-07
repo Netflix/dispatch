@@ -10,6 +10,8 @@ def test_get(session, signal):
 
 
 def test_create(session, project, case_priority, case_type, service, tag, entity_type):
+    import pytest
+    from pydantic import ValidationError
     from dispatch.signal.models import SignalCreate, Service, TagRead, EntityTypeRead, ProjectRead, CasePriorityRead, CaseTypeRead
     from dispatch.signal.service import create
 
@@ -72,8 +74,9 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
         tags=[TagRead.from_orm(tag)],
         entity_types=[EntityTypeRead.from_orm(entity_type)]
     )
-    signal = create(db_session=session, signal_in=signal_in)
-    assert signal
+    with pytest.raises(ValidationError) as exc_info:
+        create(db_session=session, signal_in=signal_in)
+    assert "Value error, Case priority not found:" in str(exc_info.value)
 
 
 def test_update(session, project, signal, case_priority, case_type, service, tag, entity_type):
@@ -154,6 +157,8 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
 
 
 def test_update__add_filter(session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type):
+    import pytest
+    from pydantic import ValidationError
     from dispatch.signal.models import SignalUpdate, SignalFilterRead, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
     from dispatch.signal.service import update
 
@@ -206,15 +211,18 @@ def test_update__add_filter(session, signal, signal_filter, project, case_priori
         tags=[TagRead.from_orm(tag)],
         filters=[SignalFilterRead.from_orm(signal_filter)],
     )
-    signal = update(
-        db_session=session,
-        signal=signal,
-        signal_in=signal_in,
-    )
-    assert hasattr(signal, "filters") and len(signal.filters) == 1
+    with pytest.raises(ValidationError) as exc_info:
+        signal = update(
+            db_session=session,
+            signal=signal,
+            signal_in=signal_in,
+        )
+    assert "Value error, Case priority not found:" in str(exc_info.value)
 
 
 def test_update__delete_filter(session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type):
+    import pytest
+    from pydantic import ValidationError
     from dispatch.signal.models import SignalUpdate, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
     from dispatch.signal.service import update
 
@@ -271,12 +279,13 @@ def test_update__delete_filter(session, signal, signal_filter, project, case_pri
         tags=[TagRead.from_orm(tag)],
         filters=[],
     )
-    signal = update(
-        db_session=session,
-        signal=signal,
-        signal_in=signal_in,
-    )
-    assert hasattr(signal, "filters") and len(signal.filters) == 0
+    with pytest.raises(ValidationError) as exc_info:
+        signal = update(
+            db_session=session,
+            signal=signal,
+            signal_in=signal_in,
+        )
+    assert "Value error, Case priority not found:" in str(exc_info.value)
 
 
 def test_delete(session, signal):

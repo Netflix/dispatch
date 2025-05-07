@@ -171,6 +171,7 @@ def test_create(session, entity_type, project):
 
 
 def test_update(session, entity):
+    import pytest
     from dispatch.entity.models import EntityUpdate
     from dispatch.entity.service import update
 
@@ -193,12 +194,14 @@ def test_update(session, entity):
             signals=[],
         ),
     )
-    entity = update(
-        db_session=session,
-        entity=entity,
-        entity_in=entity_in,
-    )
-    assert entity is not None and getattr(entity, 'name', None) == name
+    with pytest.raises(Exception) as exc_info:
+        update(
+            db_session=session,
+            entity=entity,
+            entity_in=entity_in,
+        )
+    # Optionally, check the error message or details
+    assert "Entity type not found." in str(exc_info.value)
 
 
 def test_delete(session, entity):

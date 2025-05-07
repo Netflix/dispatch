@@ -76,8 +76,8 @@ class IncidentRoleBase(DispatchBase):
 
 
 class IncidentRoleCreateUpdate(IncidentRoleBase):
-    id: Optional[PrimaryKey]
-    project: Optional[ProjectRead]
+    id: PrimaryKey | None = None
+    project: ProjectRead | None
 
 
 class IncidentRolesCreateUpdate(DispatchBase):
