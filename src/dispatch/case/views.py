@@ -25,7 +25,7 @@ from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import ParticipantUpdate, ParticipantRead, ParticipantReadMinimal
 from dispatch.individual.models import IndividualContactRead
-from dispatch.individual.service import get_by_email_and_project
+from dispatch.individual.service import get_by_email_and_project, get_or_create
 
 from .flows import (
     case_add_or_reactivate_participant_flow,
@@ -149,21 +149,20 @@ def create_case(
     # TODO: (wshel) this conditional always happens in the UI flow since
     # reporter is not available to be set.
     if not case_in.reporter:
-        # Fetch the individual by email and project
-        individual = get_by_email_and_project(
+        # Ensure the individual exists, create if not
+        if case_in.project is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=[{"msg": "Project must be set to create reporter individual."}],
+            )
+        individual = get_or_create(
             db_session=db_session,
             email=current_user.email,
-            project_id=case_in.project.id if case_in.project else None,
+            project=case_in.project,
         )
-        if individual:
-            case_in.reporter = ParticipantUpdate(
-                individual=IndividualContactRead(id=individual.id, email=individual.email)
-            )
-        else:
-            # fallback: create with just email (will still error if id is required)
-            case_in.reporter = ParticipantUpdate(
-                individual=IndividualContactRead(email=current_user.email)
-            )
+        case_in.reporter = ParticipantUpdate(
+            individual=IndividualContactRead(id=individual.id, email=individual.email)
+        )
 
     try:
         case = create(db_session=db_session, case_in=case_in, current_user=current_user)
