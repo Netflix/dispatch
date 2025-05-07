@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import datetime, timezone
 
 from dispatch.case.enums import CostModelType
 from dispatch.project import service as project_service
@@ -45,6 +46,7 @@ def get_or_create_response_cost_type(
             editable=default_case_cost_type["editable"],
             project=project_service.get(db_session=db_session, project_id=project_id),
             model_type=model_type,
+            created_at=datetime.now(timezone.utc),
         )
         case_cost_type = create(db_session=db_session, case_cost_type_in=case_cost_type_in)
 
@@ -109,7 +111,7 @@ def update(
 ) -> CaseCostType:
     """Updates a case cost type."""
     case_cost_data = case_cost_type.dict()
-    update_data = case_cost_type_in.dict(skip_defaults=True)
+    update_data = case_cost_type_in.dict(exclude_unset=True)
 
     for field in case_cost_data:
         if field in update_data:

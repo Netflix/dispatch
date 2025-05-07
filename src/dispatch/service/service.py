@@ -1,8 +1,7 @@
 from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import InvalidConfigurationError, NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.project.models import ProjectRead
@@ -41,18 +40,14 @@ def get_by_name_or_raise(*, db_session, project_id, service_in: ServiceRead) -> 
     source = get_by_name(db_session=db_session, project_id=project_id, name=service_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Service not found.",
-                        source=service_in.name,
-                    ),
-                    loc="service",
-                )
-            ],
-            model=ServiceRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("service",),
+                "msg": f"Service not found: {service_in.name}",
+                "type": "value_error",
+                "input": service_in.name,
+            }
+        ])
 
     return source
 
@@ -80,13 +75,10 @@ def get_by_external_id_and_project_id_or_raise(
     if not service:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Service not found.",
-                        incident_priority=service.external_id,
-                    ),
-                    loc="service",
-                )
+                {
+                    "msg": "Service not found.",
+                    "incident_priority": service.external_id,
+                }
             ],
             model=ServiceRead,
         )
@@ -189,7 +181,7 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     """Updates an existing service."""
     service_data = service.dict()
 
-    update_data = service_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = service_in.dict(exclude_unset=True, exclude={"filters"})
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
@@ -203,15 +195,10 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
         if not oncall_plugin_instance.enabled:
             raise ValidationError(
                 [
-                    ErrorWrapper(
-                        InvalidConfigurationError(
-                            (
-                                f"Cannot enable service {service.name}. Its associated plugin ",
-                                f"{oncall_plugin_instance.plugin.title} is not enabled.",
-                            )
-                        ),
-                        loc="type",
-                    )
+                    {
+                        "msg": "Cannot enable service. Its associated plugin is not enabled.",
+                        "loc": "type",
+                    }
                 ],
                 model=ServiceUpdate,
             )

@@ -49,10 +49,10 @@ class EventBase(DispatchBase):
     ended_at: datetime
     source: str
     description: str
-    details: Optional[dict]
-    type: Optional[str]
-    owner: Optional[str]
-    pinned: Optional[bool]
+    details: Optional[dict] = None
+    type: Optional[str] = None
+    owner: Optional[str] = None
+    pinned: Optional[bool] = False
 
 
 class EventCreate(EventBase):
@@ -72,5 +72,6 @@ class EventCreateMinimal(DispatchBase):
     source: str
     description: str
     details: dict
-    type: Optional[str]
-    owner: Optional[str]
+    type: Optional[str] = None
+    owner: Optional[str] = None
+    pinned: Optional[bool] = False

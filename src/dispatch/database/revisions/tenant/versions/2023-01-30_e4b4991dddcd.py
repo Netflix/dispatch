@@ -8,7 +8,7 @@ Create Date: 2023-01-30 10:52:31.676368
 from alembic import op
 
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 import sqlalchemy as sa
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql.expression import true
@@ -50,11 +50,7 @@ class Case(Base):
 
 # Pydantic models...
 class DispatchBase(BaseModel):
-    class Config:
-        orm_mode = True
-        validate_assignment = True
-        arbitrary_types_allowed = True
-        anystr_strip_whitespace = True
+    model_config = ConfigDict(from_attributes=True, validate_assignment=True, arbitrary_types_allowed=True, str_strip_whitespace=True)
 
 
 class DispatchEnum(str, Enum):
@@ -78,7 +74,7 @@ class ParticipantRoleType(DispatchEnum):
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
-    role: Optional[ParticipantRoleType]
+    role: Optional[ParticipantRoleType] = None
 
 
 class ProjectMixin(object):

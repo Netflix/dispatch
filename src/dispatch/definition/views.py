@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
-from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -40,14 +39,12 @@ def create_definition(db_session: DbSession, definition_in: DefinitionCreate):
     """Create a new definition."""
     definition = get_by_text(db_session=db_session, text=definition_in.text)
     if definition:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A description with this text already exists."), loc="text"
-                )
-            ],
-            model=DefinitionRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "A description with this text already exists.",
+                "loc": "text",
+            }
+        ])
 
     return create(db_session=db_session, definition_in=definition_in)
 

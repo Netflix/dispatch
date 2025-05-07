@@ -1,7 +1,6 @@
 from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -40,18 +39,14 @@ def get_by_name_or_raise(
     )
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceTransport not found.",
-                        source=source_transport_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceTransportRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"SourceTransport not found: {source_transport_in.name}",
+                "type": "value_error",
+                "input": source_transport_in.name,
+            }
+        ])
 
     return source
 
@@ -100,7 +95,7 @@ def update(
 ) -> SourceTransport:
     """Updates an existing source transport."""
     source_transport_data = source_transport.dict()
-    update_data = source_transport_in.dict(skip_defaults=True, exclude={})
+    update_data = source_transport_in.dict(exclude_unset=True, exclude={})
 
     for field in source_transport_data:
         if field in update_data:

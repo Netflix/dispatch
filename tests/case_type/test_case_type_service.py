@@ -1,3 +1,6 @@
+import datetime
+from datetime import timezone
+
 def test_get(session, case_type):
     from dispatch.case.type.service import get
 
@@ -31,6 +34,7 @@ def test_create(session, project, document):
         name=name,
         template_document=document,
         project=project,
+        enabled=True,
     )
 
     case_type = create(db_session=session, case_type_in=case_type_in)
@@ -43,7 +47,12 @@ def test_update(session, case_type):
 
     name = "Updated case type name"
 
-    case_type_in = CaseTypeUpdate(name=name)
+    case_type_in = CaseTypeUpdate(
+        name=name,
+        enabled=True,
+        project=case_type.project,
+    )
+
     case_type = update(
         db_session=session,
         case_type=case_type,
@@ -60,12 +69,11 @@ def test_update_cost_model(session, case, case_type, cost_model, case_cost, case
     from dispatch.case_cost_type import service as case_cost_type_service
     from dispatch.case.enums import CostModelType
     from dispatch.case.type.models import CaseTypeUpdate
-    import datetime
 
     name = "Updated case type name"
 
     case_type_in = CaseTypeUpdate(name=name)
-    current_time = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+    current_time = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
 
     # Initial setup.
     case.status = CaseStatus.new

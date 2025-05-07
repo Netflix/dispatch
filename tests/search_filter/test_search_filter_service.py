@@ -18,6 +18,7 @@ def test_create(session, user, project):
         description=description,
         expression=expression,
         project=project,
+        enabled=True,
     )
     search_filter = create(db_session=session, creator=user, search_filter_in=search_filter_in)
     assert search_filter
@@ -29,7 +30,7 @@ def test_update(session, search_filter):
 
     name = "Updated name"
 
-    search_filter_in = SearchFilterUpdate(name=name, expression=[{}])
+    search_filter_in = SearchFilterUpdate(name=name, expression=[{}], enabled=True)
     search_filter = update(
         db_session=session,
         search_filter=search_filter,

@@ -2,7 +2,7 @@ import logging
 
 from datetime import datetime, timedelta
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session, joinedload, load_only
 from typing import List, Optional
 
@@ -12,7 +12,6 @@ from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case_cost import service as case_cost_service
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import Participant
 from dispatch.participant import flows as participant_flows
@@ -55,15 +54,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> C
     if not case:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Case not found.",
-                        query=case_in.name,
-                    ),
-                    loc="case",
-                )
-            ],
-            model=CaseRead,
+                {
+                    "msg": "Case not found.",
+                    "query": case_in.name,
+                    "loc": "case",
+                }
+            ]
         )
     return case
 
@@ -266,7 +262,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
 def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser) -> Case:
     """Updates an existing case."""
     update_data = case_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "assignee",
             "case_costs",

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic.types import PositiveInt
+from pydantic import PositiveInt
 
 from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, Table, ForeignKey
 from sqlalchemy.orm import relationship
@@ -76,8 +76,8 @@ class IncidentRoleBase(DispatchBase):
 
 
 class IncidentRoleCreateUpdate(IncidentRoleBase):
-    id: Optional[PrimaryKey]
-    project: Optional[ProjectRead]
+    id: PrimaryKey | None = None
+    project: ProjectRead | None
 
 
 class IncidentRolesCreateUpdate(DispatchBase):

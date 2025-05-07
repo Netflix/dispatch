@@ -1,6 +1,6 @@
 import logging
 from blockkit import Modal, Section
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 

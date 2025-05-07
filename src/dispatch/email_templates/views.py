@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
@@ -12,7 +12,6 @@ from dispatch.database.core import DbSession
 from dispatch.auth.service import CurrentUser
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 from dispatch.models import PrimaryKey
-from dispatch.exceptions import ExistsError
 
 from .models import (
     EmailTemplatesRead,
@@ -56,11 +55,11 @@ def create_email_template(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="An email template with this type already exists."), loc="name"
-                )
+                {
+                    "msg": "An email template with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=EmailTemplatesRead,
         ) from None
 
 
@@ -90,11 +89,11 @@ def update_email_template(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="An email template with this type already exists."), loc="name"
-                )
+                {
+                    "msg": "An email template with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=EmailTemplatesUpdate,
         ) from None
     return email_template
 

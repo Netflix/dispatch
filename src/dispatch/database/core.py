@@ -11,8 +11,7 @@ from contextlib import contextmanager
 from typing import Annotated, Any
 
 from fastapi import Depends
-from pydantic import BaseModel
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import Session, object_session, sessionmaker, DeclarativeBase, declared_attr
@@ -21,7 +20,6 @@ from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
 from dispatch import config
-from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 from dispatch.database.logging import SessionTracker
 
@@ -190,10 +188,11 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     if not mapped_class:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Model not found. Check the name of your model."),
-                    loc="filter",
-                )
+                {
+                    "type": "value_error",
+                    "loc": ("filter",),
+                    "msg": "Model not found. Check the name of your model.",
+                }
             ],
             model=BaseModel,
         )

@@ -37,7 +37,7 @@ def update(
 ) -> ServiceFeedbackReminder:
     """Updates a service feedback reminder."""
     reminder_data = reminder.dict()
-    update_data = reminder_in.dict(skip_defaults=True)
+    update_data = reminder_in.dict(exclude_unset=True)
 
     for field in reminder_data:
         if field in update_data:

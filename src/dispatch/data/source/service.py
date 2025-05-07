@@ -1,7 +1,6 @@
 from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.incident import service as incident_service
 from dispatch.service import service as service_service
@@ -37,18 +36,14 @@ def get_by_name_or_raise(*, db_session, project_id, source_in: SourceRead) -> So
     source = get_by_name(db_session=db_session, project_id=project_id, name=source_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Source not found.",
-                        source=source_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"Source not found: {source_in.name}",
+                "type": "value_error",
+                "input": source_in.name,
+            }
+        ])
 
     return source
 
@@ -172,7 +167,7 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     source_data = source.dict()
 
     update_data = source_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "project",
             "owner",

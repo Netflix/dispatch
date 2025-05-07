@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -7,7 +7,6 @@ from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident import service as incident_service
 from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 
@@ -34,14 +33,16 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
     incident_type = get_default(db_session=db_session, project_id=project_id)
 
     if not incident_type:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "IncidentTypeRead",
             [
-                ErrorWrapper(
-                    NotFoundError(msg="No default incident type defined."),
-                    loc="incident_type",
-                )
-            ],
-            model=IncidentTypeRead,
+                {
+                    "type": "value_error",
+                    "loc": ("incident_type",),
+                    "input": None,
+                    "ctx": {"error": ValueError("No default incident type defined.")},
+                }
+            ]
         )
     return incident_type
 
@@ -65,16 +66,16 @@ def get_by_name_or_raise(
     )
 
     if not incident_type:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "IncidentTypeRead",
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident type not found.", incident_type=incident_type_in.name
-                    ),
-                    loc="incident_type",
-                )
-            ],
-            model=IncidentTypeRead,
+                {
+                    "type": "value_error",
+                    "loc": ("incident_type",),
+                    "input": incident_type_in.name,
+                    "ctx": {"error": ValueError("Incident type not found.")},
+                }
+            ]
         )
 
     return incident_type
@@ -207,9 +208,10 @@ def update(
         db_session=db_session, incident_type_id=incident_type.id
     )
     for incident in incidents:
-        incident_cost_service.calculate_incident_response_cost(
-            incident_id=incident.id, db_session=db_session, incident_review=False
-        )
+        if incident is not None:
+            incident_cost_service.calculate_incident_response_cost(
+                incident_id=incident.id, db_session=db_session, incident_review=False
+            )
 
     if incident_type_in.incident_template_document:
         incident_template_document = document_service.get(
@@ -245,7 +247,7 @@ def update(
     incident_type_data = incident_type.dict()
 
     update_data = incident_type_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "incident_template_document",
             "executive_template_document",

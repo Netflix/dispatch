@@ -81,7 +81,7 @@ def update(
     """Updates a participant role."""
     participant_role_data = participant_role.dict()
 
-    update_data = participant_role_in.dict(skip_defaults=True)
+    update_data = participant_role_in.dict(exclude_unset=True)
 
     for field in participant_role_data:
         if field in update_data:

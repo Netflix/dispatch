@@ -1,7 +1,6 @@
-from typing import List, Optional
+"""This module defines the main Dispatch API endpoints."""
 
 from fastapi import APIRouter, Depends
-
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
@@ -13,6 +12,7 @@ from dispatch.case.type.views import router as case_type_router
 from dispatch.case.views import router as case_router
 from dispatch.case_cost.views import router as case_cost_router
 from dispatch.case_cost_type.views import router as case_cost_type_router
+from dispatch.cost_model.views import router as cost_model_router
 from dispatch.data.alert.views import router as alert_router
 from dispatch.data.query.views import router as query_router
 from dispatch.data.source.data_format.views import router as source_data_format_router
@@ -23,16 +23,18 @@ from dispatch.data.source.type.views import router as source_type_router
 from dispatch.data.source.views import router as source_router
 from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
+from dispatch.email_templates.views import router as email_template_router
 from dispatch.entity.views import router as entity_router
 from dispatch.entity_type.views import router as entity_type_router
 from dispatch.feedback.incident.views import router as feedback_router
 from dispatch.feedback.service.views import router as service_feedback_router
+from dispatch.forms.type.views import router as forms_type_router
+from dispatch.forms.views import router as forms_router
 from dispatch.incident.priority.views import router as incident_priority_router
 from dispatch.incident.severity.views import router as incident_severity_router
 from dispatch.incident.type.views import router as incident_type_router
 from dispatch.incident.views import router as incident_router
 from dispatch.incident_cost.views import router as incident_cost_router
-from dispatch.cost_model.views import router as cost_model_router
 from dispatch.incident_cost_type.views import router as incident_cost_type_router
 from dispatch.incident_role.views import router as incident_role_router
 from dispatch.individual.views import router as individual_contact_router
@@ -41,17 +43,10 @@ from dispatch.notification.views import router as notification_router
 from dispatch.organization.views import router as organization_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.project.views import router as project_router
-from dispatch.forms.views import router as forms_router
-from dispatch.forms.type.views import router as forms_type_router
-from dispatch.email_templates.views import router as email_template_router
-
-
-from dispatch.signal.views import router as signal_router
-
-# from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
 from dispatch.search_filter.views import router as search_filter_router
 from dispatch.service.views import router as service_router
+from dispatch.signal.views import router as signal_router
 from dispatch.tag.views import router as tag_router
 from dispatch.tag_type.views import router as tag_type_router
 from dispatch.task.views import router as task_router
@@ -61,11 +56,15 @@ from dispatch.workflow.views import router as workflow_router
 
 
 class ErrorMessage(BaseModel):
+    """Represents a single error message."""
+
     msg: str
 
 
 class ErrorResponse(BaseModel):
-    detail: Optional[List[ErrorMessage]]
+    """Defines the structure for API error responses."""
+
+    detail: list[ErrorMessage] | None = None
 
 
 api_router = APIRouter(
@@ -84,6 +83,7 @@ authenticated_api_router = APIRouter()
 
 
 def get_organization_path(organization: OrganizationSlug):
+    """Dependency for validating organization slug in path."""
     pass
 
 
@@ -253,6 +253,7 @@ authenticated_organization_api_router.include_router(
 
 @api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
+    """Simple healthcheck endpoint."""
     return {"status": "ok"}
 
 

@@ -1,29 +1,14 @@
-from typing import Optional, NewType, TypedDict
+"""Models for Slack command payloads in the Dispatch application."""
 
-from pydantic import BaseModel, Field, AnyHttpUrl
+from typing import NewType, TypedDict
+
+from pydantic import BaseModel, AnyHttpUrl
 
 from dispatch.enums import DispatchEnum
 
 
 class SlackCommandPayload(TypedDict):
-    """Example payload values:
-
-    {
-        "token": "fQLoLYUrEun9aDVHEHsPEH8N",
-        "team_id": "T04FZTZLBFE",
-        "team_domain": "netflix",
-        "channel_id": "C06RQGTRSK0",
-        "channel_name": "dispatch-default-test-5405",
-        "user_id": "U04FUR31VCM",
-        "user_name": "wshel",
-        "command": "/dispatch-list-tasks",
-        "text": "",
-        "api_app_id": "A04FGTKNP2B",
-        "is_enterprise_install": "false",
-        "response_url": "https://hooks.slack.com/commands/T04FZTFLBFE/6904042509680/ZDe0xFBOrv88Rr6vUoioc6Tm",
-        "trigger_id": "6866691537272.4543933691524.06904af71159927b69bfe32f47ddd5a5",
-    }
-    """
+    """TypedDict for Slack command payload values."""
 
     token: str
     team_id: str
@@ -41,37 +26,49 @@ class SlackCommandPayload(TypedDict):
 
 
 class SubjectMetadata(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
+    """Base model for subject metadata in Slack payloads."""
+
+    id: str | None = None
+    type: str | None = None
     organization_slug: str = "default"
 
-    project_id: Optional[str]
-    channel_id: Optional[str]
-    thread_id: Optional[str]
+    project_id: str | None = None
+    channel_id: str | None = None
+    thread_id: str | None = None
 
 
 class AddUserMetadata(SubjectMetadata):
+    """Model for metadata when adding users."""
+
     users: list[str]
 
 
 class EngagementMetadata(SubjectMetadata):
+    """Model for engagement-related metadata."""
+
     signal_instance_id: str
     engagement_id: int
-    user: Optional[str]
+    user: str | None = None
 
 
 class TaskMetadata(SubjectMetadata):
-    task_id: Optional[str]
-    resource_id: Optional[str]
+    """Model for task-related metadata."""
+
+    task_id: str | None = None
+    resource_id: str | None = None
     action_type: str
 
 
 class MonitorMetadata(SubjectMetadata):
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    """Model for monitor-related metadata."""
+
+    weblink: AnyHttpUrl | None = None
     plugin_instance_id: int
 
 
 class BlockSelection(BaseModel):
+    """Model for a block selection in Slack forms."""
+
     name: str
     value: str
 
@@ -86,17 +83,25 @@ FormData = NewType(
 
 
 class FormMetadata(SubjectMetadata):
+    """Model for form metadata in Slack payloads."""
+
     form_data: FormData
 
 
 class CaseSubjects(DispatchEnum):
+    """Enum for case subjects."""
+
     case = "case"
 
 
 class IncidentSubjects(DispatchEnum):
+    """Enum for incident subjects."""
+
     incident = "incident"
 
 
 class SignalSubjects(DispatchEnum):
+    """Enum for signal subjects."""
+
     signal = "signal"
     signal_instance = "signal_instance"

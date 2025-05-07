@@ -65,7 +65,7 @@ def create(*, db_session, event_in: EventCreate) -> Event:
 def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
     """Updates an event."""
     event_data = event.dict()
-    update_data = event_in.dict(skip_defaults=True)
+    update_data = event_in.dict(exclude_unset=True)
 
     for field in event_data:
         if field in update_data:
@@ -150,6 +150,8 @@ def log_case_event(
     ended_at: datetime | None = None,
     details: dict | None = None,
     type: str = EventType.other,
+    owner: str = "",
+    pinned: bool = False,
 ) -> Event:
     """Logs an event in the case timeline."""
     uuid = uuid4()
@@ -168,6 +170,8 @@ def log_case_event(
         description=description,
         details=details,
         type=type,
+        owner=owner,
+        pinned=pinned,
     )
     event = create(db_session=db_session, event_in=event_in)
 

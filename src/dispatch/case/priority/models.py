@@ -1,6 +1,5 @@
-from typing import List, Optional
-from pydantic import StrictBool, Field
-from pydantic.color import Color
+"""Models and schemas for the Dispatch case priority system."""
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -13,6 +12,7 @@ from dispatch.project.models import ProjectRead
 
 
 class CasePriority(Base, ProjectMixin):
+    """SQLAlchemy model for a case priority, representing the priority level of a case."""
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -29,32 +29,39 @@ class CasePriority(Base, ProjectMixin):
     search_vector = Column(TSVectorType("name", "description"))
 
 
+default_listener_doc = """Ensure only one default priority per project by listening to the 'default' field."""
+
 listen(CasePriority.default, "set", ensure_unique_default_per_project)
 
 
 # Pydantic models
 class CasePriorityBase(DispatchBase):
-    color: Optional[Color] = Field(None, nullable=True)
-    default: Optional[bool]
-    page_assignee: Optional[StrictBool]
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    """Base Pydantic model for case priority data."""
+    color: str | None = Field(None, nullable=True)
+    default: bool | None
+    page_assignee: bool | None
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
     name: NameStr
-    project: Optional[ProjectRead]
-    view_order: Optional[int]
+    project: ProjectRead | None
+    view_order: int | None
 
 
 class CasePriorityCreate(CasePriorityBase):
+    """Pydantic model for creating a new case priority."""
     pass
 
 
 class CasePriorityUpdate(CasePriorityBase):
+    """Pydantic model for updating a case priority."""
     pass
 
 
 class CasePriorityRead(CasePriorityBase):
-    id: Optional[PrimaryKey]
+    """Pydantic model for reading case priority data."""
+    id: PrimaryKey | None
 
 
 class CasePriorityPagination(Pagination):
-    items: List[CasePriorityRead] = []
+    """Pydantic model for paginated case priority results."""
+    items: list[CasePriorityRead] = []

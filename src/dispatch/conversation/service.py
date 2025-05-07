@@ -61,7 +61,7 @@ def update(
 ) -> Conversation:
     """Updates a conversation."""
     conversation_data = conversation.dict()
-    update_data = conversation_in.dict(skip_defaults=True)
+    update_data = conversation_in.dict(exclude_unset=True)
 
     for field in conversation_data:
         if field in update_data:

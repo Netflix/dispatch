@@ -8,15 +8,16 @@ Create Date: 2022-10-26 16:02:26.996119
 from alembic import op
 import sqlalchemy as sa
 
-from pydantic.types import constr, conint
 
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session
+from pydantic import Field, StringConstraints
+from typing_extensions import Annotated
 
 
-PrimaryKey = conint(gt=0, lt=2147483647)
-NameStr = constr(regex=r"^(?!\s*$).+", strip_whitespace=True, min_length=3)
+PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
+NameStr = Annotated[str, StringConstraints(pattern=r"^.*\S.*$", strip_whitespace=True, min_length=3)]
 
 Base = declarative_base()
 

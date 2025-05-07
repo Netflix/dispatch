@@ -1,7 +1,6 @@
 from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -40,18 +39,14 @@ def get_by_name_or_raise(
     )
 
     if not data_format:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceDataFormat not found.",
-                        source=source_data_format_in.name,
-                    ),
-                    loc="dataFormat",
-                )
-            ],
-            model=SourceDataFormatRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("dataFormat",),
+                "msg": f"SourceDataFormat not found: {source_data_format_in.name}",
+                "type": "value_error",
+                "input": source_data_format_in.name,
+            }
+        ])
 
     return data_format
 
@@ -102,7 +97,7 @@ def update(
 ) -> SourceDataFormat:
     """Updates an existing source."""
     source_data_format_data = source_data_format.dict()
-    update_data = source_data_format_in.dict(skip_defaults=True, exclude={})
+    update_data = source_data_format_in.dict(exclude_unset=True, exclude={})
 
     for field in source_data_format_data:
         if field in update_data:

@@ -25,7 +25,7 @@ class ParticipantRoleBase(DispatchBase):
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
-    role: Optional[ParticipantRoleType]
+    role: ParticipantRoleType
 
 
 class ParticipantRoleUpdate(ParticipantRoleBase):

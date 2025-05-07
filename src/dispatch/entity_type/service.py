@@ -1,10 +1,9 @@
 import logging
 from typing import Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Query, Session
 from jsonpath_ng import parse
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.signal import service as signal_service
 from .models import EntityType, EntityTypeCreate, EntityTypeRead, EntityTypeUpdate
@@ -29,21 +28,23 @@ def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[
 
 def get_by_name_or_raise(
     *, db_session: Session, project_id: int, entity_type_in=EntityTypeRead
-) -> EntityType:
+) -> EntityTypeRead:
     """Returns the entity type specified or raises ValidationError."""
     entity_type = get_by_name(
         db_session=db_session, project_id=project_id, name=entity_type_in.name
     )
 
     if not entity_type:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "EntityTypeRead",
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Entity not found.", entity_type=entity_type_in.name),
-                    loc="entity",
-                )
+                {
+                    "type": "value_error",
+                    "loc": ("entity_type",),
+                    "input": entity_type_in.name,
+                    "ctx": {"error": ValueError("Entity type not found.")},
+                }
             ],
-            model=EntityTypeRead,
         )
 
     return entity_type
@@ -125,7 +126,7 @@ def update(
 ) -> EntityType:
     """Updates an entity type."""
     entity_type_data = entity_type.dict()
-    update_data = entity_type_in.dict(exclude={"jpath"}, skip_defaults=True)
+    update_data = entity_type_in.dict(exclude={"jpath"}, exclude_unset=True)
 
     for field in entity_type_data:
         if field in update_data:

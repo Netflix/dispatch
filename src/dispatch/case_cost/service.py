@@ -86,7 +86,7 @@ def create(*, db_session: Session, case_cost_in: CaseCostCreate) -> CaseCost:
 def update(*, db_session: Session, case_cost: CaseCost, case_cost_in: CaseCostUpdate) -> CaseCost:
     """Updates a case cost."""
     case_cost_data = case_cost.dict()
-    update_data = case_cost_in.dict(skip_defaults=True)
+    update_data = case_cost_in.dict(exclude_unset=True)
 
     for field in case_cost_data:
         if field in update_data:

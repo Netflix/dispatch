@@ -39,7 +39,10 @@ def test_create(session):
         ended_at=ended_at,
         source=source,
         description=description,
+        details={},
         type=EventType.other,
+        owner="owner@example.com",
+        pinned=False,
     )
     event = create(db_session=session, event_in=event_in)
     assert source == event.source
@@ -60,7 +63,10 @@ def test_update(session, event):
         ended_at=ended_at,
         source=source,
         description=description,
+        details={},
         type=EventType.other,
+        owner="owner@example.com",
+        pinned=False,
     )
     event = update(db_session=session, event=event, event_in=event_in)
     assert event.source == source
@@ -91,7 +97,11 @@ def test_log_case_event(session, case):
     source = "Dispatch event source"
     description = "Dispatch event description"
     event = log_case_event(
-        db_session=session, source=source, description=description, case_id=case.id
+        db_session=session, source=source, description=description, case_id=case.id,
+        started_at=datetime.datetime.now(),
+        ended_at=datetime.datetime.now(),
+        details={},
+        type=EventType.other,
     )
     assert event.source == source
     assert event.case_id == case.id

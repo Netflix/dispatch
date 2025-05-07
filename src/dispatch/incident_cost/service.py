@@ -87,7 +87,7 @@ def update(
 ) -> IncidentCost:
     """Updates an incident cost."""
     incident_cost_data = incident_cost.dict()
-    update_data = incident_cost_in.dict(skip_defaults=True)
+    update_data = incident_cost_in.dict(exclude_unset=True)
 
     for field in incident_cost_data:
         if field in update_data:

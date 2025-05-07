@@ -76,7 +76,7 @@ def update(
 ) -> SearchFilter:
     """Updates a search filter."""
     search_filter_data = search_filter.dict()
-    update_data = search_filter_in.dict(skip_defaults=True)
+    update_data = search_filter_in.dict(exclude_unset=True)
 
     for field in search_filter_data:
         if field in update_data:

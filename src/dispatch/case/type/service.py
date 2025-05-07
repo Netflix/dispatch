@@ -1,5 +1,4 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
 
@@ -7,7 +6,6 @@ from dispatch.case import service as case_service
 from dispatch.case_cost import service as case_cost_service
 from dispatch.cost_model import service as cost_model_service
 from dispatch.document import service as document_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.type import service as incident_type_service
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
@@ -31,19 +29,11 @@ def get_default(*, db_session, project_id: int):
 
 
 def get_default_or_raise(*, db_session, project_id: int) -> CaseType:
-    """Returns the default case type or raises a ValidationError if one doesn't exist."""
+    """Returns the default case type or raises a ValueError if one doesn't exist."""
     case_type = get_default(db_session=db_session, project_id=project_id)
 
     if not case_type:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default case type defined."),
-                    loc="case_type",
-                )
-            ],
-            model=CaseTypeRead,
-        )
+        raise ValueError("No default case type defined.")
     return case_type
 
 
@@ -58,19 +48,11 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[CaseType]
 
 
 def get_by_name_or_raise(*, db_session, project_id: int, case_type_in=CaseTypeRead) -> CaseType:
-    """Returns the case type specified or raises a ValidationError."""
+    """Returns the case type specified or raises a ValueError."""
     case_type = get_by_name(db_session=db_session, project_id=project_id, name=case_type_in.name)
 
     if not case_type:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="Case type not found.", case_type=case_type_in.name),
-                    loc="case_type",
-                )
-            ],
-            model=CaseTypeRead,
-        )
+        raise ValueError(f"Case type not found: {case_type_in.name}")
 
     return case_type
 
@@ -190,7 +172,7 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
     case_type_data = case_type.dict()
 
     update_data = case_type_in.dict(
-        skip_defaults=True, exclude={"case_template_document", "oncall_service", "incident_type"}
+        exclude_unset=True, exclude={"case_template_document", "oncall_service", "incident_type"}
     )
 
     for field in case_type_data:

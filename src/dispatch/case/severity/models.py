@@ -1,6 +1,6 @@
-from typing import List, Optional
+"""Models and schemas for the Dispatch case severity system."""
+
 from pydantic import Field
-from pydantic.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -13,6 +13,7 @@ from dispatch.project.models import ProjectRead
 
 
 class CaseSeverity(Base, ProjectMixin):
+    """SQLAlchemy model for a case severity, representing the severity level of a case."""
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -39,26 +40,31 @@ listen(CaseSeverity.default, "set", ensure_unique_default_per_project)
 
 # Pydantic models
 class CaseSeverityBase(DispatchBase):
-    color: Optional[Color] = Field(None, nullable=True)
-    default: Optional[bool]
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
+    """Base Pydantic model for case severity data."""
+    color: str | None = Field(None, nullable=True)
+    default: bool | None
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
     name: NameStr
-    project: Optional[ProjectRead]
-    view_order: Optional[int]
+    project: ProjectRead | None
+    view_order: int | None
 
 
 class CaseSeverityCreate(CaseSeverityBase):
+    """Pydantic model for creating a new case severity."""
     pass
 
 
 class CaseSeverityUpdate(CaseSeverityBase):
+    """Pydantic model for updating a case severity."""
     pass
 
 
 class CaseSeverityRead(CaseSeverityBase):
+    """Pydantic model for reading case severity data."""
     id: PrimaryKey
 
 
 class CaseSeverityPagination(Pagination):
-    items: List[CaseSeverityRead] = []
+    """Pydantic model for paginated case severity results."""
+    items: list[CaseSeverityRead] = []

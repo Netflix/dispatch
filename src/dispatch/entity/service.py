@@ -4,11 +4,10 @@ from typing import Generator, Optional, Sequence, Union, NewType, NamedTuple
 import re
 
 import jsonpath_ng
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.case.models import Case
 from dispatch.entity.models import Entity, EntityCreate, EntityUpdate, EntityRead
@@ -42,17 +41,16 @@ def get_by_name_or_raise(
     entity = get_by_name(db_session=db_session, project_id=project_id, name=entity_in.name)
 
     if not entity:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "EntityRead",
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Entity not found.",
-                        entity=entity_in.name,
-                    ),
-                    loc="entity",
-                )
+                {
+                    "type": "value_error",
+                    "loc": ("entity",),
+                    "input": entity_in.name,
+                    "ctx": {"error_message": "Entity not found."},
+                }
             ],
-            model=EntityRead,
         )
 
     return entity
@@ -151,7 +149,7 @@ def get_by_value_or_create(*, db_session: Session, entity_in: EntityCreate) -> E
 def update(*, db_session: Session, entity: Entity, entity_in: EntityUpdate) -> Entity:
     """Updates an existing entity."""
     entity_data = entity.dict()
-    update_data = entity_in.dict(skip_defaults=True, exclude={"entity_type"})
+    update_data = entity_in.dict(exclude_unset=True, exclude={"entity_type"})
 
     for field in entity_data:
         if field in update_data:
@@ -295,6 +293,7 @@ def find_entities(
                     for match in matches:
                         if isinstance(match.value, str):
                             yield EntityCreate(
+                                id=None,
                                 value=match.value,
                                 entity_type=entity_type,
                                 project=signal_instance.project,

@@ -75,7 +75,7 @@ def update(
     *, db_session, team_contact: TeamContact, team_contact_in: TeamContactUpdate
 ) -> TeamContact:
     team_contact_data = team_contact.dict()
-    update_data = team_contact_in.dict(skip_defaults=True, exclude={"filter"})
+    update_data = team_contact_in.dict(exclude_unset=True, exclude={"filter"})
 
     for field in team_contact_data:
         if field in update_data:

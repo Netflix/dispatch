@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Body, HTTPException, status, Query
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from typing import List
 
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
-from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
@@ -60,12 +59,11 @@ def create_service(
     if service:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A service with this external id already exists."),
-                    loc="external_id",
-                )
+                {
+                    "msg": "A service with this external id already exists.",
+                    "loc": "external_id",
+                }
             ],
-            model=ServiceCreate,
         )
     service = create(db_session=db_session, service_in=service_in)
     return service
@@ -85,8 +83,12 @@ def update_service(db_session: DbSession, service_id: PrimaryKey, service_in: Se
         service = update(db_session=db_session, service=service, service_in=service_in)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A service with this name already exists."), loc="name")],
-            model=ServiceUpdate,
+            [
+                {
+                    "msg": "A service with this name already exists.",
+                    "loc": "name",
+                }
+            ],
         ) from None
 
     return service

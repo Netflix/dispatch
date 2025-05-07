@@ -41,6 +41,7 @@ def test_update_instance(session, plugin_instance):
 
     plugin_instance_in = PluginInstanceUpdate(
         enabled=enabled,
+        configuration={},
     )
     plugin_instance = update_instance(
         db_session=session,

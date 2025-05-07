@@ -11,14 +11,13 @@ from fastapi import (
     Response,
     status,
 )
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
 from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
-from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.rate_limiter import limiter
@@ -311,9 +310,16 @@ def return_single_signal_stats(
     """Gets signal statistics for a specific signal given a named entity and entity type id."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "SignalRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("signal",),
+                    "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
+                }
+            ]
         )
 
     signal_data = get_signal_stats(
@@ -331,9 +337,16 @@ def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
     """Gets a signal by its id."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "SignalRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("signal",),
+                    "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
+                }
+            ]
         )
     return signal
 
@@ -358,9 +371,16 @@ def update_signal(
     """Updates an existing signal."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "SignalRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("signal",),
+                    "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
+                }
+            ]
         )
 
     try:
@@ -369,8 +389,12 @@ def update_signal(
         )
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A signal with this name already exists."), loc="name")],
-            model=SignalUpdate,
+            [
+                {
+                    "msg": "A signal with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         ) from None
 
     return signal
@@ -385,8 +409,15 @@ def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
     """Deletes a signal."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A signal with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "SignalRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("signal",),
+                    "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
+                }
+            ]
         )
     delete(db_session=db_session, signal_id=signal.id)

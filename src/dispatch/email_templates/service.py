@@ -57,7 +57,7 @@ def update(
 ) -> EmailTemplates:
     """Updates an email template."""
     new_template = email_template.dict()
-    update_data = email_template_in.dict(skip_defaults=True)
+    update_data = email_template_in.dict(exclude_unset=True)
 
     for field in new_template:
         if field in update_data:

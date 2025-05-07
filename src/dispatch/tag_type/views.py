@@ -1,9 +1,8 @@
-from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from fastapi import APIRouter
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
-from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
@@ -29,9 +28,16 @@ def get_tag_type(db_session: DbSession, tag_type_id: PrimaryKey):
     """Get a tag type by its id."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A tag type with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "TagTypeRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("tag_type",),
+                    "msg": "Tag type not found.",
+                    "input": tag_type_id,
+                }
+            ]
         )
     return tag_type
 
@@ -44,11 +50,11 @@ def create_tag_type(db_session: DbSession, tag_type_in: TagTypeCreate):
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A tag type with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A tag type with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=TagTypeCreate,
         ) from None
     return tag_type
 
@@ -58,9 +64,16 @@ def update_tag_type(db_session: DbSession, tag_type_id: PrimaryKey, tag_type_in:
     """Update a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A tag type with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "TagTypeRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("tag_type",),
+                    "msg": "Tag type not found.",
+                    "input": tag_type_id,
+                }
+            ]
         )
 
     try:
@@ -68,11 +81,11 @@ def update_tag_type(db_session: DbSession, tag_type_id: PrimaryKey, tag_type_in:
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A tag type with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A tag type with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=TagTypeUpdate,
         ) from None
     return tag_type
 
@@ -82,8 +95,15 @@ def delete_tag_type(db_session: DbSession, tag_type_id: PrimaryKey):
     """Delete a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A tag type with this id does not exist."}],
+        raise ValidationError.from_exception_data(
+            "TagTypeRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("tag_type",),
+                    "msg": "Tag type not found.",
+                    "input": tag_type_id,
+                }
+            ]
         )
     delete(db_session=db_session, tag_type_id=tag_type_id)

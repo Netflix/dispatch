@@ -54,7 +54,7 @@ def update(*, db_session, definition: Definition, definition_in: DefinitionUpdat
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t) for t in definition_in.terms
     ]
-    update_data = definition_in.dict(skip_defaults=True, exclude={"terms"})
+    update_data = definition_in.dict(exclude_unset=True, exclude={"terms"})
 
     for field in definition_data:
         if field in update_data:

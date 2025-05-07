@@ -74,7 +74,7 @@ def update(
     """Updates a notification."""
     notification_data = notification.dict()
     update_data = notification_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={"filters"},
     )
 

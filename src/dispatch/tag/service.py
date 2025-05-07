@@ -1,8 +1,7 @@
 from typing import Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.tag_type import service as tag_type_service
 
@@ -29,18 +28,14 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead) -> Tag
     tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 
     if not tag:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Tag not found.",
-                        tag=tag_in.name,
-                    ),
-                    loc="tag",
-                )
-            ],
-            model=TagRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("tag",),
+                "msg": f"Tag not found: {tag_in.name}",
+                "type": "value_error",
+                "input": tag_in.name,
+            }
+        ])
 
     return tag
 
@@ -80,7 +75,7 @@ def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
 def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
     """Updates an existing tag."""
     tag_data = tag.dict()
-    update_data = tag_in.dict(skip_defaults=True, exclude={"tag_type"})
+    update_data = tag_in.dict(exclude_unset=True, exclude={"tag_type"})
 
     for field in tag_data:
         if field in update_data:

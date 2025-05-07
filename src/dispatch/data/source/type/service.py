@@ -1,7 +1,6 @@
 from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -34,18 +33,14 @@ def get_by_name_or_raise(
     source = get_by_name(db_session=db_session, project_id=project_id, name=source_type_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceType not found.",
-                        source=source_type_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceTypeRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"SourceType not found: {source_type_in.name}",
+                "type": "value_error",
+                "input": source_type_in.name,
+            }
+        ])
 
     return source
 
@@ -92,7 +87,7 @@ def update(
 ) -> SourceType:
     """Updates an existing source."""
     source_type_data = source_type.dict()
-    update_data = source_type_in.dict(skip_defaults=True, exclude={})
+    update_data = source_type_in.dict(exclude_unset=True, exclude={})
 
     for field in source_type_data:
         if field in update_data:

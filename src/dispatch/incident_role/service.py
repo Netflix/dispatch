@@ -2,9 +2,8 @@ import logging
 
 from typing import List, Optional
 from operator import attrgetter
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.models import Incident, ProjectRead
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.type import service as incident_type_service
@@ -75,14 +74,16 @@ def create_or_update(
             role_policy = get(db_session=db_session, incident_role_id=role_policy_in.id)
 
             if not role_policy:
-                raise ValidationError(
+                raise ValidationError.from_exception_data(
+                    "IncidentRoleRead",
                     [
-                        ErrorWrapper(
-                            NotFoundError(msg="Role policy not found."),
-                            loc="id",
-                        )
-                    ],
-                    model=IncidentRoleCreateUpdate,
+                        {
+                            "type": "value_error",
+                            "loc": ("incident_role",),
+                            "msg": "Incident role not found.",
+                            "input": role_policy_in.name,
+                        }
+                    ]
                 )
 
         else:
@@ -91,7 +92,7 @@ def create_or_update(
 
         role_policy_data = role_policy.dict()
         update_data = role_policy_in.dict(
-            skip_defaults=True,
+            exclude_unset=True,
             exclude={
                 "role",  # we don't allow role to be updated
                 "tags",

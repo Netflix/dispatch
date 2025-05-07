@@ -6,7 +6,7 @@ from typing import Optional, Union
 from collections import defaultdict
 
 from fastapi import HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy import asc, desc, or_, func, and_, select, cast
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
@@ -23,7 +23,6 @@ from dispatch.entity.models import Entity
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityType
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.individual import service as individual_service
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
@@ -90,18 +89,12 @@ def get_signal_engagement_by_name_or_raise(
     )
 
     if not signal_engagement:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Signal engagement not found.",
-                        signal_engagement=signal_engagement_in.name,
-                    ),
-                    loc="signalEngagement",
-                )
-            ],
-            model=SignalEngagementRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Signal engagement not found.",
+                "loc": "signalEngagement",
+            }
+        ])
     return signal_engagement
 
 
@@ -140,7 +133,7 @@ def update_signal_engagement(
     """Updates an existing signal engagement."""
     signal_engagement_data = signal_engagement.dict()
     update_data = signal_engagement_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={},
     )
 
@@ -234,7 +227,7 @@ def update_signal_filter(
 
     signal_filter_data = signal_filter.dict()
     update_data = signal_filter_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={},
     )
 
@@ -263,17 +256,12 @@ def get_signal_filter_by_name_or_raise(
     )
 
     if not signal_filter:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Signal Filter not found.", entity_type=signal_filter_in.name
-                    ),
-                    loc="signalFilter",
-                )
-            ],
-            model=SignalFilterRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Signal Filter not found.",
+                "loc": "signalFilter",
+            }
+        ])
     return signal_filter
 
 
@@ -493,7 +481,7 @@ def update(
     """Updates a signal."""
     signal_data = signal.dict()
     update_data = signal_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude=excluded_attributes,
     )
 
@@ -756,7 +744,8 @@ def update_instance(
 
 
 def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
-    """Filters a signal instance for snoozing.
+    """
+    Apply snooze filter actions to the signal instance.
 
     Args:
         db_session (Session): Database session.
@@ -807,7 +796,8 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> Si
 
 
 def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> SignalInstance:
-    """Filters a signal instance for deduplication.
+    """
+    Apply deduplication filter actions to the signal instance.
 
     Args:
         db_session (Session): Database session.

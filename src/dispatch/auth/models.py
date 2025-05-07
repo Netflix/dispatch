@@ -1,14 +1,14 @@
+"""This module defines the models for the Dispatch authentication system."""
+
 import string
 import secrets
-from typing import List
 from datetime import datetime, timedelta
 from uuid import uuid4
 
 import bcrypt
 from jose import jwt
-from typing import Optional
-from pydantic import validator, Field
-from pydantic.networks import EmailStr
+from pydantic import field_validator, Field
+from pydantic import EmailStr
 
 from sqlalchemy import DateTime, Column, String, LargeBinary, Integer, Boolean
 from sqlalchemy.dialects.postgresql import UUID
@@ -29,27 +29,29 @@ from dispatch.project.models import Project, ProjectRead
 
 
 def generate_password():
-    """Generates a reasonable password if none is provided."""
+    """Generate a random, strong password with at least one lowercase, one uppercase, and three digits."""
     alphanumeric = string.ascii_letters + string.digits
     while True:
         password = "".join(secrets.choice(alphanumeric) for i in range(10))
+        # Ensure password meets complexity requirements
         if (
             any(c.islower() for c in password)
-            and any(c.isupper() for c in password)  # noqa
-            and sum(c.isdigit() for c in password) >= 3  # noqa
+            and any(c.isupper() for c in password)
+            and sum(c.isdigit() for c in password) >= 3
         ):
             break
     return password
 
 
 def hash_password(password: str):
-    """Generates a hashed version of the provided password."""
+    """Hash a password using bcrypt."""
     pw = bytes(password, "utf-8")
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(pw, salt)
 
 
 class DispatchUser(Base, TimeStampMixin):
+    """SQLAlchemy model for a Dispatch user."""
     __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
@@ -66,24 +68,25 @@ class DispatchUser(Base, TimeStampMixin):
     )
 
     def verify_password(self, password: str) -> bool:
-        """Verify if provided password matches stored hash"""
+        """Check if the provided password matches the stored hash."""
         if not password or not self.password:
             return False
         return bcrypt.checkpw(password.encode("utf-8"), self.password)
 
     def set_password(self, password: str) -> None:
-        """Set a new password"""
+        """Set a new password for the user."""
         if not password:
             raise ValueError("Password cannot be empty")
         self.password = hash_password(password)
 
     def is_owner(self, organization_slug: str) -> bool:
-        """Check if user is an owner in the given organization"""
+        """Return True if the user is an owner in the given organization."""
         role = self.get_organization_role(organization_slug)
         return role == UserRoles.owner
 
     @property
     def token(self):
+        """Generate a JWT token for the user."""
         now = datetime.utcnow()
         exp = (now + timedelta(seconds=DISPATCH_JWT_EXP)).timestamp()
         data = {
@@ -93,13 +96,14 @@ class DispatchUser(Base, TimeStampMixin):
         return jwt.encode(data, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
 
     def get_organization_role(self, organization_slug: OrganizationSlug):
-        """Gets the user's role for a given organization slug."""
+        """Get the user's role for a given organization slug."""
         for o in self.organizations:
             if o.organization.slug == organization_slug:
                 return o.role
 
 
 class DispatchUserOrganization(Base, TimeStampMixin):
+    """SQLAlchemy model for the relationship between users and organizations."""
     __table_args__ = {"schema": "dispatch_core"}
     dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), primary_key=True)
     dispatch_user = relationship(DispatchUser, backref="organizations")
@@ -111,6 +115,7 @@ class DispatchUserOrganization(Base, TimeStampMixin):
 
 
 class DispatchUserProject(Base, TimeStampMixin):
+    """SQLAlchemy model for the relationship between users and projects."""
     dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), primary_key=True)
     dispatch_user = relationship(DispatchUser, backref="projects")
 
@@ -123,137 +128,159 @@ class DispatchUserProject(Base, TimeStampMixin):
 
 
 class UserProject(DispatchBase):
+    """Pydantic model for a user's project membership."""
     project: ProjectRead
-    default: Optional[bool] = False
-    role: Optional[str] = Field(None, nullable=True)
+    default: bool | None = False
+    role: str | None = Field(None, nullable=True)
 
 
 class UserOrganization(DispatchBase):
+    """Pydantic model for a user's organization membership."""
     organization: OrganizationRead
-    default: Optional[bool] = False
-    role: Optional[str] = Field(None, nullable=True)
+    default: bool | None = False
+    role: str | None = Field(None, nullable=True)
 
 
 class UserBase(DispatchBase):
+    """Base Pydantic model for user data."""
     email: EmailStr
-    projects: Optional[List[UserProject]] = []
-    organizations: Optional[List[UserOrganization]] = []
+    projects: list[UserProject] | None = []
+    organizations: list[UserOrganization] | None = []
 
-    @validator("email")
+    @field_validator("email")
+    @classmethod
     def email_required(cls, v):
+        """Ensure the email field is not empty."""
         if not v:
             raise ValueError("Must not be empty string and must be a email")
         return v
 
 
 class UserLogin(UserBase):
+    """Pydantic model for user login data."""
     password: str
 
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def password_required(cls, v):
+        """Ensure the password field is not empty."""
         if not v:
             raise ValueError("Must not be empty string")
         return v
 
 
 class UserRegister(UserLogin):
-    password: Optional[str] = Field(None, nullable=True)
+    """Pydantic model for user registration data."""
+    password: str = Field(None, nullable=True)
 
-    @validator("password", pre=True, always=True)
+    @field_validator("password", mode="before")
+    @classmethod
     def password_required(cls, v):
-        # we generate a password for those that don't have one
+        """Generate and hash a password if not provided."""
         password = v or generate_password()
         return hash_password(password)
 
 
 class UserLoginResponse(DispatchBase):
-    projects: Optional[List[UserProject]]
-    token: Optional[str] = Field(None, nullable=True)
+    """Pydantic model for the response after user login."""
+    projects: list[UserProject] | None
+    token: str | None = Field(None, nullable=True)
 
 
 class UserRead(UserBase):
+    """Pydantic model for reading user data."""
     id: PrimaryKey
-    role: Optional[str] = Field(None, nullable=True)
-    experimental_features: Optional[bool]
+    role: str | None = Field(None, nullable=True)
+    experimental_features: bool | None
 
 
 class UserUpdate(DispatchBase):
+    """Pydantic model for updating user data."""
     id: PrimaryKey
-    projects: Optional[List[UserProject]]
-    organizations: Optional[List[UserOrganization]]
-    experimental_features: Optional[bool]
-    role: Optional[str] = Field(None, nullable=True)
+    projects: list[UserProject] | None
+    organizations: list[UserOrganization] | None
+    experimental_features: bool | None
+    role: str | None = Field(None, nullable=True)
 
 
 class UserPasswordUpdate(DispatchBase):
-    """Model for password updates only"""
+    """Pydantic model for password updates only."""
     current_password: str
     new_password: str
 
-    @validator("new_password")
+    @field_validator("new_password")
+    @classmethod
     def validate_password(cls, v):
+        """Validate the new password for length and complexity."""
         if not v or len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
-        # Check for at least one number
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one number")
-        # Check for at least one uppercase and one lowercase character
         if not (any(c.isupper() for c in v) and any(c.islower() for c in v)):
             raise ValueError("Password must contain both uppercase and lowercase characters")
         return v
 
-    @validator("current_password")
+    @field_validator("current_password")
+    @classmethod
     def password_required(cls, v):
+        """Ensure the current password is provided."""
         if not v:
             raise ValueError("Current password is required")
         return v
 
 
 class AdminPasswordReset(DispatchBase):
-    """Model for admin password resets"""
+    """Pydantic model for admin password resets."""
     new_password: str
 
-    @validator("new_password")
+    @field_validator("new_password")
+    @classmethod
     def validate_password(cls, v):
+        """Validate the new password for length and complexity."""
         if not v or len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
-        # Check for at least one number
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one number")
-        # Check for at least one uppercase and one lowercase character
         if not (any(c.isupper() for c in v) and any(c.islower() for c in v)):
             raise ValueError("Password must contain both uppercase and lowercase characters")
         return v
 
 
 class UserCreate(DispatchBase):
+    """Pydantic model for creating a new user."""
     email: EmailStr
-    password: Optional[str] = Field(None, nullable=True)
-    projects: Optional[List[UserProject]]
-    organizations: Optional[List[UserOrganization]]
-    role: Optional[str] = Field(None, nullable=True)
+    password: str | None = Field(None, nullable=True)
+    projects: list[UserProject] | None
+    organizations: list[UserOrganization] | None
+    role: str | None = Field(None, nullable=True)
 
-    @validator("password", pre=True)
+    @field_validator("password", mode="before")
+    @classmethod
     def hash(cls, v):
+        """Hash the password before storing."""
         return hash_password(str(v))
 
 
 class UserRegisterResponse(DispatchBase):
-    token: Optional[str] = Field(None, nullable=True)
+    """Pydantic model for the response after user registration."""
+    token: str | None = Field(None, nullable=True)
 
 
 class UserPagination(Pagination):
-    items: List[UserRead] = []
+    """Pydantic model for paginated user results."""
+    items: list[UserRead] = []
 
 
 class MfaChallengeStatus(DispatchEnum):
-    PENDING = "pending"
+    """Enumeration of possible MFA challenge statuses."""
     APPROVED = "approved"
     DENIED = "denied"
     EXPIRED = "expired"
+    PENDING = "pending"
 
 
 class MfaChallenge(Base, TimeStampMixin):
+    """SQLAlchemy model for an MFA challenge event."""
     id = Column(Integer, primary_key=True, autoincrement=True)
     valid = Column(Boolean, default=False)
     reason = Column(String, nullable=True)
@@ -265,10 +292,12 @@ class MfaChallenge(Base, TimeStampMixin):
 
 
 class MfaPayloadResponse(DispatchBase):
+    """Pydantic model for the response to an MFA challenge payload."""
     status: str
 
 
 class MfaPayload(DispatchBase):
+    """Pydantic model for an MFA challenge payload."""
     action: str
     project_id: int
     challenge_id: str

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from slugify import slugify
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
@@ -12,7 +12,6 @@ from dispatch.auth.service import CurrentUser
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.enums import UserRoles
-from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 from dispatch.project import flows as project_flows
 from dispatch.project import service as project_service
@@ -129,10 +128,10 @@ def update_organization(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="An organization with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "An organization with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=OrganizationUpdate,
         ) from None
     return organization

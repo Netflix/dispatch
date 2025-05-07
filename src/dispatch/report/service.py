@@ -49,7 +49,7 @@ def create(*, db_session, report_in: ReportCreate) -> Report:
 def update(*, db_session, report: Report, report_in: ReportUpdate) -> Report:
     """Updates a report."""
     report_data = report.dict()
-    update_data = report_in.dict(skip_defaults=True)
+    update_data = report_in.dict(exclude_unset=True)
 
     for field in report_data:
         if field in update_data:

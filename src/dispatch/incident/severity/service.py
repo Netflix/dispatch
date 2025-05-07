@@ -1,9 +1,8 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -38,14 +37,17 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentSeverity:
     incident_severity = get_default(db_session=db_session, project_id=project_id)
 
     if not incident_severity:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "IncidentSeverityRead",
             [
-                ErrorWrapper(
-                    NotFoundError(msg="No default incident severity defined."),
-                    loc="incident_severity",
-                )
-            ],
-            model=IncidentSeverityRead,
+                {
+                    "type": "value_error",
+                    "loc": ("incident_severity",),
+                    "input": None,
+                    "msg": "No default incident severity defined.",
+                    "ctx": {"error": ValueError("No default incident severity defined.")}
+                }
+            ]
         )
 
     return incident_severity
@@ -70,18 +72,14 @@ def get_by_name_or_raise(
     )
 
     if not incident_severity:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident severity not found.",
-                        incident_severity=incident_severity_in.name,
-                    ),
-                    loc="incident_severity",
-                )
-            ],
-            model=IncidentSeverityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Incident severity not found.",
+                "loc": ("incident_severity",),
+                "type": "value_error.not_found",
+                "incident_severity": incident_severity_in.name,
+            }
+        ])
 
     return incident_severity
 
@@ -135,7 +133,7 @@ def create(*, db_session, incident_severity_in: IncidentSeverityCreate) -> Incid
         **incident_severity_in.dict(exclude={"project", "color"}), project=project
     )
     if incident_severity_in.color:
-        incident_severity.color = incident_severity_in.color.as_hex()
+        incident_severity.color = incident_severity_in.color
 
     db_session.add(incident_severity)
     db_session.commit()
@@ -149,14 +147,14 @@ def update(
     """Updates an incident severity."""
     incident_severity_data = incident_severity.dict()
 
-    update_data = incident_severity_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = incident_severity_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in incident_severity_data:
         if field in update_data:
             setattr(incident_severity, field, update_data[field])
 
     if incident_severity_in.color:
-        incident_severity.color = incident_severity_in.color.as_hex()
+        incident_severity.color = incident_severity_in.color
 
     db_session.commit()
 

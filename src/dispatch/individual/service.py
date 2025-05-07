@@ -1,12 +1,11 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.plugin.models import PluginInstance
 from dispatch.project.models import Project
-from dispatch.exceptions import NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -55,18 +54,14 @@ def get_by_email_and_project_id_or_raise(
     )
 
     if not individual_contact:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Individual not found.",
-                        individual=individual_contact_in.email,
-                    ),
-                    loc="individual",
-                )
-            ],
-            model=IndividualContactRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("individual",),
+                "msg": "Individual not found.",
+                "type": "value_error",
+                "input": individual_contact_in.email,
+            }
+        ])
 
     return individual_contact
 
@@ -154,7 +149,7 @@ def update(
 ) -> IndividualContact:
     """Updates an individual."""
     individual_contact_data = individual_contact.dict()
-    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = individual_contact_in.dict(exclude_unset=True, exclude={"filters"})
 
     for field in individual_contact_data:
         if field in update_data:

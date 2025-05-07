@@ -215,7 +215,7 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
     user_data = user.dict()
 
     update_data = user_in.dict(
-        exclude={"password", "organizations", "projects"}, skip_defaults=True
+        exclude={"password", "organizations", "projects"}, exclude_unset=True
     )
     for field in user_data:
         if field in update_data:
