@@ -12,8 +12,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, Foreig
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, Mapped
-from dispatch.project.models import Project
+from sqlalchemy.orm import relationship
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
@@ -26,12 +25,12 @@ class ProjectMixin(object):
     """Project mixin for adding project relationships to models."""
 
     @declared_attr
-    def project_id(cls) -> Mapped[int]:  # noqa
+    def project_id(cls):  # noqa
         """Returns the project_id column."""
         return Column(Integer, ForeignKey("project.id", ondelete="CASCADE"))
 
     @declared_attr
-    def project(cls) -> Mapped["Project"]:
+    def project(cls):
         """Returns the project relationship."""
         return relationship("Project")
 
@@ -87,18 +86,20 @@ class EvergreenMixin(object):
     def overdue(self):
         """Returns True if the evergreen reminder is overdue."""
         now = datetime.now(timezone.utc)
-        next_reminder = self.evergreen_last_reminder_at + timedelta(
-            days=self.evergreen_reminder_interval
-        )
-        if now >= next_reminder:
-            return True
+        if self.evergreen_last_reminder_at is not None and self.evergreen_reminder_interval is not None:
+            next_reminder = self.evergreen_last_reminder_at + timedelta(
+                days=self.evergreen_reminder_interval
+            )
+            if now >= next_reminder:
+                return True
+        return False
 
     @overdue.expression
-    def overdue(self):
+    def overdue(cls):
         """SQL expression for checking if the evergreen reminder is overdue."""
         return (
-            func.date_part("day", func.now() - self.evergreen_last_reminder_at)
-            >= self.evergreen_reminder_interval  # noqa
+            func.date_part("day", func.now() - cls.evergreen_last_reminder_at)
+            >= cls.evergreen_reminder_interval  # noqa
         )
 
 
