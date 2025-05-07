@@ -273,7 +273,7 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
     assert signal_instance_1.filter_action == SignalFilterAction.none
 
 
-def test_filter_actions_deduplicate(session, signal, project):
+def test_filter_actions_deduplicate(session, entity, signal, project):
     from dispatch.signal.models import (
         SignalFilter,
         SignalInstance,
@@ -281,17 +281,16 @@ def test_filter_actions_deduplicate(session, signal, project):
     )
     from dispatch.signal.service import filter_signal
     from dispatch.entity_type.models import EntityType
-    from dispatch.entity.models import Entity
 
     entity_type = EntityType(
-        name="dedupe1",
+        name="test",
         jpath="id",
         regular_expression=None,
         project=project,
     )
     session.add(entity_type)
+    signal.entity_types.append(entity_type)
 
-    entity = Entity(name="dedupe1", description="test", value="foo", entity_type=entity_type)
     session.add(entity)
 
     # create instance
@@ -299,19 +298,17 @@ def test_filter_actions_deduplicate(session, signal, project):
         raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_1)
-
     signal_instance_2 = SignalInstance(
         raw=json.dumps({"id": "foo"}), project=project, signal=signal, entities=[entity]
     )
     session.add(signal_instance_2)
     session.commit()
+
     # create deduplicate signal filter
     signal_filter = SignalFilter(
-        name="dedupe1",
+        name="test",
         description="test",
-        expression=[
-            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}
-        ],
+        expression=[{"or": [{"model": "Entity", "field": "id", "op": "==", "value": entity.id}]}],
         action=SignalFilterAction.deduplicate,
         window=5,
         project=project,

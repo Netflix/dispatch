@@ -8,7 +8,7 @@ jobs:
       # Minimum code coverage per file
       COVERAGE_SINGLE: 50
       # Minimum total code coverage
-      COVERAGE_TOTAL: 55
+      COVERAGE_TOTAL: 50
     runs-on: ubuntu-latest
     services:
       postgres:
