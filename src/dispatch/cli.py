@@ -266,12 +266,54 @@ def dispatch_database():
     pass
 
 
+def prompt_for_confirmation(command: str) -> bool:
+    """Prompts the user for database details."""
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_NAME
+    from sqlalchemy_utils import database_exists
+
+    database_hostname = click.prompt(
+        f"Please enter the database hostname (env = {DATABASE_HOSTNAME})"
+    )
+    if database_hostname != DATABASE_HOSTNAME:
+        click.secho(
+            f"ERROR: You cannot {command} a database with a different hostname.",
+            fg="red",
+        )
+        return False
+    if database_hostname != "localhost":
+        click.secho(
+            f"Warning: You are about to {command} a remote database.",
+            fg="yellow",
+        )
+    database_name = click.prompt(f"Please enter the database name (env = {DATABASE_NAME})")
+    if database_name != DATABASE_NAME:
+        click.secho(
+            f"ERROR: You cannot {command} a database with a different name.",
+            fg="red",
+        )
+        return False
+    sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
+
+    if database_exists(str(sqlalchemy_database_uri)):
+        if click.confirm(
+            f"Are you sure you want to {command} database: '{database_hostname}:{database_name}'?"
+        ):
+            return True
+    else:
+        click.secho(f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red")
+    return False
+
+
 @dispatch_database.command("init")
 def database_init():
     """Initializes a new database."""
     click.echo("Initializing new database...")
     from .database.core import engine
     from .database.manage import init_database
+
+    if not prompt_for_confirmation("init"):
+        click.secho("Aborting database initialization.", fg="red")
+        return
 
     init_database(engine)
     click.secho("Success.", fg="green")
@@ -293,6 +335,10 @@ def restore_database(dump_file):
         DATABASE_NAME,
         DATABASE_PORT,
     )
+
+    if not prompt_for_confirmation("restore"):
+        click.secho("Aborting database initialization.", fg="red")
+        return
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -366,22 +412,20 @@ def dump_database(dump_file):
 @dispatch_database.command("drop")
 def drop_database():
     """Drops all data in database."""
-    from sqlalchemy_utils import database_exists, drop_database
+    from sqlalchemy_utils import drop_database
 
-    database_hostname = click.prompt(
-        f"Please enter the database hostname (env = {config.DATABASE_HOSTNAME})"
+    if not prompt_for_confirmation("drop"):
+        click.secho("Aborting database drop.", fg="red")
+        return
+
+    sqlalchemy_database_uri = (
+        f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:"
+        f"{config._QUOTED_DATABASE_PASSWORD}@{config.DATABASE_HOSTNAME}:"
+        f"{config.DATABASE_PORT}/{config.DATABASE_NAME}"
     )
-    database_name = click.prompt(f"Please enter the database name (env = {config.DATABASE_NAME})")
-    sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
 
-    if database_exists(str(sqlalchemy_database_uri)):
-        if click.confirm(
-            f"Are you sure you want to drop database: '{database_hostname}:{database_name}'?"
-        ):
-            drop_database(str(sqlalchemy_database_uri))
-            click.secho("Success.", fg="green")
-    else:
-        click.secho(f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red")
+    drop_database(str(sqlalchemy_database_uri))
+    click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("upgrade")
