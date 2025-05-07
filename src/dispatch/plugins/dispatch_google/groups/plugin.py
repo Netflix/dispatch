@@ -104,7 +104,14 @@ def remove_member(client: Any, group_key: str, email: str):
 
 def list_members(client: Any, group_key: str, **kwargs):
     """Lists all members of google group."""
-    return make_call(client.members(), "list", groupKey=group_key, **kwargs)
+    try:
+        return make_call(client.members(), "list", groupKey=group_key, **kwargs)
+    except HttpError as e:
+        if e.resp.status in [404]:
+            log.debug(f"Group does not exist. GroupKey={group_key} Trying to list members.")
+            return
+        else:
+            raise e
 
 
 def create_group(client: Any, name: str, email: str, description: str):
