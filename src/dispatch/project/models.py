@@ -122,7 +122,7 @@ class ProjectBase(DispatchBase):
     report_incident_instructions: Optional[str] = Field(None, nullable=True)
     report_incident_title_hint: Optional[str] = Field(None, nullable=True)
     report_incident_description_hint: Optional[str] = Field(None, nullable=True)
-    snooze_extension_oncall_service: Optional[Service]
+    snooze_extension_oncall_service: Optional[Service] = None
 
 
 class ProjectCreate(ProjectBase):
