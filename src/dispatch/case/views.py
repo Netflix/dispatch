@@ -25,7 +25,7 @@ from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import ParticipantUpdate, ParticipantRead, ParticipantReadMinimal
 from dispatch.individual.models import IndividualContactRead
-from dispatch.individual.service import get_by_email_and_project, get_or_create
+from dispatch.individual.service import get_or_create
 
 from .flows import (
     case_add_or_reactivate_participant_flow,
