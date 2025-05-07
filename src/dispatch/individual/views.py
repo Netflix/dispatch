@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from pydantic import ValidationError
 
 from dispatch.auth.permissions import (
@@ -33,7 +33,7 @@ def get_individual(db_session: DbSession, individual_contact_id: PrimaryKey):
                 {
                     "type": "value_error",
                     "loc": ("individual",),
-                    "msg": f"Individual not found.",
+                    "msg": "Individual not found.",
                     "input": individual_contact_id,
                 }
             ]
@@ -85,7 +85,7 @@ def update_individual(
                 {
                     "type": "value_error",
                     "loc": ("individual",),
-                    "msg": f"Individual not found.",
+                    "msg": "Individual not found.",
                     "input": individual_contact_id,
                 }
             ]
@@ -113,7 +113,7 @@ def delete_individual(db_session: DbSession, individual_contact_id: PrimaryKey):
                 {
                     "type": "value_error",
                     "loc": ("individual",),
-                    "msg": f"Individual not found.",
+                    "msg": "Individual not found.",
                     "input": individual_contact_id,
                 }
             ]

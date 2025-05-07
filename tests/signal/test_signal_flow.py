@@ -3,17 +3,15 @@ from unittest import mock
 import pytest
 
 from dispatch.exceptions import DispatchException
-from dispatch.case.models import CaseReadMinimal, ProjectRead as CaseProjectRead
+from dispatch.case.models import CaseReadMinimal
 from dispatch.service.models import ServiceRead
 from dispatch.project.models import ProjectRead as ProjectReadProject
 from dispatch.case.models import ProjectRead as ProjectReadCase
 from dispatch.signal.models import (
-    SignalInstanceCreate,
     CaseReadMinimal as SignalCaseReadMinimal,
     CasePriorityRead as SignalCasePriorityRead,
     CaseTypeRead as SignalCaseTypeRead,
     ProjectRead as SignalProjectRead,
-    ServiceRead as SignalServiceRead,
 )
 from dispatch.case.severity.models import CaseSeverityRead
 from dispatch.case.type.models import CaseType
@@ -23,12 +21,8 @@ from dispatch.case.type.models import CaseTypeRead
 
 def test_create_signal_instance(session, signal, case_severity, case_priority, user, services):
     from dispatch.signal.flows import create_signal_instance
-    from dispatch.case.priority.models import CasePriorityRead
-    from dispatch.case.type.models import CaseTypeRead
     from dispatch.case.severity.models import CaseSeverityRead
-    from dispatch.project.models import ProjectRead as SignalProjectRead
     from dispatch.service.models import ServiceRead
-    from dispatch.case.models import CaseReadMinimal, ProjectRead as ProjectReadCase
 
     case_priority.default = True
     case_priority.project_id = signal.project_id
@@ -207,13 +201,8 @@ def test_create_signal_instance_not_enabled(session, signal, case_severity, case
 
 def test_create_signal_instance_custom_conversation_target(session, signal, case_severity, case_priority, user, case_type, services):
     from dispatch.signal.flows import create_signal_instance
-    from dispatch.case.priority.models import CasePriorityRead
-    from dispatch.case.type.models import CaseTypeRead
-    from dispatch.project.models import ProjectRead
-    from dispatch.case.models import CaseReadMinimal
     from dispatch.service.models import ServiceRead
     from dispatch.case.severity.models import CaseSeverityRead
-    from dispatch.case.models import ProjectRead as CaseProjectRead
 
     case_priority.default = True
     case_priority.project_id = signal.project_id
@@ -331,9 +320,6 @@ def test_create_signal_instance_custom_conversation_target(session, signal, case
 
 def test_create_signal_instance_custom_oncall_service(session, signal, case_severity, case_priority, user, services):
     from dispatch.signal.flows import create_signal_instance
-    from dispatch.case.priority.models import CasePriorityRead
-    from dispatch.case.type.models import CaseTypeRead
-    from dispatch.case.models import CaseReadMinimal, ProjectRead as ProjectReadCase
     from dispatch.project.models import ProjectRead as ProjectReadProject
 
     service_0, service_1 = services

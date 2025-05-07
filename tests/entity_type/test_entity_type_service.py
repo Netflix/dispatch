@@ -57,7 +57,6 @@ def test_create(session, project):
 def test_update(session, project, entity_type):
     from dispatch.entity_type.models import EntityTypeUpdate
     from dispatch.entity_type.service import update
-    from dispatch.project.models import ProjectRead
     from dispatch.entity_type.models import EntityScopeEnum
 
     name = "Updated name"

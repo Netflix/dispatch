@@ -9,7 +9,6 @@ def test_create(session, organization):
     from dispatch.project.service import create
     from dispatch.project.models import ProjectCreate
     from dispatch.organization.models import OrganizationRead
-    import uuid
     import random
 
     name = "name"

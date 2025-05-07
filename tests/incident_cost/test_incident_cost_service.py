@@ -256,8 +256,7 @@ def test_calculate_incident_response_cost_without_cost_model__update_cost(
 
     from dispatch.incident import service as incident_service
     from dispatch.incident_cost.service import (
-        calculate_incident_response_cost_with_classic_model,
-        get_or_create_default_incident_response_cost
+        calculate_incident_response_cost_with_classic_model
     )
     from dispatch.incident_cost_type import service as incident_cost_type_service
 

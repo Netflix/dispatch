@@ -1,5 +1,4 @@
 import pytest
-from datetime import datetime, timezone
 from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.case.models import CaseReadMinimal
 from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal
@@ -45,8 +44,8 @@ def test_create(session, incident, incident_type, incident_priority):
         # case=... # Similar full population as in other tests
         # participant=... # Similar full population
     )
-    # feedback_obj = create(db_session=session, feedback_in=feedback_in)
-    # assert feedback_obj
+    feedback_obj = create(db_session=session, feedback_in=feedback_in)
+    assert feedback_obj
 
 
 def test_update(session, feedback, individual_contact, case): # Added case fixture

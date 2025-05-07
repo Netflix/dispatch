@@ -43,7 +43,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in: TagTypeRea
                 {
                     "type": "value_error",
                     "loc": ("tag_type",),
-                    "msg": f"Tag type not found.",
+                    "msg": "Tag type not found.",
                     "input": tag_type_in.name,
                 }
             ]

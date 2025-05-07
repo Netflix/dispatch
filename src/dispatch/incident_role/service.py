@@ -80,7 +80,7 @@ def create_or_update(
                         {
                             "type": "value_error",
                             "loc": ("incident_role",),
-                            "msg": f"Incident role not found.",
+                            "msg": "Incident role not found.",
                             "input": role_policy_in.name,
                         }
                     ]

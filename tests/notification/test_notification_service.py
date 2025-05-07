@@ -43,7 +43,6 @@ def test_create(session, project):
 def test_update(session, notification, project):
     from dispatch.notification.service import update
     from dispatch.notification.models import NotificationUpdate, NotificationTypeEnum
-    from dispatch.project.models import ProjectRead
 
     updated_name = "Updated name"
     updated_target = "incident-channel"

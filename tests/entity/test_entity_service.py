@@ -1,8 +1,6 @@
 from dispatch.entity_type.models import EntityType, EntityTypeCreate, EntityTypeUpdate, EntityScopeEnum
-from dispatch.entity_type.models import EntityType, EntityTypeCreate, EntityTypeUpdate, EntityScopeEnum
 from dispatch.entity import service as entity_service
 from tests.factories import SignalInstanceFactory
-from dispatch.project.models import ProjectRead
 from dispatch.project.models import ProjectRead
 
 

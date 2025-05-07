@@ -69,7 +69,6 @@ def test_get_all_by_status(session, new_case: Case):
 
 def test_create(session, participant, case_type, case_severity, case_priority, project, user):
     from dispatch.case.service import create as create_case
-    from dispatch.enums import Visibility
 
     case_type.project = project
     case_severity.project = project
@@ -108,7 +107,6 @@ def test_create__no_conversation_target(
 ):
     """Assert that a case with a dedicated channel can be created without a conversation_target."""
     from dispatch.case.service import create as create_case
-    from dispatch.enums import Visibility
 
     case_type.project = project
     case_type.conversation_target = None
@@ -147,7 +145,6 @@ def test_create__fails_with_no_conversation_target(
 ):
     """Assert that a case without a dedicated channel cannot be created without a conversation_target."""
     from dispatch.case.service import create as create_case
-    from dispatch.enums import Visibility
 
     case_type.project = project
     case_type.conversation_target = None
@@ -187,7 +184,6 @@ def test_create__fails_with_no_conversation_target(
 def test_update(session, case: Case, project):
     from dispatch.case.service import update as update_case
     from dispatch.case.enums import CaseStatus
-    from dispatch.enums import Visibility
 
     current_user = DispatchUser(email="test@netflix.com")
     case.case_type = CaseType(name="Test", project=project)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -34,7 +34,7 @@ def get_tag_type(db_session: DbSession, tag_type_id: PrimaryKey):
                 {
                     "type": "value_error",
                     "loc": ("tag_type",),
-                    "msg": f"Tag type not found.",
+                    "msg": "Tag type not found.",
                     "input": tag_type_id,
                 }
             ]
@@ -70,7 +70,7 @@ def update_tag_type(db_session: DbSession, tag_type_id: PrimaryKey, tag_type_in:
                 {
                     "type": "value_error",
                     "loc": ("tag_type",),
-                    "msg": f"Tag type not found.",
+                    "msg": "Tag type not found.",
                     "input": tag_type_id,
                 }
             ]
@@ -101,7 +101,7 @@ def delete_tag_type(db_session: DbSession, tag_type_id: PrimaryKey):
                 {
                     "type": "value_error",
                     "loc": ("tag_type",),
-                    "msg": f"Tag type not found.",
+                    "msg": "Tag type not found.",
                     "input": tag_type_id,
                 }
             ]

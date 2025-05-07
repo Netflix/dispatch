@@ -1,5 +1,4 @@
 from typing import List, Optional
-from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 

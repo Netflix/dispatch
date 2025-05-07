@@ -1,7 +1,7 @@
 """Shared models and mixins for the Dispatch application."""
 
 from datetime import datetime, timedelta, timezone
-from typing import ClassVar, Any
+from typing import ClassVar
 from typing_extensions import Annotated
 
 from pydantic import EmailStr
@@ -13,6 +13,7 @@ from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped
+from dispatch.project.models import Project
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]

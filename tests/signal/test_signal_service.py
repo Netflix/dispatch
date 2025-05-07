@@ -300,7 +300,6 @@ def test_filter_actions_default_deduplicate(session, signal, project):
     from dispatch.signal.service import filter_signal
     from tests.factories import EntityTypeFactory, EntityFactory, CaseFactory, SignalInstanceFactory
     from datetime import datetime, timedelta
-    import json
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
@@ -353,7 +352,6 @@ def test_filter_actions_deduplicate_different_entities(session, signal, project)
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
     from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
-    import json
 
     entity_type_0 = EntityTypeFactory(project=project)
     session.add(entity_type_0)
@@ -401,7 +399,6 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
     from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
-    import json
 
     entity_type_0 = EntityTypeFactory(project=project)
     session.add(entity_type_0)
@@ -449,7 +446,6 @@ def test_filter_actions_deduplicate(session, signal, project):
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
     from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
-    import json
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
@@ -497,7 +493,6 @@ def test_filter_action_with_dedupe_and_snooze(session, signal, project):
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
     from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
-    import json
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
@@ -552,8 +547,7 @@ def test_filter_actions_snooze(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
-    from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
-    import json
+    from tests.factories import EntityTypeFactory, SignalInstanceFactory, SignalFilterFactory
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
@@ -589,10 +583,8 @@ def test_filter_actions_snooze(session, entity, signal, project):
 
 def test_filter_actions_snooze_expired(session, entity, signal, project):
     from datetime import datetime, timedelta, timezone
-    from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
-    from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
-    import json
+    from tests.factories import EntityTypeFactory, SignalInstanceFactory, SignalFilterFactory
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)

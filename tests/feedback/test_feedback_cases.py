@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from dispatch.feedback.incident.enums import FeedbackRating
 from dispatch.project.models import ProjectRead
 from dispatch.case.models import CaseReadMinimal

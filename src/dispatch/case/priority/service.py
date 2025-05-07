@@ -73,7 +73,7 @@ def get_by_name_or_raise(
                     "type": "value_error",
                     "loc": ("case_priority",),
                     "input": case_priority_in.name,
-                    "msg": f"Value error, Case priority not found.",
+                    "msg": "Value error, Case priority not found.",
                     "ctx": {"error": ValueError(f"Case priority not found: {case_priority_in.name}")}
                 }
             ]

@@ -5,10 +5,6 @@ from dispatch.feedback.service.enums import ServiceFeedbackRating
 from dispatch.individual.models import IndividualContactReadMinimal
 from dispatch.project.models import ProjectRead
 
-from datetime import datetime, timezone
-from dispatch.feedback.service.enums import ServiceFeedbackRating
-from dispatch.individual.models import IndividualContactReadMinimal
-from dispatch.project.models import ProjectRead
 
 
 def test_create(session, participant, project):

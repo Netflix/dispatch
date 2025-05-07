@@ -35,7 +35,6 @@ def get_by_name_or_raise(
     )
 
     if not entity_type:
-        from dispatch.entity_type.models import EntityTypeRead
         raise ValidationError.from_exception_data(
             "EntityTypeRead",
             [
