@@ -1,7 +1,6 @@
 import base64
 import logging
 import os
-from typing import List
 from urllib import parse
 
 from pydantic import BaseModel
@@ -15,7 +14,7 @@ class BaseConfigurationModel(BaseModel):
     pass
 
 
-def get_env_tags(tag_list: List[str]) -> dict:
+def get_env_tags(tag_list: list[str]) -> dict:
     """Create dictionary of available env tags."""
     tags = {}
     for t in tag_list:

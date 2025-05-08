@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from dispatch.config import DISPATCH_AUTH_REGISTRATION_ENABLED
 
@@ -10,11 +10,6 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
 )
 from dispatch.auth.service import CurrentUser
-from dispatch.exceptions import (
-    InvalidConfigurationError,
-    InvalidPasswordError,
-    InvalidUsernameError,
-)
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.enums import UserRoles
@@ -99,12 +94,11 @@ def create_user(
     if user:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    InvalidConfigurationError(msg="A user with this email already exists."),
-                    loc="email",
-                )
-            ],
-            model=UserCreate,
+                {
+                    "msg": "A user with this email already exists.",
+                    "loc": "email",
+                }
+            ]
         )
 
     current_user_organization_role = current_user.get_organization_role(organization)
@@ -302,18 +296,21 @@ def login_user(
             )
         return {"projects": projects, "token": user.token}
 
-    raise ValidationError(
-        [
-            ErrorWrapper(
-                InvalidUsernameError(msg="Invalid username."),
-                loc="username",
-            ),
-            ErrorWrapper(
-                InvalidPasswordError(msg="Invalid password."),
-                loc="password",
-            ),
+    # Pydantic v2 compatible error handling
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=[
+            {
+                "msg": "Invalid username.",
+                "loc": ["username"],
+                "type": "value_error",
+            },
+            {
+                "msg": "Invalid password.",
+                "loc": ["password"],
+                "type": "value_error",
+            },
         ],
-        model=UserLogin,
     )
 
 
@@ -324,14 +321,16 @@ def register_user(
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    InvalidConfigurationError(msg="A user with this email already exists."),
-                    loc="email",
-                )
+        # Pydantic v2 compatible error handling
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "A user with this email already exists.",
+                    "loc": ["email"],
+                    "type": "value_error",
+                }
             ],
-            model=UserRegister,
         )
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)

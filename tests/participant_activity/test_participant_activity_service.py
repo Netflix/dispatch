@@ -4,11 +4,15 @@ def test_create_participant_activity(session, plugin_event, participant, inciden
         get_all_incident_participant_activities_for_incident,
     )
     from dispatch.participant_activity.models import ParticipantActivityCreate
+    from datetime import datetime, timezone
 
+    # Add required fields started_at and ended_at
     activity_in = ParticipantActivityCreate(
         plugin_event=plugin_event,
         participant=participant,
         incident=incident,
+        started_at=datetime.now(timezone.utc),
+        ended_at=datetime.now(timezone.utc),
     )
 
     activity_out = create(db_session=session, activity_in=activity_in)

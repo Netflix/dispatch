@@ -1,7 +1,5 @@
-from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.incident import service as incident_service
 from dispatch.service import service as service_service
@@ -17,12 +15,12 @@ from dispatch.data.source.transport import service as transport_service
 from .models import Source, SourceCreate, SourceUpdate, SourceRead
 
 
-def get(*, db_session, source_id: int) -> Optional[Source]:
+def get(*, db_session, source_id: int) -> Source | None:
     """Gets a source by its id."""
     return db_session.query(Source).filter(Source.id == source_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Source]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Source | None:
     """Gets a source by its name."""
     return (
         db_session.query(Source)
@@ -37,23 +35,19 @@ def get_by_name_or_raise(*, db_session, project_id, source_in: SourceRead) -> So
     source = get_by_name(db_session=db_session, project_id=project_id, name=source_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Source not found.",
-                        source=source_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"Source not found: {source_in.name}",
+                "type": "value_error",
+                "input": source_in.name,
+            }
+        ])
 
     return source
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Source]]:
+def get_all(*, db_session, project_id: int) -> list[Source | None]:
     """Gets all sources."""
     return db_session.query(Source).filter(Source.project_id == project_id)
 
@@ -172,7 +166,7 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     source_data = source.dict()
 
     update_data = source_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "project",
             "owner",

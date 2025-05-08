@@ -1,13 +1,10 @@
-from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
 from dispatch.case import service as case_service
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.document import service as document_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
@@ -25,13 +22,15 @@ from .models import (
     WorkflowUpdate,
 )
 
+from pydantic import ValidationError
 
-def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
+
+def get(*, db_session, workflow_id: int) -> Workflow | None:
     """Returns a workflow based on the given workflow id."""
     return db_session.query(Workflow).filter(Workflow.id == workflow_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
+def get_by_name(*, db_session, name: str) -> Workflow | None:
     """Returns a workflow based on the given workflow name."""
     return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
 
@@ -40,24 +39,21 @@ def get_by_name_or_raise(*, db_session: Session, workflow_in: WorkflowRead) -> W
     workflow = get_by_name(db_session=db_session, name=workflow_in.name)
 
     if not workflow:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="Workflow not found.", workflow=workflow_in.name),
-                    loc="workflow",
-                )
-            ],
-            model=WorkflowRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Workflow not found.",
+                "loc": "workflow",
+            }
+        ])
     return workflow
 
 
-def get_all(*, db_session) -> List[Optional[Workflow]]:
+def get_all(*, db_session) -> list[Workflow | None]:
     """Returns all workflows."""
     return db_session.query(Workflow)
 
 
-def get_enabled(*, db_session, project_id: int = None) -> List[Optional[Workflow]]:
+def get_enabled(*, db_session, project_id: int = None) -> list[Workflow | None]:
     """Fetches all enabled workflows."""
     if project_id:
         return (
@@ -91,7 +87,7 @@ def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
 def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Workflow:
     """Updates a workflow."""
     workflow_data = workflow.dict()
-    update_data = workflow_in.dict(skip_defaults=True, exclude={"plugin_instance"})
+    update_data = workflow_in.dict(exclude_unset=True, exclude={"plugin_instance"})
 
     for field in workflow_data:
         if field in update_data:
@@ -120,7 +116,7 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
     )
 
 
-def get_running_instances(*, db_session, project_id: int) -> List[WorkflowInstance]:
+def get_running_instances(*, db_session, project_id: int) -> list[WorkflowInstance]:
     """Fetches all running instances."""
     return (
         db_session.query(WorkflowInstance)
@@ -194,11 +190,11 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
     """Updates an existing workflow instance."""
     instance_data = instance.dict()
     update_data = instance_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={"incident", "case", "signal", "workflow", "creator", "artifacts"},
     )
 
-    for a in instance_in.artifacts:
+    for a in instance_in.artifacts or []:
         artifact_document = document_service.get_or_create(db_session=db_session, document_in=a)
         instance.artifacts.append(artifact_document)
 

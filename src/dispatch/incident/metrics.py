@@ -4,7 +4,6 @@ import math
 from calendar import monthrange
 from datetime import date
 from itertools import groupby
-from typing import List
 
 import pandas as pd
 from sqlalchemy import and_
@@ -32,7 +31,7 @@ def create_incident_metric_query(
     db_session,
     end_date: date,
     start_date: date = None,
-    filter_spec: List[dict] | str | None = None,
+    filter_spec: list[dict] | str | None = None,
 ):
     """Fetches eligible incidents."""
     query = db_session.query(Incident)
@@ -55,7 +54,7 @@ def create_incident_metric_query(
     return query.all()
 
 
-def make_forecast(incidents: List[Incident]):
+def make_forecast(incidents: list[Incident]):
     """Makes an incident forecast."""
     incidents_sorted = sorted(incidents, key=month_grouper)
 

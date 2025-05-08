@@ -2,7 +2,6 @@ import logging
 
 from sqlalchemy.orm import Session
 from schedule import every
-from typing import List
 
 from dispatch.database.core import resolve_attr
 from dispatch.decorators import scheduled_project_task, timer
@@ -30,7 +29,7 @@ def run_monitors(
     db_session: Session,
     project: Project,
     monitor_plugin: Plugin,
-    incidents: List[Incident],
+    incidents: list[Incident],
     notify: bool = False,
 ):
     """Performs monitor run."""

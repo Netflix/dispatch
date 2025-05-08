@@ -1,12 +1,10 @@
-from typing import List
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.case.service import get as get_case
 from dispatch.database.core import DbSession
-from dispatch.exceptions import ExistsError
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 from dispatch.signal.models import SignalInstanceRead
@@ -48,8 +46,12 @@ def create_entity_type(db_session: DbSession, entity_type_in: EntityTypeCreate):
         entity_type = create(db_session=db_session, entity_type_in=entity_type_in)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
-            model=EntityTypeCreate,
+            [
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         ) from None
     return entity_type
 
@@ -63,13 +65,17 @@ def create_entity_type_with_case(
         entity_type = create(db_session=db_session, entity_type_in=entity_type_in, case_id=case_id)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="An entity with this name already exists."), loc="name")],
-            model=EntityTypeCreate,
+            [
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         ) from None
     return entity_type
 
 
-@router.put("/recalculate/{entity_type_id}/{case_id}", response_model=List[SignalInstanceRead])
+@router.put("/recalculate/{entity_type_id}/{case_id}", response_model=list[SignalInstanceRead])
 def recalculate(db_session: DbSession, entity_type_id: PrimaryKey, case_id: PrimaryKey):
     """Recalculates the associated entities for all signal instances in a case."""
     entity_type = get(
@@ -131,11 +137,11 @@ def update_entity_type(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A entity type with this name already exists."), loc="name"
-                )
-            ],
-            model=EntityTypeUpdate,
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         ) from None
     return entity_type
 
@@ -161,11 +167,11 @@ def process_entity_type(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A entity type with this name already exists."), loc="name"
-                )
-            ],
-            model=EntityTypeUpdate,
+                {
+                    "msg": "An entity with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         ) from None
     return entity_type
 

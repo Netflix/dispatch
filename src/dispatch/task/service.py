@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
 
 from sqlalchemy import or_
 
@@ -17,29 +16,29 @@ from .enums import TaskStatus
 from .models import Task, TaskCreate, TaskUpdate
 
 
-def get(*, db_session, task_id: int) -> Optional[Task]:
+def get(*, db_session, task_id: int) -> Task | None:
     """Get a single task by id."""
     return db_session.query(Task).filter(Task.id == task_id).first()
 
 
-def get_by_resource_id(*, db_session, resource_id: str) -> Optional[Task]:
+def get_by_resource_id(*, db_session, resource_id: str) -> Task | None:
     """Get a single task by resource id."""
     return db_session.query(Task).filter(Task.resource_id == resource_id).one_or_none()
 
 
-def get_all(*, db_session) -> List[Optional[Task]]:
+def get_all(*, db_session) -> list[Task | None]:
     """Return all tasks."""
     return db_session.query(Task)
 
 
-def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Task]]:
+def get_all_by_incident_id(*, db_session, incident_id: int) -> list[Task | None]:
     """Get all tasks by incident id."""
     return db_session.query(Task).filter(Task.incident_id == incident_id)
 
 
 def get_all_by_incident_id_and_status(
     *, db_session, incident_id: int, status: str
-) -> List[Optional[Task]]:
+) -> list[Task | None]:
     """Get all tasks by incident id and status."""
     return (
         db_session.query(Task)
@@ -49,7 +48,7 @@ def get_all_by_incident_id_and_status(
     )
 
 
-def get_overdue_tasks(*, db_session, project_id: int) -> List[Optional[Task]]:
+def get_overdue_tasks(*, db_session, project_id: int) -> list[Task | None]:
     """Returns all tasks that have not been resolved and are past due date."""
     # TODO ensure that we don't send reminders more than their interval
     return (
@@ -184,9 +183,7 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
                 user_email=task_in.owner.individual.email,
             )
 
-    update_data = task_in.dict(
-        skip_defaults=True, exclude={"assignees", "owner", "creator", "incident"}
-    )
+    update_data = task_in.dict(exclude_unset=True, exclude={"assignees", "owner", "creator", "incident"})
 
     for field in update_data.keys():
         setattr(task, field, update_data[field])

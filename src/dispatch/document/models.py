@@ -1,9 +1,8 @@
+"""Models for document resources in the Dispatch application."""
 from datetime import datetime
-from typing import List, Optional
 from collections import defaultdict
 
-from pydantic import validator, Field
-from dispatch.models import EvergreenBase, NameStr, PrimaryKey
+from pydantic import field_validator
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -17,11 +16,11 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import DOCUMENT_DESCRIPTIONS
+from dispatch.models import EvergreenBase, NameStr, PrimaryKey
 from dispatch.models import ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin, Pagination
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
 from dispatch.tag.models import TagRead
-
 
 # Association tables for many to many relationships
 assoc_document_filters = Table(
@@ -42,6 +41,7 @@ assoc_document_tags = Table(
 
 
 class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
+    """SQLAlchemy model for document resources."""
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -62,24 +62,29 @@ class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
 
 # Pydantic models...
 class DocumentBase(ResourceBase, EvergreenBase):
-    description: Optional[str] = Field(None, nullable=True)
+    """Base Pydantic model for document resources."""
+    description: str | None = None
     name: NameStr
-    created_at: Optional[datetime] = Field(None, nullable=True)
-    updated_at: Optional[datetime] = Field(None, nullable=True)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class DocumentCreate(DocumentBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    """Pydantic model for creating a document resource."""
+    filters: list[SearchFilterRead] | None = []
     project: ProjectRead
-    tags: Optional[List[TagRead]] = []
+    tags: list[TagRead] | None = []
 
 
 class DocumentUpdate(DocumentBase):
-    filters: Optional[List[SearchFilterRead]]
-    tags: Optional[List[TagRead]] = []
+    """Pydantic model for updating a document resource."""
+    filters: list[SearchFilterRead] | None
+    tags: list[TagRead] | None = []
 
-    @validator("tags")
+    @field_validator("tags")
+    @classmethod
     def find_exclusive(cls, v):
+        """Ensures only one exclusive tag per tag type is applied."""
         if v:
             exclusive_tags = defaultdict(list)
             for tag in v:
@@ -95,18 +100,21 @@ class DocumentUpdate(DocumentBase):
 
 
 class DocumentRead(DocumentBase):
+    """Pydantic model for reading a document resource."""
     id: PrimaryKey
-    filters: Optional[List[SearchFilterRead]] = []
-    project: Optional[ProjectRead]
-    tags: Optional[List[TagRead]] = []
+    filters: list[SearchFilterRead] | None = []
+    project: ProjectRead | None
+    tags: list[TagRead] | None = []
 
-    @validator("description", pre=True, always=True)
+    @field_validator("description", mode="before")
+    @classmethod
     def set_description(cls, v, values):
-        """Sets the description"""
+        """Sets the description for the document resource."""
         if not v:
             return DOCUMENT_DESCRIPTIONS.get(values["resource_type"], "No Description")
         return v
 
 
 class DocumentPagination(Pagination):
-    items: List[DocumentRead] = []
+    """Pydantic model for paginated document results."""
+    items: list[DocumentRead] = []

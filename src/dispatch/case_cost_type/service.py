@@ -1,4 +1,4 @@
-from typing import List, Optional
+from datetime import datetime, timezone
 
 from dispatch.case.enums import CostModelType
 from dispatch.project import service as project_service
@@ -11,14 +11,14 @@ from .models import (
 )
 
 
-def get(*, db_session, case_cost_type_id: int) -> Optional[CaseCostType]:
+def get(*, db_session, case_cost_type_id: int) -> CaseCostType | None:
     """Gets a case cost type by its id."""
     return db_session.query(CaseCostType).filter(CaseCostType.id == case_cost_type_id).one_or_none()
 
 
 def get_response_cost_type(
     *, db_session, project_id: int, model_type: str
-) -> Optional[CaseCostType]:
+) -> CaseCostType | None:
     """Gets the default response cost type."""
     return (
         db_session.query(CaseCostType)
@@ -45,6 +45,7 @@ def get_or_create_response_cost_type(
             editable=default_case_cost_type["editable"],
             project=project_service.get(db_session=db_session, project_id=project_id),
             model_type=model_type,
+            created_at=datetime.now(timezone.utc),
         )
         case_cost_type = create(db_session=db_session, case_cost_type_in=case_cost_type_in)
 
@@ -53,7 +54,7 @@ def get_or_create_response_cost_type(
 
 def get_all_response_case_cost_types(
     *, db_session, project_id: int
-) -> List[Optional[CaseCostType]]:
+) -> list[CaseCostType | None]:
     """Returns all response case cost types.
 
     This function queries the database for all case cost types that are marked as the response cost type.
@@ -75,7 +76,7 @@ def get_all_response_case_cost_types(
     )
 
 
-def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> Optional[CaseCostType]:
+def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> CaseCostType | None:
     """Gets a case cost type by its name."""
     return (
         db_session.query(CaseCostType)
@@ -85,7 +86,7 @@ def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> Opt
     )
 
 
-def get_all(*, db_session) -> List[Optional[CaseCostType]]:
+def get_all(*, db_session) -> list[CaseCostType | None]:
     """Gets all case cost types."""
     return db_session.query(CaseCostType).all()
 
@@ -109,7 +110,7 @@ def update(
 ) -> CaseCostType:
     """Updates a case cost type."""
     case_cost_data = case_cost_type.dict()
-    update_data = case_cost_type_in.dict(skip_defaults=True)
+    update_data = case_cost_type_in.dict(exclude_unset=True)
 
     for field in case_cost_data:
         if field in update_data:

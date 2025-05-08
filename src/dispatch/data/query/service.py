@@ -1,7 +1,5 @@
-from typing import Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
 from dispatch.data.source import service as source_service
@@ -9,12 +7,12 @@ from dispatch.data.source import service as source_service
 from .models import Query, QueryCreate, QueryUpdate, QueryRead
 
 
-def get(*, db_session, query_id: int) -> Optional[Query]:
+def get(*, db_session, query_id: int) -> Query | None:
     """Gets a query by its id."""
     return db_session.query(Query).filter(Query.id == query_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Query]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Query | None:
     """Gets a query by its name."""
     return (
         db_session.query(Query)
@@ -29,18 +27,14 @@ def get_by_name_or_raise(*, db_session, query_in: QueryRead, project_id: int) ->
     query = get_by_name(db_session=db_session, name=query_in.name, project_id=project_id)
 
     if not query:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Query not found.",
-                        query=query_in.name,
-                    ),
-                    loc="query",
-                )
-            ],
-            model=QueryRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("query",),
+                "msg": f"Query not found: {query_in.name}",
+                "type": "value_error",
+                "input": query_in.name,
+            }
+        ])
 
     return query
 
@@ -93,7 +87,7 @@ def get_or_create(*, db_session, query_in: QueryCreate) -> Query:
 def update(*, db_session, query: Query, query_in: QueryUpdate) -> Query:
     """Updates an existing query."""
     query_data = query.dict()
-    update_data = query_in.dict(skip_defaults=True, exclude={})
+    update_data = query_in.dict(exclude_unset=True, exclude={})
 
     source = source_service.get_by_name_or_raise(
         db_session=db_session, project_id=query.project.id, source_in=query_in.source

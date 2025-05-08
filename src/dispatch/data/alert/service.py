@@ -1,18 +1,16 @@
-from typing import Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 
 from .models import Alert, AlertCreate, AlertRead, AlertUpdate
 
 
-def get(*, db_session, alert_id: int) -> Optional[Alert]:
+def get(*, db_session, alert_id: int) -> Alert | None:
     """Gets an alert by its id."""
     return db_session.query(Alert).filter(Alert.id == alert_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Alert]:
+def get_by_name(*, db_session, name: str) -> Alert | None:
     """Gets a alert by its name."""
     return db_session.query(Alert).filter(Alert.name == name).one_or_none()
 
@@ -24,15 +22,12 @@ def get_by_name_or_raise(*, db_session, alert_in: AlertRead) -> AlertRead:
     if not alert:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Alert not found.",
-                        alert=alert_in.name,
-                    ),
-                    loc="alert",
-                )
-            ],
-            model=AlertRead,
+                {
+                    "msg": "Alert not found.",
+                    "alert": alert_in.name,
+                    "loc": ["alert"],
+                }
+            ]
         )
 
     return alert
@@ -69,7 +64,7 @@ def get_or_create(*, db_session, alert_in: AlertCreate) -> Alert:
 def update(*, db_session, alert: Alert, alert_in: AlertUpdate) -> Alert:
     """Updates an existing alert."""
     alert_data = alert.dict()
-    update_data = alert_in.dict(skip_defaults=True, exclude={})
+    update_data = alert_in.dict(exclude_unset=True, exclude={})
 
     for field in alert_data:
         if field in update_data:

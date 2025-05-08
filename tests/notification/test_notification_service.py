@@ -2,6 +2,7 @@ def test_get(session, notification):
     from dispatch.notification.service import get
 
     t_notification = get(db_session=session, notification_id=notification.id)
+    assert t_notification is not None
     assert t_notification.id == notification.id
 
 
@@ -14,41 +15,56 @@ def test_get_all(session, notifications):
 
 def test_create(session, project):
     from dispatch.notification.service import create
-    from dispatch.notification.models import NotificationCreate
+    from dispatch.notification.models import NotificationCreate, NotificationTypeEnum
+    from dispatch.project.models import ProjectRead
 
-    name = "name"
-    description = "description"
-    type = "email"
-    target = "target"
+    name = "test_notification_name"
+    description = "test_notification_description"
+    notif_type = NotificationTypeEnum.email
+    target = "test_target@example.com"
     enabled = True
 
     notification_in = NotificationCreate(
         name=name,
         description=description,
-        type=type,
+        type=notif_type,
         target=target,
         enabled=enabled,
-        project=project,
+        project=ProjectRead.model_validate(project),
+        filters=[]
     )
-    notification = create(db_session=session, notification_in=notification_in)
-    assert notification
+    created_notification = create(db_session=session, notification_in=notification_in)
+    assert created_notification is not None
+    assert created_notification.name == name
+    assert created_notification.type == notif_type.value
+    assert created_notification.project.id == project.id
 
 
-def test_update(session, notification):
+def test_update(session, notification, project):
     from dispatch.notification.service import update
-    from dispatch.notification.models import NotificationUpdate
+    from dispatch.notification.models import NotificationUpdate, NotificationTypeEnum
 
-    name = "Updated name"
-    target = "incident-channel"
-    type = "conversation"
+    updated_name = "Updated name"
+    updated_target = "incident-channel"
+    updated_type = NotificationTypeEnum.conversation
 
-    notification_in = NotificationUpdate(name=name, target=target, type=type)
-    notification = update(
+    notification_in = NotificationUpdate(
+        name=updated_name,
+        target=updated_target,
+        type=updated_type,
+        description=notification.description,
+        enabled=notification.enabled,
+        filters=[]
+    )
+    updated_notification_obj = update(
         db_session=session,
         notification=notification,
         notification_in=notification_in,
     )
-    assert notification.name == name
+    assert updated_notification_obj is not None
+    assert updated_notification_obj.name == updated_name
+    assert updated_notification_obj.target == updated_target
+    assert updated_notification_obj.type == updated_type.value
 
 
 def test_delete(session, notification):

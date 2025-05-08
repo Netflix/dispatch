@@ -1,4 +1,3 @@
-from typing import List, Optional
 from datetime import datetime, timedelta
 
 from .models import (
@@ -11,7 +10,7 @@ from dispatch.project.models import Project
 
 def get_all_expired_reminders_by_project_id(
     *, db_session, project_id: int
-) -> List[Optional[ServiceFeedbackReminder]]:
+) -> list[ServiceFeedbackReminder | None]:
     """Returns all expired reminders by project id."""
     return (
         db_session.query(ServiceFeedbackReminder)
@@ -37,7 +36,7 @@ def update(
 ) -> ServiceFeedbackReminder:
     """Updates a service feedback reminder."""
     reminder_data = reminder.dict()
-    update_data = reminder_in.dict(skip_defaults=True)
+    update_data = reminder_in.dict(exclude_unset=True)
 
     for field in reminder_data:
         if field in update_data:

@@ -1,7 +1,5 @@
-from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -12,7 +10,7 @@ from .models import (
 )
 
 
-def get(*, db_session, source_environment_id: int) -> Optional[SourceEnvironment]:
+def get(*, db_session, source_environment_id: int) -> SourceEnvironment | None:
     """Gets a source by its id."""
     return (
         db_session.query(SourceEnvironment)
@@ -21,7 +19,7 @@ def get(*, db_session, source_environment_id: int) -> Optional[SourceEnvironment
     )
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceEnvironment]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceEnvironment | None:
     """Gets a source by its name."""
     return (
         db_session.query(SourceEnvironment)
@@ -42,23 +40,19 @@ def get_by_name_or_raise(
     )
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Source environment not found.",
-                        source=source_environment_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceEnvironmentRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"Source environment not found: {source_environment_in.name}",
+                "type": "value_error",
+                "input": source_environment_in.name,
+            }
+        ])
 
     return source
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceEnvironment]]:
+def get_all(*, db_session, project_id: int) -> list[SourceEnvironment | None]:
     """Gets all sources."""
     return db_session.query(SourceEnvironment).filter(SourceEnvironment.project_id == project_id)
 
@@ -106,7 +100,7 @@ def update(
 ) -> SourceEnvironment:
     """Updates an existing source."""
     source_environment_data = source_environment.dict()
-    update_data = source_environment_in.dict(skip_defaults=True, exclude={})
+    update_data = source_environment_in.dict(exclude_unset=True, exclude={})
 
     for field in source_environment_data:
         if field in update_data:

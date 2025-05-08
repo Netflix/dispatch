@@ -1,6 +1,5 @@
 import logging
 
-from typing import List, Optional, Type
 
 from dispatch.database.core import Base
 from dispatch.models import PrimaryKey
@@ -14,7 +13,7 @@ from .models import Notification, NotificationCreate, NotificationUpdate
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, notification_id: int) -> Optional[Notification]:
+def get(*, db_session, notification_id: int) -> Notification | None:
     """Gets a notification by id."""
     return db_session.query(Notification).filter(Notification.id == notification_id).one_or_none()
 
@@ -24,7 +23,7 @@ def get_all(*, db_session):
     return db_session.query(Notification)
 
 
-def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notification]]:
+def get_all_enabled(*, db_session, project_id: int) -> list[Notification | None]:
     """Gets all enabled notifications."""
     return (
         db_session.query(Notification)
@@ -35,7 +34,7 @@ def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notificatio
 
 def get_overdue_evergreen_notifications(
     *, db_session, project_id: int
-) -> List[Optional[Notification]]:
+) -> list[Notification | None]:
     """Returns all notifications that have not had a recent evergreen notification."""
     query = (
         db_session.query(Notification)
@@ -74,7 +73,7 @@ def update(
     """Updates a notification."""
     notification_data = notification.dict()
     update_data = notification_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={"filters"},
     )
 
@@ -134,7 +133,7 @@ def filter_and_send(
     *,
     db_session,
     project_id: PrimaryKey,
-    class_instance: Type[Base],
+    class_instance: type[Base],
     notification_params: dict = None,
 ):
     """Sends notifications."""

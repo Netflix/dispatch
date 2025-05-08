@@ -2,7 +2,6 @@ import functools
 import heapq
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from blockkit import Message, Section
 from requests import Timeout
@@ -285,7 +284,7 @@ def get_user_avatar_url(client: WebClient, email: str) -> str:
     return get_user_info_by_email(client, email)["profile"]["image_512"]
 
 
-def get_conversations_by_user_id(client: WebClient, user_id: str, type: str) -> List[Conversation]:
+def get_conversations_by_user_id(client: WebClient, user_id: str, type: str) -> list[Conversation]:
     result = make_call(
         client,
         SlackAPIGetEndpoints.users_conversations,
@@ -434,7 +433,7 @@ def add_users_to_conversation_thread(
         send_message(client=client, conversation_id=conversation_id, blocks=blocks, ts=thread_id)
 
 
-def add_users_to_conversation(client: WebClient, conversation_id: str, user_ids: List[str]) -> None:
+def add_users_to_conversation(client: WebClient, conversation_id: str, user_ids: list[str]) -> None:
     """Add users to conversation."""
     # NOTE this will trigger a member_joined_channel event, which we will capture and run
     # the incident.incident_add_or_reactivate_participant_flow() as a result
@@ -466,7 +465,7 @@ def send_message(
     conversation_id: str,
     text: str = None,
     ts: str = None,
-    blocks: List[Dict] = None,
+    blocks: list[dict] = None,
     persist: bool = False,
 ) -> dict:
     """Sends a message to the given conversation."""
@@ -495,7 +494,7 @@ def update_message(
     conversation_id: str,
     text: str = None,
     ts: str = None,
-    blocks: List[Dict] = None,
+    blocks: list[dict] = None,
 ) -> dict:
     """Updates a message for the given conversation."""
     response = make_call(
@@ -519,8 +518,8 @@ def send_ephemeral_message(
     conversation_id: str,
     user_id: str,
     text: str,
-    blocks: Optional[List] = None,
-    thread_ts: Optional[str] = None,
+    blocks: list | None = None,
+    thread_ts: str | None = None,
 ) -> dict:
     """Sends an ephemeral message to a user in a channel or thread."""
     if thread_ts:
@@ -560,7 +559,7 @@ def is_user(config: SlackConversationConfiguration, user_id: str) -> bool:
 
 def get_thread_activity(
     client: WebClient, conversation_id: str, ts: str, oldest: str = "0"
-) -> List:
+) -> list:
     """Gets all messages for a given Slack thread.
 
     Returns:
@@ -596,7 +595,7 @@ def get_thread_activity(
     return heapq.nsmallest(len(result), result)
 
 
-def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = "0") -> List:
+def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = "0") -> list:
     """Gets all top-level messages for a given Slack channel.
 
     Returns:

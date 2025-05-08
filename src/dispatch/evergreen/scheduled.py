@@ -6,11 +6,10 @@
 """
 
 import logging
-
+from typing import Any
 from collections import defaultdict
 from datetime import datetime
 from schedule import every
-from typing import Any
 
 from sqlalchemy.orm import Session
 

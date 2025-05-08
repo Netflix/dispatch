@@ -1,23 +1,21 @@
-from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization
 from dispatch.database.core import engine
 from dispatch.database.manage import init_schema
 from dispatch.enums import UserRoles
-from dispatch.exceptions import NotFoundError
 
 from .models import Organization, OrganizationCreate, OrganizationRead, OrganizationUpdate
 
 
-def get(*, db_session, organization_id: int) -> Optional[Organization]:
+def get(*, db_session, organization_id: int) -> Organization | None:
     """Gets an organization."""
     return db_session.query(Organization).filter(Organization.id == organization_id).first()
 
 
-def get_default(*, db_session) -> Optional[Organization]:
+def get_default(*, db_session) -> Organization | None:
     """Gets the default organization."""
     return db_session.query(Organization).filter(Organization.default == true()).one_or_none()
 
@@ -27,19 +25,17 @@ def get_default_or_raise(*, db_session) -> Organization:
     organization = get_default(db_session=db_session)
 
     if not organization:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default organization defined."),
-                    loc="organization",
-                )
-            ],
-            model=OrganizationRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("organization",),
+                "msg": "No default organization defined.",
+                "type": "value_error",
+            }
+        ])
     return organization
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Organization]:
+def get_by_name(*, db_session, name: str) -> Organization | None:
     """Gets an organization by its name."""
     return db_session.query(Organization).filter(Organization.name == name).one_or_none()
 
@@ -51,10 +47,11 @@ def get_by_name_or_raise(*, db_session, organization_in: OrganizationRead) -> Or
     if not organization:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Organization not found.", organization=organization_in.name),
-                    loc="organization",
-                )
+                {
+                    "msg": "Organization not found.",
+                    "organization": organization_in.name,
+                    "loc": "organization",
+                }
             ],
             model=OrganizationRead,
         )
@@ -62,7 +59,7 @@ def get_by_name_or_raise(*, db_session, organization_in: OrganizationRead) -> Or
     return organization
 
 
-def get_by_slug(*, db_session, slug: str) -> Optional[Organization]:
+def get_by_slug(*, db_session, slug: str) -> Organization | None:
     """Gets an organization by its slug."""
     return db_session.query(Organization).filter(Organization.slug == slug).one_or_none()
 
@@ -74,10 +71,11 @@ def get_by_slug_or_raise(*, db_session, organization_in: OrganizationRead) -> Or
     if not organization:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Organization not found.", organization=organization_in.name),
-                    loc="organization",
-                )
+                {
+                    "msg": "Organization not found.",
+                    "organization": organization_in.name,
+                    "loc": "organization",
+                }
             ],
             model=OrganizationRead,
         )
@@ -93,7 +91,7 @@ def get_by_name_or_default(*, db_session, organization_in: OrganizationRead) -> 
         return get_default_or_raise(db_session=db_session)
 
 
-def get_all(*, db_session) -> List[Optional[Organization]]:
+def get_all(*, db_session) -> list[Organization | None]:
     """Gets all organizations."""
     return db_session.query(Organization)
 
@@ -105,7 +103,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     )
 
     if organization_in.banner_color:
-        organization.banner_color = organization_in.banner_color.as_hex()
+        organization.banner_color = organization_in.banner_color
 
     # we let the new schema session create the organization
     organization = init_schema(engine=engine, organization=organization)
@@ -132,14 +130,14 @@ def update(
     """Updates an organization."""
     organization_data = organization.dict()
 
-    update_data = organization_in.dict(skip_defaults=True, exclude={"banner_color"})
+    update_data = organization_in.dict(exclude_unset=True, exclude={"banner_color"})
 
     for field in organization_data:
         if field in update_data:
             setattr(organization, field, update_data[field])
 
     if organization_in.banner_color:
-        organization.banner_color = organization_in.banner_color.as_hex()
+        organization.banner_color = organization_in.banner_color
 
     db_session.commit()
     return organization

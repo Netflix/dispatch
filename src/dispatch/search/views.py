@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter
 from fastapi.params import Query
 from starlette.responses import JSONResponse
@@ -19,7 +18,7 @@ router = APIRouter()
 @router.get("", response_class=JSONResponse)
 def search(
     common: CommonParameters,
-    type: List[SearchTypes] = Query(..., alias="type[]"),
+    type: list[SearchTypes] = Query(..., alias="type[]"),
 ):
     """Perform a search."""
     if common["query_str"]:

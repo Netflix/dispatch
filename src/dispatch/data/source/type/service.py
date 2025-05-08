@@ -1,7 +1,5 @@
-from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -12,12 +10,12 @@ from .models import (
 )
 
 
-def get(*, db_session, source_type_id: int) -> Optional[SourceType]:
+def get(*, db_session, source_type_id: int) -> SourceType | None:
     """Gets a source by its id."""
     return db_session.query(SourceType).filter(SourceType.id == source_type_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceType]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceType | None:
     """Gets a source by its name."""
     return (
         db_session.query(SourceType)
@@ -34,23 +32,19 @@ def get_by_name_or_raise(
     source = get_by_name(db_session=db_session, project_id=project_id, name=source_type_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceType not found.",
-                        source=source_type_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceTypeRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"SourceType not found: {source_type_in.name}",
+                "type": "value_error",
+                "input": source_type_in.name,
+            }
+        ])
 
     return source
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceType]]:
+def get_all(*, db_session, project_id: int) -> list[SourceType | None]:
     """Gets all source types."""
     return db_session.query(SourceType).filter(SourceType.project_id == project_id)
 
@@ -92,7 +86,7 @@ def update(
 ) -> SourceType:
     """Updates an existing source."""
     source_type_data = source_type.dict()
-    update_data = source_type_in.dict(skip_defaults=True, exclude={})
+    update_data = source_type_in.dict(exclude_unset=True, exclude={})
 
     for field in source_type_data:
         if field in update_data:

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import logging
 import math
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -27,19 +26,19 @@ SECONDS_IN_HOUR = 3600
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session: Session, case_cost_id: int) -> Optional[CaseCost]:
+def get(*, db_session: Session, case_cost_id: int) -> CaseCost | None:
     """Gets a case cost by its id."""
     return db_session.query(CaseCost).filter(CaseCost.id == case_cost_id).one_or_none()
 
 
-def get_by_case_id(*, db_session, case_id: int) -> list[Optional[CaseCost]]:
+def get_by_case_id(*, db_session, case_id: int) -> list[CaseCost | None]:
     """Gets case costs by their case id."""
     return db_session.query(CaseCost).filter(CaseCost.case_id == case_id).all()
 
 
 def get_by_case_id_and_case_cost_type_id(
     *, db_session: Session, case_id: int, case_cost_type_id: int
-) -> Optional[CaseCost]:
+) -> CaseCost | None:
     """Gets case costs by their case id and case cost type id."""
     return (
         db_session.query(CaseCost)
@@ -50,7 +49,7 @@ def get_by_case_id_and_case_cost_type_id(
     )
 
 
-def get_all(*, db_session: Session) -> list[Optional[CaseCost]]:
+def get_all(*, db_session: Session) -> list[CaseCost | None]:
     """Gets all case costs."""
     return db_session.query(CaseCost)
 
@@ -86,7 +85,7 @@ def create(*, db_session: Session, case_cost_in: CaseCostCreate) -> CaseCost:
 def update(*, db_session: Session, case_cost: CaseCost, case_cost_in: CaseCostUpdate) -> CaseCost:
     """Updates a case cost."""
     case_cost_data = case_cost.dict()
-    update_data = case_cost_in.dict(skip_defaults=True)
+    update_data = case_cost_in.dict(exclude_unset=True)
 
     for field in case_cost_data:
         if field in update_data:
@@ -133,7 +132,7 @@ def calculate_response_cost(hourly_rate, total_response_time_seconds) -> int:
 
 def get_or_create_case_response_cost_by_model_type(
     case: Case, model_type: str, db_session: Session
-) -> Optional[CaseCost]:
+) -> CaseCost | None:
     """Gets a case response cost for a specific model type."""
     # Find the cost type matching the requested model type for the project
     response_cost_type = case_cost_type_service.get_or_create_response_cost_type(
@@ -165,7 +164,7 @@ def get_or_create_case_response_cost_by_model_type(
 
 def fetch_case_events(
     case: Case, activity: CostModelActivity, oldest: str, db_session: Session
-) -> list[Optional[tuple[datetime.timestamp, str]]]:
+) -> list[tuple[datetime.timestamp, str | None]]:
     """Fetches case events for a given case and cost model activity.
 
     Args:
@@ -175,7 +174,7 @@ def fetch_case_events(
         db_session: The database session.
 
     Returns:
-        list[Optional[tuple[datetime.timestamp, str]]]: A list of tuples containing the timestamp and user_id of each event.
+        list[tuple[datetime.timestamp, str | None]]: A list of tuples containing the timestamp and user_id of each event.
     """
 
     plugin_instance = plugin_service.get_active_instance_by_slug(

@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -9,7 +8,7 @@ from dispatch.project import service as project_service
 log = logging.getLogger(__name__)
 
 
-def get(*, email_template_id: int, db_session: Session) -> Optional[EmailTemplates]:
+def get(*, email_template_id: int, db_session: Session) -> EmailTemplates | None:
     """Gets an email template by its id."""
     return (
         db_session.query(EmailTemplates)
@@ -20,7 +19,7 @@ def get(*, email_template_id: int, db_session: Session) -> Optional[EmailTemplat
 
 def get_by_type(
     *, email_template_type: str, project_id: int, db_session: Session
-) -> Optional[EmailTemplates]:
+) -> EmailTemplates | None:
     """Gets an email template by its type."""
     return (
         db_session.query(EmailTemplates)
@@ -31,7 +30,7 @@ def get_by_type(
     )
 
 
-def get_all(*, db_session: Session) -> List[Optional[EmailTemplates]]:
+def get_all(*, db_session: Session) -> list[EmailTemplates | None]:
     """Gets all email templates."""
     return db_session.query(EmailTemplates)
 
@@ -57,7 +56,7 @@ def update(
 ) -> EmailTemplates:
     """Updates an email template."""
     new_template = email_template.dict()
-    update_data = email_template_in.dict(skip_defaults=True)
+    update_data = email_template_in.dict(exclude_unset=True)
 
     for field in new_template:
         if field in update_data:

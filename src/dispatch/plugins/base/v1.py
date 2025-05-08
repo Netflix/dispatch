@@ -9,9 +9,9 @@
 
 import logging
 from threading import local
-from typing import Any, List, Optional
 
 from pydantic import BaseModel
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ class PluginConfiguration(BaseModel):
 
 
 class IPluginEvent:
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
 
 
 # stolen from https://github.com/getsentry/sentry/
@@ -55,21 +55,21 @@ class IPlugin(local):
     """
 
     # Generic plugin information
-    title: Optional[str] = None
-    slug: Optional[str] = None
-    description: Optional[str] = None
-    version: Optional[str] = None
-    author: Optional[str] = None
-    author_url: Optional[str] = None
-    configuration: Optional[dict] = None
-    project_id: Optional[int] = None
+    title: str | None = None
+    slug: str | None = None
+    description: str | None = None
+    version: str | None = None
+    author: str | None = None
+    author_url: str | None = None
+    configuration: dict | None = None
+    project_id: int | None = None
     resource_links = ()
 
     schema: PluginConfiguration
-    commands: List[Any] = []
+    commands: list[Any] = []
 
     events: Any = None
-    plugin_events: Optional[List[IPluginEvent]] = []
+    plugin_events: list[IPluginEvent | None] = []
 
     # Global enabled state
     enabled: bool = False
@@ -87,14 +87,14 @@ class IPlugin(local):
             return True
         return True
 
-    def get_title(self) -> Optional[str]:
+    def get_title(self) -> str | None:
         """
         Returns the general title for this plugin.
         >>> plugin.get_title()
         """
         return self.title
 
-    def get_description(self) -> Optional[str]:
+    def get_description(self) -> str | None:
         """
         Returns the description for this plugin. This is shown on the plugin configuration
         page.
@@ -102,7 +102,7 @@ class IPlugin(local):
         """
         return self.description
 
-    def get_resource_links(self) -> List[Any]:
+    def get_resource_links(self) -> list[Any]:
         """
         Returns a list of tuples pointing to various resources for this plugin.
         >>> def get_resource_links(self):
@@ -114,7 +114,7 @@ class IPlugin(local):
         """
         return self.resource_links
 
-    def get_event(self, event) -> Optional[IPluginEvent]:
+    def get_event(self, event) -> IPluginEvent | None:
         for plugin_event in self.plugin_events:
             if plugin_event.slug == event.slug:
                 return plugin_event

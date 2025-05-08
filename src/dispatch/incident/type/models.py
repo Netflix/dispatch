@@ -1,25 +1,26 @@
-from typing import List, Optional
-from pydantic import validator, Field, AnyHttpUrl
-from dispatch.models import NameStr, PrimaryKey
+"""Models for incident type resources in the Dispatch application."""
+
+from pydantic import field_validator, AnyHttpUrl
 
 from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
+from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
-from sqlalchemy.event import listen
-
 from sqlalchemy_utils import TSVectorType
+
 
 from dispatch.cost_model.models import CostModelRead
 from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin, Pagination
+from dispatch.models import NameStr, PrimaryKey
 from dispatch.plugin.models import PluginMetadata
 from dispatch.project.models import ProjectRead
 from dispatch.service.models import ServiceRead
 
-
 class IncidentType(ProjectMixin, Base):
+    """SQLAlchemy model for incident type resources."""
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -68,14 +69,13 @@ class IncidentType(ProjectMixin, Base):
         foreign_keys=[cost_model_id],
     )
 
-    # Sets the channel description for the incidents of this type
     channel_description = Column(String, nullable=True)
-    # Optionally add on-call name to the channel description
     description_service_id = Column(Integer, ForeignKey("service.id"))
     description_service = relationship("Service", foreign_keys=[description_service_id])
 
     @hybrid_method
     def get_meta(self, slug):
+        """Retrieve plugin metadata by slug."""
         if not self.plugin_metadata:
             return
 
@@ -85,6 +85,7 @@ class IncidentType(ProjectMixin, Base):
 
     @hybrid_method
     def get_task_meta(self, slug):
+        """Retrieve task plugin metadata by slug."""
         if not self.task_plugin_metadata:
             return
 
@@ -97,61 +98,70 @@ listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 
 class Document(DispatchBase):
+    """Pydantic model for a document related to an incident type."""
     id: PrimaryKey
     name: NameStr
-    resource_type: Optional[str] = Field(None, nullable=True)
-    resource_id: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
+    resource_type: str | None = None
+    resource_id: str | None = None
+    description: str | None = None
+    weblink: AnyHttpUrl | None = None
 
 
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
+    """Base Pydantic model for incident type resources."""
     name: NameStr
-    visibility: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    incident_template_document: Optional[Document]
-    executive_template_document: Optional[Document]
-    review_template_document: Optional[Document]
-    tracking_template_document: Optional[Document]
-    exclude_from_metrics: Optional[bool] = False
-    exclude_from_reminders: Optional[bool] = False
-    exclude_from_review: Optional[bool] = False
-    default: Optional[bool] = False
-    project: Optional[ProjectRead]
-    plugin_metadata: List[PluginMetadata] = []
-    cost_model: Optional[CostModelRead] = None
-    channel_description: Optional[str] = Field(None, nullable=True)
-    description_service: Optional[ServiceRead]
-    task_plugin_metadata: List[PluginMetadata] = []
+    visibility: str | None = None
+    description: str | None = None
+    enabled: bool | None = None
+    incident_template_document: Document | None = None
+    executive_template_document: Document | None = None
+    review_template_document: Document | None = None
+    tracking_template_document: Document | None = None
+    exclude_from_metrics: bool | None = False
+    exclude_from_reminders: bool | None = False
+    exclude_from_review: bool | None = False
+    default: bool | None = False
+    project: ProjectRead | None = None
+    plugin_metadata: list[PluginMetadata] = []
+    cost_model: CostModelRead | None = None
+    channel_description: str | None = None
+    description_service: ServiceRead | None = None
+    task_plugin_metadata: list[PluginMetadata] = []
 
-    @validator("plugin_metadata", pre=True)
+    @field_validator("plugin_metadata", mode="before")
+    @classmethod
     def replace_none_with_empty_list(cls, value):
+        """Ensure plugin_metadata is always a list, replacing None with an empty list."""
         return [] if value is None else value
 
 
 class IncidentTypeCreate(IncidentTypeBase):
+    """Pydantic model for creating an incident type resource."""
     pass
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
-    id: PrimaryKey = None
+    """Pydantic model for updating an incident type resource."""
+    id: PrimaryKey | None = None
 
 
 class IncidentTypeRead(IncidentTypeBase):
+    """Pydantic model for reading an incident type resource."""
     id: PrimaryKey
 
 
 class IncidentTypeReadMinimal(DispatchBase):
+    """Pydantic model for reading a minimal incident type resource."""
     id: PrimaryKey
     name: NameStr
-    visibility: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    exclude_from_metrics: Optional[bool] = False
-    default: Optional[bool] = False
+    visibility: str | None = None
+    description: str | None = None
+    enabled: bool | None = None
+    exclude_from_metrics: bool | None = False
+    default: bool | None = False
 
 
 class IncidentTypePagination(Pagination):
-    items: List[IncidentTypeRead] = []
+    """Pydantic model for paginated incident type results."""
+    items: list[IncidentTypeRead] = []

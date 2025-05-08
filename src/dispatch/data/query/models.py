@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Table, ForeignKey, PrimaryKeyConstraint
@@ -50,11 +49,11 @@ class Query(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class QueryBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=False)
-    description: Optional[str] = Field(None, nullable=True)
-    language: Optional[str] = Field(None, nullable=True)
-    text: Optional[str] = Field(None, nullable=True)
-    tags: Optional[List[TagRead]] = []
+    name: str | None = Field(None, nullable=False)
+    description: str | None = None
+    language: str | None = None
+    text: str | None = None
+    tags: list[TagRead | None] = []
     source: SourceRead
     project: ProjectRead
 
@@ -64,7 +63,7 @@ class QueryCreate(QueryBase):
 
 
 class QueryUpdate(QueryBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
 
 
 class QueryRead(QueryBase):
@@ -72,4 +71,4 @@ class QueryRead(QueryBase):
 
 
 class QueryPagination(Pagination):
-    items: List[QueryRead]
+    items: list[QueryRead]

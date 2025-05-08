@@ -2,9 +2,8 @@ import logging
 
 from datetime import datetime, timedelta
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session, joinedload, load_only
-from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
@@ -12,7 +11,6 @@ from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
 from dispatch.case_cost import service as case_cost_service
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import Participant
 from dispatch.participant import flows as participant_flows
@@ -33,12 +31,12 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, case_id: int) -> Optional[Case]:
+def get(*, db_session, case_id: int) -> Case | None:
     """Returns a case based on the given id."""
     return db_session.query(Case).filter(Case.id == case_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Case | None:
     """Returns a case based on the given name."""
     return (
         db_session.query(Case)
@@ -55,25 +53,22 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> C
     if not case:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Case not found.",
-                        query=case_in.name,
-                    ),
-                    loc="case",
-                )
-            ],
-            model=CaseRead,
+                {
+                    "msg": "Case not found.",
+                    "query": case_in.name,
+                    "loc": "case",
+                }
+            ]
         )
     return case
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Case]]:
+def get_all(*, db_session, project_id: int) -> list[Case | None]:
     """Returns all cases."""
     return db_session.query(Case).filter(Case.project_id == project_id)
 
 
-def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional[Case]]:
+def get_all_open_by_case_type(*, db_session, case_type_id: int) -> list[Case | None]:
     """Returns all non-closed cases based on the given case type."""
     return (
         db_session.query(Case)
@@ -86,7 +81,7 @@ def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional
 
 def get_all_by_status(
     *, db_session: Session, project_id: int, statuses: list[str]
-) -> List[Optional[Case]]:
+) -> list[Case | None]:
     """Returns all cases based on a given list of statuses."""
     return (
         db_session.query(Case)
@@ -107,7 +102,7 @@ def get_all_by_status(
     )
 
 
-def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Case]]:
+def get_all_last_x_hours(*, db_session, hours: int) -> list[Case | None]:
     """Returns all cases in the last x hours."""
     now = datetime.utcnow()
     return db_session.query(Case).filter(Case.created_at >= now - timedelta(hours=hours)).all()
@@ -115,7 +110,7 @@ def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Case]]:
 
 def get_all_last_x_hours_by_status(
     *, db_session, project_id: int, status: str, hours: int
-) -> List[Optional[Case]]:
+) -> list[Case | None]:
     """Returns all cases of a given status in the last x hours."""
     now = datetime.utcnow()
 
@@ -266,7 +261,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
 def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser) -> Case:
     """Updates an existing case."""
     update_data = case_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "assignee",
             "case_costs",

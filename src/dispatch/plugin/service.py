@@ -1,10 +1,8 @@
 import logging
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from typing import List, Optional
+from pydantic import ValidationError
 
 from sqlalchemy.orm import Session
 
-from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugins.bases import OncallPlugin
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
@@ -22,7 +20,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session: Session, plugin_id: int) -> Optional[Plugin]:
+def get(*, db_session: Session, plugin_id: int) -> Plugin | None:
     """Returns a plugin based on the given plugin id."""
     return db_session.query(Plugin).filter(Plugin.id == plugin_id).one_or_none()
 
@@ -32,17 +30,17 @@ def get_by_slug(*, db_session: Session, slug: str) -> Plugin:
     return db_session.query(Plugin).filter(Plugin.slug == slug).one_or_none()
 
 
-def get_all(*, db_session) -> List[Optional[Plugin]]:
+def get_all(*, db_session) -> list[Plugin | None]:
     """Returns all plugins."""
     return db_session.query(Plugin).all()
 
 
-def get_by_type(*, db_session: Session, plugin_type: str) -> List[Optional[Plugin]]:
+def get_by_type(*, db_session: Session, plugin_type: str) -> list[Plugin | None]:
     """Fetches all plugins for a given type."""
     return db_session.query(Plugin).filter(Plugin.type == plugin_type).all()
 
 
-def get_instance(*, db_session: Session, plugin_instance_id: int) -> Optional[PluginInstance]:
+def get_instance(*, db_session: Session, plugin_instance_id: int) -> PluginInstance | None:
     """Returns a plugin instance based on the given instance id."""
     return (
         db_session.query(PluginInstance)
@@ -53,7 +51,7 @@ def get_instance(*, db_session: Session, plugin_instance_id: int) -> Optional[Pl
 
 def get_active_instance(
     *, db_session: Session, plugin_type: str, project_id=None
-) -> Optional[PluginInstance]:
+) -> PluginInstance | None:
     """Fetches the current active plugin for the given type."""
     return (
         db_session.query(PluginInstance)
@@ -67,7 +65,7 @@ def get_active_instance(
 
 def get_active_instances(
     *, db_session: Session, plugin_type: str, project_id=None
-) -> Optional[PluginInstance]:
+) -> PluginInstance | None:
     """Fetches the current active plugin for the given type."""
     return (
         db_session.query(PluginInstance)
@@ -81,7 +79,7 @@ def get_active_instances(
 
 def get_active_instance_by_slug(
     *, db_session: Session, slug: str, project_id: int | None = None
-) -> Optional[PluginInstance]:
+) -> PluginInstance | None:
     """Fetches the current active plugin for the given type."""
     return (
         db_session.query(PluginInstance)
@@ -95,7 +93,7 @@ def get_active_instance_by_slug(
 
 def get_enabled_instances_by_type(
     *, db_session: Session, project_id: int, plugin_type: str
-) -> List[Optional[PluginInstance]]:
+) -> list[PluginInstance | None]:
     """Fetches all enabled plugins for a given type."""
     return (
         db_session.query(PluginInstance)
@@ -135,7 +133,7 @@ def update_instance(
 ) -> PluginInstance:
     """Updates a plugin instance."""
     plugin_instance_data = plugin_instance.dict()
-    update_data = plugin_instance_in.dict(skip_defaults=True)
+    update_data = plugin_instance_in.dict(exclude_unset=True)
 
     if plugin_instance_in.enabled:  # user wants to enable the plugin
         if not plugin_instance.plugin.multiple:
@@ -154,17 +152,12 @@ def update_instance(
                 db_session=db_session, service_type=plugin_instance.plugin.slug, is_active=True
             )
             if oncall_services:
-                raise ValidationError(
-                    [
-                        ErrorWrapper(
-                            InvalidConfigurationError(
-                                msg=f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
-                            ),
-                            loc="plugin_instance",
-                        )
-                    ],
-                    model=PluginInstanceUpdate,
-                )
+                raise ValidationError([
+                    {
+                        "msg": "Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. ",
+                        "loc": "plugin_instance",
+                    }
+                ])
 
     for field in plugin_instance_data:
         if field in update_data:
@@ -182,19 +175,19 @@ def delete_instance(*, db_session: Session, plugin_instance_id: int):
     db_session.commit()
 
 
-def get_plugin_event_by_id(*, db_session: Session, plugin_event_id: int) -> Optional[PluginEvent]:
+def get_plugin_event_by_id(*, db_session: Session, plugin_event_id: int) -> PluginEvent | None:
     """Returns a plugin event based on the plugin event id."""
     return db_session.query(PluginEvent).filter(PluginEvent.id == plugin_event_id).one_or_none()
 
 
-def get_plugin_event_by_slug(*, db_session: Session, slug: str) -> Optional[PluginEvent]:
+def get_plugin_event_by_slug(*, db_session: Session, slug: str) -> PluginEvent | None:
     """Returns a project based on the plugin event slug."""
     return db_session.query(PluginEvent).filter(PluginEvent.slug == slug).one_or_none()
 
 
 def get_all_events_for_plugin(
     *, db_session: Session, plugin_id: int
-) -> List[Optional[PluginEvent]]:
+) -> list[PluginEvent | None]:
     """Returns all plugin events for a given plugin."""
     return db_session.query(PluginEvent).filter(PluginEvent.plugin_id == plugin_id).all()
 

@@ -1,6 +1,5 @@
-from typing import Any
 import logging
-
+from typing import Any
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import resolve_attr

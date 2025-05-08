@@ -1,6 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
-from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.event import listen
@@ -21,6 +19,7 @@ from dispatch.project.models import ProjectRead
 
 # SQLAlchemy Model
 class IncidentCostType(Base, TimeStampMixin, ProjectMixin):
+    """SQLAlchemy model for incident cost type resources."""
     # columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -41,26 +40,31 @@ listen(IncidentCostType.default, "set", ensure_unique_default_per_project)
 
 # Pydantic Models
 class IncidentCostTypeBase(DispatchBase):
+    """Base Pydantic model for incident cost type resources."""
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    category: Optional[str] = Field(None, nullable=True)
-    details: Optional[dict] = {}
-    created_at: Optional[datetime]
-    default: Optional[bool]
-    editable: Optional[bool]
+    description: str | None = None
+    category: str | None = None
+    details: dict[str, object] | None = None
+    default: bool | None = None
+    editable: bool | None = None
 
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):
+    """Pydantic model for creating an incident cost type."""
     project: ProjectRead
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
-    id: PrimaryKey = None
+    """Pydantic model for updating an incident cost type."""
+    id: PrimaryKey | None = None
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
+    """Pydantic model for reading an incident cost type."""
     id: PrimaryKey
+    created_at: datetime
 
 
 class IncidentCostTypePagination(Pagination):
-    items: List[IncidentCostTypeRead] = []
+    """Pydantic model for paginated incident cost type results."""
+    items: list[IncidentCostTypeRead] = []

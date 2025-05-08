@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import Optional
 import logging
 
 from pdpyras import APISession, PDHTTPError, PDClientError
@@ -139,7 +138,7 @@ def page_oncall(
     return create_incident(client, headers, data)
 
 
-def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> Optional[dict]:
+def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> dict | None:
     """Retrieves the email of the oncall person at the utc time given."""
     try:
         oncalls = list(
@@ -182,7 +181,7 @@ def get_oncall_at_time(client: APISession, schedule_id: str, utctime: str) -> Op
         raise e
 
 
-def oncall_shift_check(client: APISession, schedule_id: str, hour: int) -> Optional[dict]:
+def oncall_shift_check(client: APISession, schedule_id: str, hour: int) -> dict | None:
     """Determines whether the oncall person just went off shift and returns their email."""
     now = datetime.utcnow()
     # in case scheduler is late, replace hour with exact one for shift comparison
@@ -211,7 +210,7 @@ def oncall_shift_check(client: APISession, schedule_id: str, hour: int) -> Optio
         return previous_oncall
 
 
-def get_next_oncall(client: APISession, schedule_id: str) -> Optional[str]:
+def get_next_oncall(client: APISession, schedule_id: str) -> str | None:
     """Retrieves the email of the next oncall person. Assumes 12-hour shifts"""
     now = datetime.utcnow()
 

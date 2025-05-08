@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import uuid4
 from datetime import datetime
 import logging
@@ -21,7 +20,7 @@ from dispatch.plugin import service as plugin_service
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, event_id: int) -> Optional[Event]:
+def get(*, db_session, event_id: int) -> Event | None:
     """Get an event by id."""
     return (
         db_session.query(Event)
@@ -44,7 +43,7 @@ def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     )
 
 
-def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
+def get_by_uuid(*, db_session, uuid: str) -> Event | None:
     """Get events by uuid."""
     return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
 
@@ -65,7 +64,7 @@ def create(*, db_session, event_in: EventCreate) -> Event:
 def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
     """Updates an event."""
     event_data = event.dict()
-    update_data = event_in.dict(skip_defaults=True)
+    update_data = event_in.dict(exclude_unset=True)
 
     for field in event_data:
         if field in update_data:
@@ -150,6 +149,8 @@ def log_case_event(
     ended_at: datetime | None = None,
     details: dict | None = None,
     type: str = EventType.other,
+    owner: str = "",
+    pinned: bool = False,
 ) -> Event:
     """Logs an event in the case timeline."""
     uuid = uuid4()
@@ -168,6 +169,8 @@ def log_case_event(
         description=description,
         details=details,
         type=type,
+        owner=owner,
+        pinned=pinned,
     )
     event = create(db_session=db_session, event_in=event_in)
 

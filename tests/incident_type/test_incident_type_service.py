@@ -1,3 +1,6 @@
+import datetime
+from datetime import timezone
+
 def test_get(session, incident_type):
     from dispatch.incident.type.service import get
 
@@ -53,6 +56,7 @@ def test_update(session, incident_type):
     name = "Updated incident type name"
 
     incident_type_in = IncidentTypeUpdate(name=name)
+
     incident_type = update(
         db_session=session,
         incident_type=incident_type,
@@ -68,12 +72,11 @@ def test_update_cost_model(session, incident, incident_type, cost_model, inciden
     from dispatch.incident_cost import service as incident_cost_service
     from dispatch.incident_cost_type import service as incident_cost_type_service
     from dispatch.incident.type.models import IncidentTypeUpdate
-    import datetime
 
     name = "Updated incident type name"
 
     incident_type_in = IncidentTypeUpdate(name=name)
-    current_time = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+    current_time = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
 
     # Initial setup.
     incident.status = IncidentStatus.active

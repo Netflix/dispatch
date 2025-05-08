@@ -1,9 +1,7 @@
-from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.error_wrappers import ValidationError
 from datetime import datetime
 
 from dispatch.enums import DocumentResourceReferenceTypes, DocumentResourceTemplateTypes
-from dispatch.exceptions import ExistsError
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 from dispatch.tag import service as tag_service
@@ -11,14 +9,14 @@ from dispatch.tag import service as tag_service
 from .models import Document, DocumentCreate, DocumentUpdate
 
 
-def get(*, db_session, document_id: int) -> Optional[Document]:
+def get(*, db_session, document_id: int) -> Document | None:
     """Returns a document based on the given document id."""
     return db_session.query(Document).filter(Document.id == document_id).one_or_none()
 
 
 def get_by_incident_id_and_resource_type(
     *, db_session, incident_id: int, project_id: int, resource_type: str
-) -> Optional[Document]:
+) -> Document | None:
     """Returns a document based on the given incident and id and document resource type."""
     return (
         db_session.query(Document)
@@ -29,7 +27,7 @@ def get_by_incident_id_and_resource_type(
     )
 
 
-def get_project_forms_export_template(*, db_session, project_id: int) -> Optional[Document]:
+def get_project_forms_export_template(*, db_session, project_id: int) -> Document | None:
     """Fetches the project forms export template."""
     resource_type = DocumentResourceTemplateTypes.forms
     return (
@@ -60,7 +58,7 @@ def get_conversation_reference_document(*, db_session, project_id: int):
     ).one_or_none()
 
 
-def get_overdue_evergreen_documents(*, db_session, project_id: int) -> List[Optional[Document]]:
+def get_overdue_evergreen_documents(*, db_session, project_id: int) -> list[Document | None]:
     """Returns all documents that have not had a recent evergreen notification."""
     query = (
         db_session.query(Document)
@@ -71,7 +69,7 @@ def get_overdue_evergreen_documents(*, db_session, project_id: int) -> List[Opti
     return query.all()
 
 
-def get_all(*, db_session) -> List[Optional[Document]]:
+def get_all(*, db_session) -> list[Document | None]:
     """Returns all documents."""
     return db_session.query(Document)
 
@@ -91,18 +89,12 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
             .one_or_none()
         )
         if faq_doc:
-            raise ValidationError(
-                [
-                    ErrorWrapper(
-                        ExistsError(
-                            msg="FAQ document already defined for this project.",
-                            document=faq_doc.name,
-                        ),
-                        loc="document",
-                    )
-                ],
-                model=DocumentCreate,
-            )
+            raise ValidationError([
+                {
+                    "msg": "FAQ document already defined for this project.",
+                    "loc": "document",
+                }
+            ])
 
     if document_in.resource_type == DocumentResourceTemplateTypes.forms:
         forms_doc = (
@@ -112,18 +104,12 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
             .one_or_none()
         )
         if forms_doc:
-            raise ValidationError(
-                [
-                    ErrorWrapper(
-                        ExistsError(
-                            msg="Forms export template document already defined for this project.",
-                            document=forms_doc.name,
-                        ),
-                        loc="document",
-                    )
-                ],
-                model=DocumentCreate,
-            )
+            raise ValidationError([
+                {
+                    "msg": "Forms export template document already defined for this project.",
+                    "loc": "document",
+                }
+            ])
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
@@ -173,7 +159,7 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()
 
-    update_data = document_in.dict(skip_defaults=True, exclude={"filters", "tags"})
+    update_data = document_in.dict(exclude_unset=True, exclude={"filters", "tags"})
 
     tags = []
     for t in document_in.tags:

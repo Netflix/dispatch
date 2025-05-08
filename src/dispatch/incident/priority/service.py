@@ -1,8 +1,6 @@
-from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
-from dispatch.exceptions import NotFoundError
 
 from dispatch.project import service as project_service
 
@@ -14,7 +12,7 @@ from .models import (
 )
 
 
-def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
+def get(*, db_session, incident_priority_id: int) -> IncidentPriority | None:
     """Returns an incident priority based on the given priority id."""
     return (
         db_session.query(IncidentPriority)
@@ -38,19 +36,16 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentPriority:
     incident_priority = get_default(db_session=db_session, project_id=project_id)
 
     if not incident_priority:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default incident priority defined."),
-                    loc="incident_priority",
-                )
-            ],
-            model=IncidentPriorityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "No default incident priority defined.",
+                "loc": "incident_priority",
+            }
+        ])
     return incident_priority
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentPriority]:
+def get_by_name(*, db_session, project_id: int, name: str) -> IncidentPriority | None:
     """Returns an incident priority based on the given priority name."""
     return (
         db_session.query(IncidentPriority)
@@ -69,18 +64,13 @@ def get_by_name_or_raise(
     )
 
     if not incident_priority:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident priority not found.",
-                        incident_priority=incident_priority_in.name,
-                    ),
-                    loc="incident_priority",
-                )
-            ],
-            model=IncidentPriorityRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Incident priority not found.",
+                "loc": "incident_priority",
+                "incident_priority": incident_priority_in.name,
+            }
+        ])
 
     return incident_priority
 
@@ -99,14 +89,14 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
+def get_all(*, db_session, project_id: int = None) -> list[IncidentPriority | None]:
     """Returns all incident priorities."""
     if project_id:
         return db_session.query(IncidentPriority).filter(IncidentPriority.project_id == project_id)
     return db_session.query(IncidentPriority)
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[IncidentPriority | None]:
     """Returns all enabled incident priorities."""
     if project_id:
         return (
@@ -131,7 +121,7 @@ def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> Incid
         **incident_priority_in.dict(exclude={"project", "color"}), project=project
     )
     if incident_priority_in.color:
-        incident_priority.color = incident_priority_in.color.as_hex()
+        incident_priority.color = incident_priority_in.color
 
     db_session.add(incident_priority)
     db_session.commit()
@@ -144,14 +134,14 @@ def update(
     """Updates an incident priority."""
     incident_priority_data = incident_priority.dict()
 
-    update_data = incident_priority_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = incident_priority_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in incident_priority_data:
         if field in update_data:
             setattr(incident_priority, field, update_data[field])
 
     if incident_priority_in.color:
-        incident_priority.color = incident_priority_in.color.as_hex()
+        incident_priority.color = incident_priority_in.color
 
     db_session.commit()
     return incident_priority

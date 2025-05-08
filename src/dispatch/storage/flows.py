@@ -1,4 +1,3 @@
-from typing import TypeVar, List
 import logging
 
 from sqlalchemy.orm import Session
@@ -16,10 +15,10 @@ from .service import create
 
 log = logging.getLogger(__name__)
 
-Subject = TypeVar("Subject", Case, Incident)
+Subject = Case | Incident
 
 
-def create_storage(subject: Subject, storage_members: List[str], db_session: Session):
+def create_storage(subject: Subject, storage_members: list[str], db_session: Session):
     """Creates a storage."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=subject.project.id, plugin_type="storage"
@@ -108,7 +107,7 @@ def create_storage(subject: Subject, storage_members: List[str], db_session: Ses
 def update_storage(
     subject: Subject,
     storage_action: StorageAction,
-    storage_members: List[str],
+    storage_members: list[str],
     db_session: Session,
 ):
     """Updates an existing storage."""

@@ -1,9 +1,7 @@
-from typing import List, Optional
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -14,7 +12,7 @@ from .models import (
 )
 
 
-def get(*, db_session, case_priority_id: int) -> Optional[CasePriority]:
+def get(*, db_session, case_priority_id: int) -> CasePriority | None:
     """Returns a case priority based on the given priority id."""
     return db_session.query(CasePriority).filter(CasePriority.id == case_priority_id).one_or_none()
 
@@ -34,19 +32,21 @@ def get_default_or_raise(*, db_session, project_id: int) -> CasePriority:
     case_priority = get_default(db_session=db_session, project_id=project_id)
 
     if not case_priority:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "CasePriority",
             [
-                ErrorWrapper(
-                    NotFoundError(msg="No default case priority defined."),
-                    loc="case_priority",
-                )
-            ],
-            model=CasePriorityRead,
+                {
+                    "type": "value_error",
+                    "loc": ("case_priority",),
+                    "input": None,
+                    "ctx": {"error": ValueError("No default case priority defined.")},
+                }
+            ]
         )
     return case_priority
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[CasePriority]:
+def get_by_name(*, db_session, project_id: int, name: str) -> CasePriority | None:
     """Returns a case priority based on the given priority name."""
     return (
         db_session.query(CasePriority)
@@ -65,17 +65,17 @@ def get_by_name_or_raise(
     )
 
     if not case_priority:
-        raise ValidationError(
+        raise ValidationError.from_exception_data(
+            "CasePriority",
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Case priority not found.",
-                        case_priority=case_priority_in.name,
-                    ),
-                    loc="case_priority",
-                )
-            ],
-            model=CasePriorityRead,
+                {
+                    "type": "value_error",
+                    "loc": ("case_priority",),
+                    "input": case_priority_in.name,
+                    "msg": "Value error, Case priority not found.",
+                    "ctx": {"error": ValueError(f"Case priority not found: {case_priority_in.name}")}
+                }
+            ]
         )
 
     return case_priority
@@ -95,16 +95,16 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
+def get_all(*, db_session, project_id: int = None) -> list[CasePriority | None]:
     """Returns all case priorities."""
-    if project_id:
+    if project_id is not None:
         return db_session.query(CasePriority).filter(CasePriority.project_id == project_id)
     return db_session.query(CasePriority)
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CasePriority]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[CasePriority | None]:
     """Returns all enabled case priorities."""
-    if project_id:
+    if project_id is not None:
         return (
             db_session.query(CasePriority)
             .filter(CasePriority.project_id == project_id)
@@ -122,7 +122,7 @@ def create(*, db_session, case_priority_in: CasePriorityCreate) -> CasePriority:
         **case_priority_in.dict(exclude={"project", "color"}), project=project
     )
     if case_priority_in.color:
-        case_priority.color = case_priority_in.color.as_hex()
+        case_priority.color = case_priority_in.color
 
     db_session.add(case_priority)
     db_session.commit()
@@ -135,14 +135,14 @@ def update(
     """Updates a case priority."""
     case_priority_data = case_priority.dict()
 
-    update_data = case_priority_in.dict(skip_defaults=True, exclude={"project", "color"})
+    update_data = case_priority_in.dict(exclude_unset=True, exclude={"project", "color"})
 
     for field in case_priority_data:
         if field in update_data:
             setattr(case_priority, field, update_data[field])
 
     if case_priority_in.color:
-        case_priority.color = case_priority_in.color.as_hex()
+        case_priority.color = case_priority_in.color
 
     db_session.commit()
     return case_priority

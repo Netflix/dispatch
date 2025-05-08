@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional, TypeVar
 
 from sqlalchemy.orm import Session
 
@@ -17,6 +16,7 @@ from dispatch.participant_role.models import (
     ParticipantRoleType,
 )
 from dispatch.service import service as service_service
+from typing import TypeVar
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def add_participant(
     subject: Subject,
     db_session: Session,
     service_id: int = None,
-    roles: Optional[List[str]] = None,
+    roles: list[str | None] = None,
 ) -> Participant:
     """Adds a participant to an incident or a case."""
     # we get or create a new individual
