@@ -1,5 +1,4 @@
 import json
-from collections import defaultdict
 
 
 def test_get(session, signal):

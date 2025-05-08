@@ -1,5 +1,5 @@
 import logging
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 
 from blockkit import (

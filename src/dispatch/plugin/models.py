@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import Field, SecretStr
+from pydantic import SecretStr
 from pydantic.json import pydantic_encoder
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey

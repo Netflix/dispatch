@@ -2,7 +2,7 @@ import calendar
 import json
 import logging
 from datetime import date, datetime
-
+from typing import Annotated
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
