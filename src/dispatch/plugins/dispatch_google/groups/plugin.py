@@ -7,6 +7,7 @@
 
 import logging
 import time
+from typing import Any
 
 from googleapiclient.errors import HttpError
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
@@ -25,7 +26,7 @@ log = logging.getLogger(__name__)
     retry=retry_if_exception_type(TryAgain),
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
-def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool = False, **kwargs):
+def make_call(client: Any, func: Any, delay: int | None = None, propagate_errors: bool = False, **kwargs):
     """Make an google client api call."""
     try:
         data = getattr(client, func)(**kwargs).execute()

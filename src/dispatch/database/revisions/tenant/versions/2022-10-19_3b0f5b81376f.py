@@ -6,6 +6,7 @@ Create Date: 2022-10-19 13:13:17.581202
 
 """
 from alembic import op
+from typing import Annotated
 
 from pydantic import Field, StringConstraints, ConfigDict, BaseModel
 

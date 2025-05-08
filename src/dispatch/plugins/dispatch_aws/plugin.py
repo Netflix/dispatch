@@ -10,6 +10,7 @@ import base64
 import json
 import logging
 import zlib
+from typing import TypedDict
 
 import boto3
 from psycopg2.errors import UniqueViolation

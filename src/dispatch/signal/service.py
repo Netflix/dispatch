@@ -2,7 +2,7 @@ import json
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
-
+from collections import defaultdict
 from fastapi import HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy import asc, desc, or_, func, and_, select, cast

@@ -7,6 +7,7 @@
 """
 
 import logging
+from typing import NewType
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import MultiFactorAuthenticationPlugin

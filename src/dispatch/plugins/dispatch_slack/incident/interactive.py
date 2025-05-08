@@ -3,6 +3,7 @@ import re
 import uuid
 from functools import partial
 from datetime import datetime, timedelta
+from typing import Any
 
 import pytz
 from blockkit import (

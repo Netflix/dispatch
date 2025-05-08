@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import logging
 import re
 from collections.abc import Generator, Sequence
-
+from typing import Any, NamedTuple
 import jsonpath_ng
 from pydantic import ValidationError
 from sqlalchemy import desc

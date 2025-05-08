@@ -9,6 +9,7 @@
 
 import re
 import logging
+from typing import Any
 
 from dispatch.task.enums import TaskStatus
 from enum import Enum
@@ -48,7 +49,7 @@ def find_urls(text: str) -> list[str]:
     """Finds a url in a text blob."""
     # findall() has been used
     # with valid conditions for urls in string
-    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»""'']))"
     url = re.findall(regex, text)
     return [x[0] for x in url]
 

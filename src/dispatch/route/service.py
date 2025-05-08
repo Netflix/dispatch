@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Any
 
 from dispatch.database.core import Base
 from dispatch.route.models import Recommendation, RecommendationMatch

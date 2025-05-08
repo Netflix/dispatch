@@ -1,3 +1,5 @@
+from typing import Any
+
 def test_configure():
     """Test that we can configure the plugin."""
     from dispatch.plugins.dispatch_slack.incident.interactive import (

@@ -6,7 +6,7 @@
 """
 
 import logging
-
+from typing import Any
 from blockkit import (
     Actions,
     Button,
@@ -264,7 +264,7 @@ def default_notification(items: list):
 def create_message_blocks(
     message_template: list[dict],
     message_type: MessageType,
-    items: List | None = None,
+    items: list | None = None,
     **kwargs,
 ):
     """Creates all required blocks for a given message type and template."""

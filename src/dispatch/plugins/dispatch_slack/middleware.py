@@ -1,6 +1,6 @@
 import logging
 import json
-
+from typing import Callable, NamedTuple
 from slack_bolt import BoltContext, BoltRequest
 from slack_sdk.web import WebClient
 from sqlalchemy.orm.session import Session

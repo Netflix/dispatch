@@ -7,6 +7,7 @@
 
 import json
 import logging
+from typing import Any
 
 import requests
 from requests.auth import HTTPBasicAuth

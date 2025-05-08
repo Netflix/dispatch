@@ -5,6 +5,7 @@ Fork of the built-in Bolt Starlette adapter. Removes async to allow instant ackn
 """
 
 from http import HTTPStatus
+from typing import Any
 
 from starlette.requests import Request
 from starlette.responses import Response

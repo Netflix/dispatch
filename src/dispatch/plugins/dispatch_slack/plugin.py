@@ -9,7 +9,7 @@
 import io
 import json
 import logging
-
+from typing import Any
 from blockkit import Message
 from blockkit.surfaces import Block
 from slack_sdk.errors import SlackApiError
@@ -254,8 +254,8 @@ class SlackConversationPlugin(ConversationPlugin):
         text: str,
         message_template: list[dict],
         notification_type: str,
-        items: List | None = None,
-        blocks: List | None = None,
+        items: list | None = None,
+        blocks: list | None = None,
         ts: str | None = None,
         persist: bool = False,
         **kwargs,
@@ -297,9 +297,9 @@ class SlackConversationPlugin(ConversationPlugin):
         text: str,
         message_template: dict,
         notification_type: str,
-        items: List | None = None,
+        items: list | None = None,
         ts: str | None = None,
-        blocks: List | None = None,
+        blocks: list | None = None,
         **kwargs,
     ):
         """Sends a message directly to a user if the user exists."""
@@ -322,8 +322,8 @@ class SlackConversationPlugin(ConversationPlugin):
         text: str,
         message_template: dict = None,
         notification_type: str = None,
-        items: List | None = None,
-        blocks: List | None = None,
+        items: list | None = None,
+        blocks: list | None = None,
         **kwargs,
     ):
         """Sends an ephemeral message to a user in a channel if the user exists."""

@@ -23,7 +23,7 @@ class ChannelActivityEvent(SlackPluginEvent):
         By periodically polling channel messages, this gathers insights into the \
         activity and engagement levels of each participant."
 
-    def fetch_activity(client: WebClient, subject: None, oldest: str = "0") -> List:
+    def fetch_activity(self, client: WebClient, subject: None, oldest: str = "0") -> list:
         if not subject:
             log.warning("No subject provided. Cannot fetch channel activity.")
         elif not subject.conversation:
@@ -48,7 +48,7 @@ class ThreadActivityEvent(SlackPluginEvent):
         By periodically polling thread replies, this gathers insights \
         into the activity and engagement levels of each participant."
 
-    def fetch_activity(client: WebClient, subject: None, oldest: str = "0") -> List:
+    def fetch_activity(self, client: WebClient, subject: None, oldest: str = "0") -> list:
         if not subject:
             log.warning("No subject provided. Cannot fetch thread activity.")
         elif not subject.conversation:
