@@ -22,8 +22,8 @@ from dispatch.models import (
 )
 
 # Association tables for many to many relationships
-assoc_individual_filters = Table(
-    "assoc_individual_filters",
+assoc_individual_contact_filters = Table(
+    "assoc_individual_contact_filters",
     Base.metadata,
     Column("individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")),
     Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
@@ -47,7 +47,7 @@ class IndividualContact(Base, ContactMixin, ProjectMixin, TimeStampMixin):
     service_feedback = relationship("ServiceFeedback", backref="individual")
 
     filters = relationship(
-        "SearchFilter", secondary=assoc_individual_filters, backref="individuals"
+        "SearchFilter", secondary=assoc_individual_contact_filters, backref="individuals"
     )
     team_contact_id = Column(Integer, ForeignKey("team_contact.id"))
     team_contact = relationship("TeamContact", backref="individuals")

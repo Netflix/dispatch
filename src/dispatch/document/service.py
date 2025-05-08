@@ -1,5 +1,5 @@
-from pydantic.error_wrappers import ValidationError
 from datetime import datetime
+from pydantic import ValidationError
 
 from dispatch.enums import DocumentResourceReferenceTypes, DocumentResourceTemplateTypes
 from dispatch.project import service as project_service
