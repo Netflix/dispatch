@@ -2,7 +2,6 @@ import msal
 import logging
 import requests
 import json
-from typing import Any
 
 logger = logging.getLogger(__name__)
 

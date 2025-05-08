@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
@@ -32,24 +31,24 @@ class Term(Base, ProjectMixin):
 
 # Pydantic models...
 class TermBase(DispatchBase):
-    id: Optional[PrimaryKey] = None
-    text: Optional[str] = Field(None, nullable=True)
-    discoverable: Optional[bool] = True
+    id: PrimaryKey | None = None
+    text: str | None = Field(None, nullable=True)
+    discoverable: bool | None = True
 
 
 class TermCreate(TermBase):
-    definitions: Optional[List[DefinitionRead]] = []
+    definitions: list[DefinitionRead | None] = []
     project: ProjectRead
 
 
 class TermUpdate(TermBase):
-    definitions: Optional[List[DefinitionRead]] = []
+    definitions: list[DefinitionRead | None] = []
 
 
 class TermRead(TermBase):
     id: PrimaryKey
-    definitions: Optional[List[DefinitionRead]] = []
+    definitions: list[DefinitionRead | None] = []
 
 
 class TermPagination(Pagination):
-    items: List[TermRead] = []
+    items: list[TermRead] = []

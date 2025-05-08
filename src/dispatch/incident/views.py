@@ -2,7 +2,6 @@ import calendar
 import json
 import logging
 from datetime import date, datetime
-from typing import Annotated, List
 
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -73,7 +72,7 @@ CurrentIncident = Annotated[Incident, Depends(get_current_incident)]
 @router.get("", summary="Retrieve a list of incidents.")
 def get_incidents(
     common: CommonParameters,
-    include: List[str] = Query([], alias="include[]"),
+    include: list[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
 ):
     """Retrieves a list of incidents."""

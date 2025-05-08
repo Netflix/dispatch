@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from pydantic import ValidationError
 
@@ -10,22 +9,22 @@ from dispatch.search_filter import service as search_filter_service
 from .models import Service, ServiceCreate, ServiceRead, ServiceUpdate
 
 
-def get(*, db_session, service_id: int) -> Optional[Service]:
+def get(*, db_session, service_id: int) -> Service | None:
     """Gets a service by id."""
     return db_session.query(Service).filter(Service.id == service_id).first()
 
 
-def get_by_external_id(*, db_session, external_id: str) -> Optional[Service]:
+def get_by_external_id(*, db_session, external_id: str) -> Service | None:
     """Gets a service by external id (e.g. PagerDuty service id)."""
     return db_session.query(Service).filter(Service.external_id == external_id).first()
 
 
-def get_all_by_external_ids(*, db_session, external_ids: List[str]) -> Optional[List[Service]]:
+def get_all_by_external_ids(*, db_session, external_ids: list[str]) -> list[Service | None]:
     """Gets a service by external id (e.g. PagerDuty service id) and project id."""
     return db_session.query(Service).filter(Service.external_id.in_(external_ids)).all()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Service]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Service | None:
     """Gets a service by its name."""
     return (
         db_session.query(Service)
@@ -54,7 +53,7 @@ def get_by_name_or_raise(*, db_session, project_id, service_in: ServiceRead) -> 
 
 def get_by_external_id_and_project_id(
     *, db_session, external_id: str, project_id: int
-) -> Optional[Service]:
+) -> Service | None:
     """Gets a service by external id (e.g. PagerDuty service id) and project id."""
     return (
         db_session.query(Service)
@@ -86,7 +85,7 @@ def get_by_external_id_and_project_id_or_raise(
     return service
 
 
-def get_overdue_evergreen_services(*, db_session, project_id: int) -> List[Optional[Service]]:
+def get_overdue_evergreen_services(*, db_session, project_id: int) -> list[Service | None]:
     """Returns all services that have not had a recent evergreen notification."""
     query = (
         db_session.query(Service)
@@ -99,7 +98,7 @@ def get_overdue_evergreen_services(*, db_session, project_id: int) -> List[Optio
 
 def get_by_external_id_and_project_name(
     *, db_session, external_id: str, project_name: str
-) -> Optional[Service]:
+) -> Service | None:
     """Gets a service by external id (e.g. PagerDuty service id) and project name."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=ProjectRead(name=project_name)
@@ -122,7 +121,7 @@ def get_all_by_status(*, db_session, is_active: bool):
 
 def get_all_by_type_and_status(
     *, db_session, service_type: str, is_active: bool
-) -> List[Optional[Service]]:
+) -> list[Service | None]:
     """Gets services by type and status."""
     return (
         db_session.query(Service)
@@ -134,7 +133,7 @@ def get_all_by_type_and_status(
 
 def get_all_by_project_id_and_status(
     *, db_session, project_id: id, is_active: bool
-) -> List[Optional[Service]]:
+) -> list[Service | None]:
     """Gets services by project id and status."""
     return (
         db_session.query(Service)
@@ -146,7 +145,7 @@ def get_all_by_project_id_and_status(
 
 def get_all_by_health_metrics(
     *, db_session, service_type: str, health_metrics: bool, project_id: int
-) -> List[Optional[Service]]:
+) -> list[Service | None]:
     """Gets all services based on the given health metrics value for a given project."""
     return (
         db_session.query(Service)

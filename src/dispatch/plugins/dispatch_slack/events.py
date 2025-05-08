@@ -1,6 +1,5 @@
 import logging
 from slack_sdk import WebClient
-from typing import List
 
 from dispatch.plugins.base import IPluginEvent
 

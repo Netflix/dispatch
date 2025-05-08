@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import ValidationError
 
 from dispatch.project import service as project_service
@@ -8,12 +6,12 @@ from dispatch.tag_type import service as tag_type_service
 from .models import Tag, TagCreate, TagRead, TagUpdate
 
 
-def get(*, db_session, tag_id: int) -> Optional[Tag]:
+def get(*, db_session, tag_id: int):
     """Gets a tag by its id."""
     return db_session.query(Tag).filter(Tag.id == tag_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
+def get_by_name(*, db_session, project_id: int, name: str):
     """Gets a tag by its project and name."""
     return (
         db_session.query(Tag)
@@ -23,7 +21,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead) -> TagRead:
+def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead):
     """Returns the tag specified or raises ValidationError."""
     tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 

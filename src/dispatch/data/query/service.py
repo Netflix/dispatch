@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import ValidationError
 
 from dispatch.project import service as project_service
@@ -8,12 +7,12 @@ from dispatch.data.source import service as source_service
 from .models import Query, QueryCreate, QueryUpdate, QueryRead
 
 
-def get(*, db_session, query_id: int) -> Optional[Query]:
+def get(*, db_session, query_id: int) -> Query | None:
     """Gets a query by its id."""
     return db_session.query(Query).filter(Query.id == query_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Query]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Query | None:
     """Gets a query by its name."""
     return (
         db_session.query(Query)

@@ -1,4 +1,3 @@
-from typing import Optional, List
 from datetime import datetime
 from pydantic import Field, AnyHttpUrl
 
@@ -103,18 +102,18 @@ class QueryReadMinimal(DispatchBase):
 
 
 class Link(DispatchBase):
-    id: Optional[int]
-    name: Optional[str]
-    description: Optional[str]
-    href: Optional[AnyHttpUrl]
+    id: int | None
+    name: str | None
+    description: str | None
+    href: AnyHttpUrl | None
 
 
 # Pydantic models
 class SourceBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=False)
-    description: Optional[str] = Field(None, nullable=True)
-    data_last_loaded_at: Optional[datetime] = Field(None, nullable=True, title="Last Loaded")
-    sampling_rate: Optional[int] = Field(
+    name: str | None = Field(None, nullable=False)
+    description: str | None = Field(None, nullable=True)
+    data_last_loaded_at: datetime | None = Field(None, nullable=True, title="Last Loaded")
+    sampling_rate: int | None = Field(
         None,
         nullable=True,
         title="Sampling Rate",
@@ -122,25 +121,25 @@ class SourceBase(DispatchBase):
         gt=1,
         description="Rate at which data is sampled (as a percentage) 100% meaning all data is captured.",
     )
-    source_schema: Optional[str] = Field(None, nullable=True)
-    documentation: Optional[str] = Field(None, nullable=True)
-    retention: Optional[int] = Field(None, nullable=True)
-    delay: Optional[int] = Field(None, nullable=True)
-    size: Optional[int] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
-    aggregated: Optional[bool] = Field(False, nullable=True)
-    links: Optional[List[Link]] = Field(default_factory=list)
-    tags: Optional[List[TagRead]] = []
-    incidents: Optional[List[IncidentRead]] = []
-    queries: Optional[List[QueryReadMinimal]] = []
-    alerts: Optional[List[AlertRead]] = []
-    cost: Optional[float]
-    owner: Optional[ServiceRead] = Field(None, nullable=True)
-    source_type: Optional[SourceTypeRead]
-    source_environment: Optional[SourceEnvironmentRead]
-    source_data_format: Optional[SourceDataFormatRead]
-    source_status: Optional[SourceStatusRead]
-    source_transport: Optional[SourceTransportRead]
+    source_schema: str | None = Field(None, nullable=True)
+    documentation: str | None = Field(None, nullable=True)
+    retention: int | None = Field(None, nullable=True)
+    delay: int | None = Field(None, nullable=True)
+    size: int | None = Field(None, nullable=True)
+    external_id: str | None = Field(None, nullable=True)
+    aggregated: bool | None = Field(False, nullable=True)
+    links: list[Link | None] = Field(default_factory=list)
+    tags: list[TagRead | None] = []
+    incidents: list[IncidentRead | None] = []
+    queries: list[QueryReadMinimal | None] = []
+    alerts: list[AlertRead | None] = []
+    cost: float | None
+    owner: ServiceRead | None = Field(None, nullable=True)
+    source_type: SourceTypeRead | None
+    source_environment: SourceEnvironmentRead | None
+    source_data_format: SourceDataFormatRead | None
+    source_status: SourceStatusRead | None
+    source_transport: SourceTransportRead | None
     project: ProjectRead
 
 
@@ -149,7 +148,7 @@ class SourceCreate(SourceBase):
 
 
 class SourceUpdate(SourceBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
 
 
 class SourceRead(SourceBase):
@@ -157,4 +156,4 @@ class SourceRead(SourceBase):
 
 
 class SourcePagination(Pagination):
-    items: List[SourceRead]
+    items: list[SourceRead]

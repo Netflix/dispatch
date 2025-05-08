@@ -4,7 +4,6 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import Annotated
 
 from fastapi import Depends, Query
 from pydantic import StringConstraints

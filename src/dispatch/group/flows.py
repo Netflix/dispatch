@@ -1,4 +1,3 @@
-from typing import List, TypeVar
 import logging
 
 from sqlalchemy.orm import Session
@@ -19,7 +18,7 @@ Subject = TypeVar("Subject", Case, Incident)
 
 
 def create_group(
-    subject: Subject, group_type: str, group_participants: List[str], db_session: Session
+    subject: Subject, group_type: str, group_participants: list[str], db_session: Session
 ):
     """Creates a group."""
     plugin = plugin_service.get_active_instance(

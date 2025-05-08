@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
@@ -38,12 +37,12 @@ class CaseCostType(Base, TimeStampMixin, ProjectMixin):
 # Pydantic Models
 class CaseCostTypeBase(DispatchBase):
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    category: Optional[str] = Field(None, nullable=True)
-    details: Optional[dict] = {}
-    created_at: Optional[datetime]
-    editable: Optional[bool]
-    model_type: Optional[str] = Field(None, nullable=False)
+    description: str | None = Field(None, nullable=True)
+    category: str | None = Field(None, nullable=True)
+    details: dict | None = {}
+    created_at: datetime | None
+    editable: bool | None
+    model_type: str | None = Field(None, nullable=False)
 
 
 class CaseCostTypeCreate(CaseCostTypeBase):
@@ -59,4 +58,4 @@ class CaseCostTypeRead(CaseCostTypeBase):
 
 
 class CaseCostTypePagination(Pagination):
-    items: List[CaseCostTypeRead] = []
+    items: list[CaseCostTypeRead] = []

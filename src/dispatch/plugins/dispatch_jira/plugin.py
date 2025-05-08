@@ -5,7 +5,6 @@
 :license: Apache, see LICENSE for more details.
 """
 
-from typing import Any
 import json
 import logging
 

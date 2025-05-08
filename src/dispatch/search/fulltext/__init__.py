@@ -4,7 +4,6 @@ https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searcha
 """
 import os
 from functools import reduce
-from typing import Any
 
 from sqlalchemy import event, inspect, func, desc, text, MetaData, Table, Index, orm
 from sqlalchemy.dialects.postgresql.base import RESERVED_WORDS

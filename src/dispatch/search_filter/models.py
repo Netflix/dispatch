@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import Field
 
@@ -47,30 +46,30 @@ class SearchFilter(Base, ProjectMixin, TimeStampMixin):
 
 # Pydantic models...
 class IndividualContactRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: str
     email: str
 
 
 class TeamRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: str
 
 
 class ServiceRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: str
 
 
 class NotificationRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: str
 
 
 class SearchFilterBase(DispatchBase):
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    expression: List[dict]
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
+    expression: list[dict]
     name: NameStr
     subject: SearchFilterSubject = SearchFilterSubject.incident
 
@@ -85,15 +84,15 @@ class SearchFilterUpdate(SearchFilterBase):
 
 class SearchFilterRead(SearchFilterBase):
     id: PrimaryKey
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    project: Optional[ProjectRead]
-    creator: Optional[UserRead]
-    individuals: Optional[List[IndividualContactRead]] = []
-    notifications: Optional[List[NotificationRead]] = []
-    services: Optional[List[ServiceRead]] = []
-    teams: Optional[List[TeamRead]] = []
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    project: ProjectRead | None
+    creator: UserRead | None
+    individuals: list[IndividualContactRead | None] = []
+    notifications: list[NotificationRead | None] = []
+    services: list[ServiceRead | None] = []
+    teams: list[TeamRead | None] = []
 
 
 class SearchFilterPagination(Pagination):
-    items: List[SearchFilterRead]
+    items: list[SearchFilterRead]

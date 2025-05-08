@@ -8,7 +8,6 @@
 import functools
 import re
 from contextlib import contextmanager
-from typing import Annotated, Any
 
 from fastapi import Depends
 from pydantic import BaseModel, ValidationError

@@ -1,6 +1,5 @@
 """Models for search functionality in the Dispatch application."""
 
-from typing import ClassVar
 from pydantic import ConfigDict, Field
 
 from dispatch.case.models import CaseRead

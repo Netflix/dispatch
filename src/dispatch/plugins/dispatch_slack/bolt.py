@@ -1,7 +1,6 @@
 import logging
 import uuid
 from http import HTTPStatus
-from typing import Any
 
 from blockkit import Context, MarkdownText, Modal
 from slack_bolt.app import App

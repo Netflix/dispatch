@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -446,7 +445,7 @@ def incident_active_status_flow(incident: Incident, db_session=None):
     conversation_flows.unarchive_conversation(subject=incident, db_session=db_session)
 
 
-def create_incident_review_document(incident: Incident, db_session=None) -> Optional[Document]:
+def create_incident_review_document(incident: Incident, db_session=None) -> Document | None:
     # we create the post-incident review document
     document_flows.create_document(
         subject=incident,

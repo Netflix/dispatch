@@ -1,6 +1,5 @@
 """Models for Slack command payloads in the Dispatch application."""
 
-from typing import NewType, TypedDict
 
 from pydantic import BaseModel, AnyHttpUrl
 

@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -15,7 +14,7 @@ from dispatch.incident.messaging import send_completed_form_email
 log = logging.getLogger(__name__)
 
 
-def get(*, forms_type_id: int, db_session: Session) -> Optional[FormsType]:
+def get(*, forms_type_id: int, db_session: Session) -> FormsType | None:
     """Gets a from type by its id."""
     return db_session.query(FormsType).filter(FormsType.id == forms_type_id).one_or_none()
 

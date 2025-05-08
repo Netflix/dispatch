@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import logging
-from typing import Generator, Optional, Sequence, Union, NewType, NamedTuple
 import re
+from collections.abc import Generator, Sequence
 
 import jsonpath_ng
 from pydantic import ValidationError
@@ -19,12 +19,12 @@ from dispatch.signal.models import Signal, SignalInstance
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session: Session, entity_id: int) -> Optional[Entity]:
+def get(*, db_session: Session, entity_id: int) -> Entity | None:
     """Gets a entity by its id."""
     return db_session.query(Entity).filter(Entity.id == entity_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Entity]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Entity | None:
     """Gets a entity by its project and name."""
     return (
         db_session.query(Entity)
@@ -56,7 +56,7 @@ def get_by_name_or_raise(
     return entity
 
 
-def get_by_value(*, db_session: Session, project_id: int, value: str) -> Optional[Entity]:
+def get_by_value(*, db_session: Session, project_id: int, value: str) -> Entity | None:
     """Gets a entity by its value."""
     return (
         db_session.query(Entity)
@@ -244,16 +244,13 @@ def get_signal_instances_with_entities(
     return signal_instances
 
 
-EntityTypePair = NewType(
-    "EntityTypePair",
-    NamedTuple(
-        "EntityTypePairTuple",
-        [
-            ("entity_type", EntityType),
-            ("regex", Union[re.Pattern[str], None]),
-            ("json_path", Union[jsonpath_ng.JSONPath, None]),
-        ],
-    ),
+EntityTypePair = NamedTuple(
+    "EntityTypePairTuple",
+    [
+        ("entity_type", EntityType),
+        ("regex", re.Pattern[str] | None),
+        ("json_path", jsonpath_ng.JSONPath | None),
+    ],
 )
 
 

@@ -1,6 +1,5 @@
 from datetime import datetime
 from slack_sdk import WebClient
-from typing import Any
 
 from dispatch.plugins.bases import ConversationPlugin
 from dispatch.plugins.dispatch_slack.events import ChannelActivityEvent

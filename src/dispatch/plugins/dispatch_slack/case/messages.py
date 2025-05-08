@@ -1,5 +1,4 @@
 import logging
-from typing import NamedTuple, Tuple
 
 from blockkit import (
     Actions,
@@ -369,7 +368,7 @@ def create_genai_signal_message_metadata_blocks(
 def create_genai_signal_analysis_message(
     case: Case,
     db_session: Session,
-) -> Tuple[str | dict[str, str], list[Block]]:
+) -> tuple[str | dict[str, str], list[Block]]:
     """
     Generates a GenAI signal analysis message for a given case.
 
@@ -381,7 +380,7 @@ def create_genai_signal_analysis_message(
         db_session (Session): The database session to use for querying and generating the case signal summary.
 
     Returns:
-        Tuple[str | dict[str, str], list[Block]]: A tuple containing the GenAI analysis message (either as a string or a dictionary)
+        tuple[str | dict[str, str], list[Block]]: A tuple containing the GenAI analysis message (either as a string or a dictionary)
         and the updated list of signal metadata blocks with the GenAI analysis section appended.
     """
     signal_metadata_blocks = []

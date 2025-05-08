@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import ValidationError
 
 from dispatch.project import service as project_service
@@ -11,7 +10,7 @@ from .models import (
 )
 
 
-def get(*, db_session, source_transport_id: int) -> Optional[SourceTransport]:
+def get(*, db_session, source_transport_id: int) -> SourceTransport | None:
     """Gets a source transport by its id."""
     return (
         db_session.query(SourceTransport)
@@ -20,7 +19,7 @@ def get(*, db_session, source_transport_id: int) -> Optional[SourceTransport]:
     )
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceTransport]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceTransport | None:
     """Gets a source transport by its name."""
     return (
         db_session.query(SourceTransport)
@@ -51,7 +50,7 @@ def get_by_name_or_raise(
     return source
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceTransport]]:
+def get_all(*, db_session, project_id: int) -> list[SourceTransport | None]:
     """Gets all source transports."""
     return db_session.query(SourceTransport).filter(SourceTransport.project_id == project_id)
 

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import ValidationError
 
 from dispatch.project import service as project_service
@@ -7,12 +5,12 @@ from dispatch.project import service as project_service
 from .models import TagType, TagTypeCreate, TagTypeRead, TagTypeUpdate
 
 
-def get(*, db_session, tag_type_id: int) -> Optional[TagType]:
+def get(*, db_session, tag_type_id: int):
     """Gets a tag type by its id."""
     return db_session.query(TagType).filter(TagType.id == tag_type_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[TagType]:
+def get_by_name(*, db_session, project_id: int, name: str):
     """Gets a tag type by its name."""
     return (
         db_session.query(TagType)
@@ -22,7 +20,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[TagType]:
     )
 
 
-def get_storage_tag_type_for_project(*, db_session, project_id) -> TagType | None:
+def get_storage_tag_type_for_project(*, db_session, project_id):
     """Returns the storage tag type for a project."""
     return (
         db_session.query(TagType)
@@ -32,7 +30,7 @@ def get_storage_tag_type_for_project(*, db_session, project_id) -> TagType | Non
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in: TagTypeRead) -> TagType:
+def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in: TagTypeRead):
     """Returns the tag_type specified or raises ValidationError."""
     tag_type = get_by_name(db_session=db_session, project_id=project_id, name=tag_type_in.name)
 

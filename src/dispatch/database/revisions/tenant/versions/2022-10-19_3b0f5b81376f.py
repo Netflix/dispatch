@@ -16,7 +16,6 @@ from sqlalchemy.sql.expression import true
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from dispatch.incident.severity import service as incident_severity_service
-from typing_extensions import Annotated
 
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
 NameStr = Annotated[str, StringConstraints(pattern=r"^.*\S.*$", strip_whitespace=True, min_length=3)]

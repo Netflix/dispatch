@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
@@ -36,30 +35,30 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=True)
-    source: Optional[str] = Field(None, nullable=True)
-    uri: Optional[str] = Field(None, nullable=True)
-    discoverable: Optional[bool] = True
-    external_id: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
+    name: str | None = Field(None, nullable=True)
+    source: str | None = Field(None, nullable=True)
+    uri: str | None = Field(None, nullable=True)
+    discoverable: bool | None = True
+    external_id: str | None = Field(None, nullable=True)
+    description: str | None = Field(None, nullable=True)
 
 
 class TagCreate(TagBase):
-    id: Optional[PrimaryKey] = None
+    id: PrimaryKey | None = None
     tag_type: TagTypeCreate
     project: ProjectRead
 
 
 class TagUpdate(TagBase):
-    id: Optional[PrimaryKey] = None
-    tag_type: Optional[TagTypeUpdate] = None
+    id: PrimaryKey | None = None
+    tag_type: TagTypeUpdate | None = None
 
 
 class TagRead(TagBase):
     id: PrimaryKey
-    tag_type: Optional[TagTypeRead]
+    tag_type: TagTypeRead | None
     project: ProjectRead
 
 
 class TagPagination(Pagination):
-    items: List[TagRead]
+    items: list[TagRead]

@@ -1,5 +1,4 @@
 import logging
-from typing import Union
 
 from fastapi import (
     APIRouter,
@@ -302,7 +301,7 @@ def return_signal_stats(
 @router.get("/{signal_id}/stats", response_model=SignalStats)
 def return_single_signal_stats(
     db_session: DbSession,
-    signal_id: Union[str, PrimaryKey],
+    signal_id: str | PrimaryKey,
     entity_value: str = Query(..., description="The name of the entity"),
     entity_type_id: int = Query(..., description="The ID of the entity type"),
     num_days: int = Query(None, description="The number of days to look back"),
@@ -333,7 +332,7 @@ def return_single_signal_stats(
 
 
 @router.get("/{signal_id}", response_model=SignalRead)
-def get_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
+def get_signal(db_session: DbSession, signal_id: str | PrimaryKey):
     """Gets a signal by its id."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:
@@ -364,7 +363,7 @@ def create_signal(db_session: DbSession, signal_in: SignalCreate, current_user: 
 )
 def update_signal(
     db_session: DbSession,
-    signal_id: Union[str, PrimaryKey],
+    signal_id: str | PrimaryKey,
     signal_in: SignalUpdate,
     current_user: CurrentUser,
 ):
@@ -405,7 +404,7 @@ def update_signal(
     response_model=None,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_signal(db_session: DbSession, signal_id: Union[str, PrimaryKey]):
+def delete_signal(db_session: DbSession, signal_id: str | PrimaryKey):
     """Deletes a signal."""
     signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
     if not signal:

@@ -9,7 +9,6 @@ import base64
 import json
 import logging
 import time
-from typing import Literal
 from uuid import UUID
 
 import requests

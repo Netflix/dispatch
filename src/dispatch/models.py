@@ -1,8 +1,6 @@
 """Shared models and mixins for the Dispatch application."""
 
 from datetime import datetime, timedelta, timezone
-from typing import ClassVar
-from typing_extensions import Annotated
 
 from pydantic import EmailStr
 from pydantic import Field, StringConstraints, ConfigDict, BaseModel

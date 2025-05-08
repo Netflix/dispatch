@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import Field
-from typing import List, Optional
 
 from sqlalchemy import Boolean, Column, Integer, ForeignKey, String
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -41,14 +40,14 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
 # Pydantic models
 class FormsTypeBase(DispatchBase):
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool]
-    form_schema: Optional[str] = Field(None, nullable=True)
-    attorney_form_schema: Optional[str] = Field(None, nullable=True)
-    scoring_schema: Optional[str] = Field(None, nullable=True)
-    creator: Optional[IndividualContactReadMinimal]
-    project: Optional[ProjectRead]
-    service: Optional[ServiceRead]
+    description: str | None = Field(None, nullable=True)
+    enabled: bool | None
+    form_schema: str | None = Field(None, nullable=True)
+    attorney_form_schema: str | None = Field(None, nullable=True)
+    scoring_schema: str | None = Field(None, nullable=True)
+    creator: IndividualContactReadMinimal | None
+    project: ProjectRead | None
+    service: ServiceRead | None
 
 
 class FormsTypeCreate(FormsTypeBase):
@@ -61,9 +60,9 @@ class FormsTypeUpdate(FormsTypeBase):
 
 class FormsTypeRead(FormsTypeBase):
     id: PrimaryKey
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class FormsTypePagination(Pagination):
-    items: List[FormsTypeRead] = []
+    items: list[FormsTypeRead] = []

@@ -1,4 +1,3 @@
-from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import ValidationError
@@ -76,7 +75,7 @@ def create_entity_type_with_case(
     return entity_type
 
 
-@router.put("/recalculate/{entity_type_id}/{case_id}", response_model=List[SignalInstanceRead])
+@router.put("/recalculate/{entity_type_id}/{case_id}", response_model=list[SignalInstanceRead])
 def recalculate(db_session: DbSession, entity_type_id: PrimaryKey, case_id: PrimaryKey):
     """Recalculates the associated entities for all signal instances in a case."""
     entity_type = get(

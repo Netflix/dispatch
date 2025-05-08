@@ -10,7 +10,6 @@ import logging
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, List
 
 from googleapiclient.errors import HttpError
 from pytz import timezone
@@ -77,7 +76,7 @@ def create_event(
     name: str,
     description: str = None,
     title: str = None,
-    participants: List[str] = None,
+    participants: list[str] = None,
     start_time: str = None,
     duration: int = 60000,  # duration in mins ~6 weeks
 ):
@@ -136,7 +135,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
         self.configuration_schema = GoogleConfiguration
 
     def create(
-        self, name: str, description: str = None, title: str = None, participants: List[str] = None
+        self, name: str, description: str = None, title: str = None, participants: list[str] = None
     ):
         """Create a new event."""
         client = get_service(self.configuration, "calendar", "v3", self.scopes)

@@ -8,7 +8,6 @@
 
 import time
 from email.mime.text import MIMEText
-from typing import Dict, List, Optional
 import base64
 import logging
 
@@ -84,7 +83,7 @@ class GoogleGmailEmailPlugin(EmailPlugin):
         notification_text: str,
         notification_template: dict,
         notification_type: MessageType,
-        items: Optional[List] = None,
+        items: List | None = None,
         **kwargs,
     ):
         """Sends an html email based on the type."""

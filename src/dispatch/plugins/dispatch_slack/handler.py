@@ -5,7 +5,6 @@ Fork of the built-in Bolt Starlette adapter. Removes async to allow instant ackn
 """
 
 from http import HTTPStatus
-from typing import Dict, Any, Optional
 
 from starlette.requests import Request
 from starlette.responses import Response
@@ -17,7 +16,7 @@ from slack_bolt.oauth import OAuthFlow
 def to_bolt_request(
     req: Request,
     body: bytes,
-    addition_context_properties: Optional[Dict[str, Any]] = None,
+    addition_context_properties: dict[str, Any | None] = None,
 ) -> BoltRequest:
     request = BoltRequest(
         body=body.decode("utf-8"),
@@ -59,7 +58,7 @@ class SlackRequestHandler:
         self,
         req: Request,
         body: bytes,
-        addition_context_properties: Optional[Dict[str, Any]] = None,
+        addition_context_properties: dict[str, Any | None] = None,
     ) -> Response:
         if req.method == "GET":
             if self.app.oauth_flow is not None:

@@ -1,5 +1,4 @@
 import logging
-from typing import Annotated, List
 
 import json
 
@@ -80,7 +79,7 @@ def get_case(
 
 @router.get(
     "/{case_id}/participants/minimal",
-    response_model=List[ParticipantReadMinimal],
+    response_model=list[ParticipantReadMinimal],
     summary="Retrieves a minimal list of case participants.",
     dependencies=[Depends(PermissionsDependency([CaseViewPermission]))],
 )
@@ -114,7 +113,7 @@ def get_case_participants(
 @router.get("", summary="Retrieves a list of cases.")
 def get_cases(
     common: CommonParameters,
-    include: List[str] = Query([], alias="include[]"),
+    include: list[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
 ):
     """Retrieves all cases."""

@@ -2,8 +2,6 @@ import json
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Union
-from collections import defaultdict
 
 from fastapi import HTTPException, status
 from pydantic import ValidationError
@@ -59,7 +57,7 @@ log = logging.getLogger(__name__)
 
 def get_signal_engagement(
     *, db_session: Session, signal_engagement_id: int
-) -> Optional[SignalEngagement]:
+) -> SignalEngagement | None:
     """Gets a signal engagement by id."""
     return (
         db_session.query(SignalEngagement)
@@ -70,7 +68,7 @@ def get_signal_engagement(
 
 def get_signal_engagement_by_name(
     *, db_session, project_id: int, name: str
-) -> Optional[SignalEngagement]:
+) -> SignalEngagement | None:
     """Gets a signal engagement by its name."""
     return (
         db_session.query(SignalEngagement)

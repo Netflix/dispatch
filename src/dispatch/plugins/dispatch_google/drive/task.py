@@ -9,7 +9,6 @@
 
 import re
 import logging
-from typing import Any, List
 
 from dispatch.task.enums import TaskStatus
 from enum import Enum
@@ -45,7 +44,7 @@ class AssignmentSubTypes(str, Enum):
     reassigned = "REASSIGNED"
 
 
-def find_urls(text: str) -> List[str]:
+def find_urls(text: str) -> list[str]:
     """Finds a url in a text blob."""
     # findall() has been used
     # with valid conditions for urls in string
@@ -54,7 +53,7 @@ def find_urls(text: str) -> List[str]:
     return [x[0] for x in url]
 
 
-def get_tickets(replies: List[dict]):
+def get_tickets(replies: list[dict]):
     """Fetches urls/tickets from task replies."""
     tickets = []
     for r in replies:

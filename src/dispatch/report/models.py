@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from typing import List, Optional
 
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, event
 from sqlalchemy.orm import relationship
@@ -38,7 +37,7 @@ class Report(Base):
 
 # Pydantic models...
 class ReportBase(DispatchBase):
-    details: Optional[dict] = None
+    details: dict | None = None
     type: ReportTypes
 
 
@@ -52,11 +51,11 @@ class ReportUpdate(ReportBase):
 
 class ReportRead(ReportBase):
     id: int
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 
 class ReportPagination(Pagination):
-    items: List[ReportRead] = []
+    items: list[ReportRead] = []
 
 
 class TacticalReportCreate(DispatchBase):
