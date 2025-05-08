@@ -1,5 +1,4 @@
 import json
-from typing import List
 from fastapi import APIRouter, HTTPException, Query, status
 
 
@@ -25,7 +24,7 @@ router = APIRouter()
 
 
 @router.get("", summary="Retrieve a list of all tasks.")
-def get_tasks(common: CommonParameters, include: List[str] = Query([], alias="include[]")):
+def get_tasks(common: CommonParameters, include: list[str] = Query([], alias="include[]")):
     """Retrieve all tasks."""
     pagination = search_filter_sort_paginate(model="Task", **common)
 

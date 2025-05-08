@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import ValidationError
 
 from dispatch.project import service as project_service
@@ -11,12 +10,12 @@ from .models import (
 )
 
 
-def get(*, db_session, source_status_id: int) -> Optional[SourceStatus]:
+def get(*, db_session, source_status_id: int) -> SourceStatus | None:
     """Gets a status by its id."""
     return db_session.query(SourceStatus).filter(SourceStatus.id == source_status_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceStatus]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceStatus | None:
     """Gets a status by its name."""
     return (
         db_session.query(SourceStatus)
@@ -45,7 +44,7 @@ def get_by_name_or_raise(
     return status
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceStatus]]:
+def get_all(*, db_session, project_id: int) -> list[SourceStatus | None]:
     """Gets all sources."""
     return db_session.query(SourceStatus).filter(SourceStatus.project_id == project_id)
 

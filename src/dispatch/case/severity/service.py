@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
@@ -13,7 +12,7 @@ from .models import (
 )
 
 
-def get(*, db_session, case_severity_id: int) -> Optional[CaseSeverity]:
+def get(*, db_session, case_severity_id: int) -> CaseSeverity | None:
     """Returns a case severity based on the given severity id."""
     return db_session.query(CaseSeverity).filter(CaseSeverity.id == case_severity_id).one_or_none()
 
@@ -43,7 +42,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> CaseSeverity:
     return case_severity
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[CaseSeverity]:
+def get_by_name(*, db_session, project_id: int, name: str) -> CaseSeverity | None:
     """Returns a case severity based on the given severity name."""
     return (
         db_session.query(CaseSeverity)
@@ -88,14 +87,14 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[CaseSeverity]]:
+def get_all(*, db_session, project_id: int = None) -> list[CaseSeverity | None]:
     """Returns all case severities."""
     if project_id:
         return db_session.query(CaseSeverity).filter(CaseSeverity.project_id == project_id)
     return db_session.query(CaseSeverity)
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CaseSeverity]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[CaseSeverity | None]:
     """Returns all enabled case severities."""
     if project_id:
         return (

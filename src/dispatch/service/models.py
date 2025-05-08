@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 from pydantic import Field
 from dispatch.models import EvergreenBase, EvergreenMixin, PrimaryKey
 
@@ -43,30 +42,30 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 
 # Pydantic models...
 class ServiceBase(EvergreenBase):
-    description: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
-    health_metrics: Optional[bool] = None
-    is_active: Optional[bool] = None
-    name: Optional[str] = Field(None, nullable=True)
-    type: Optional[str] = Field(None, nullable=True)
-    shift_hours_type: Optional[int] = Field(24, nullable=True)
+    description: str | None = None
+    external_id: str | None = None
+    health_metrics: bool | None = None
+    is_active: bool | None = None
+    name: str | None = None
+    type: str | None = None
+    shift_hours_type: int | None = Field(24, nullable=True)
 
 
 class ServiceCreate(ServiceBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: list[SearchFilterRead | None] = []
     project: ProjectRead
 
 
 class ServiceUpdate(ServiceBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: list[SearchFilterRead | None] = []
 
 
 class ServiceRead(ServiceBase):
     id: PrimaryKey
-    filters: Optional[List[SearchFilterRead]] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    filters: list[SearchFilterRead | None] = []
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class ServicePagination(Pagination):
-    items: List[ServiceRead] = []
+    items: list[ServiceRead] = []

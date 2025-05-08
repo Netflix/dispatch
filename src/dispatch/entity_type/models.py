@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import Field
 
 from sqlalchemy import Column, Integer, String
@@ -49,23 +48,23 @@ class SignalRead(DispatchBase):
     id: PrimaryKey
     name: str
     owner: str
-    conversation_target: Optional[str]
-    description: Optional[str]
-    variant: Optional[str]
+    conversation_target: str | None
+    description: str | None
+    variant: str | None
 
 
 class EntityTypeBase(DispatchBase):
-    name: Optional[NameStr]
-    description: Optional[str] = Field(None, nullable=True)
-    jpath: Optional[str] = Field(None, nullable=True)
-    scope: Optional[EntityScopeEnum] = Field(EntityScopeEnum.single, nullable=False)
-    enabled: Optional[bool]
-    signals: Optional[List[SignalRead]] = Field([], nullable=True)
-    regular_expression: Optional[str] = Field(None, nullable=True)
+    name: NameStr | None
+    description: str | None = None
+    jpath: str | None = None
+    scope: EntityScopeEnum | None = Field(EntityScopeEnum.single, nullable=False)
+    enabled: bool | None
+    signals: list[SignalRead | None] = Field([], nullable=True)
+    regular_expression: str | None = None
 
 
 class EntityTypeCreate(EntityTypeBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     project: ProjectRead
 
 
@@ -81,11 +80,11 @@ class EntityTypeRead(EntityTypeBase):
 class EntityTypeReadMinimal(DispatchBase):
     id: PrimaryKey
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
     scope: EntityScopeEnum
-    enabled: Optional[bool]
-    regular_expression: Optional[str] = Field(None, nullable=True)
+    enabled: bool | None
+    regular_expression: str | None = None
 
 
 class EntityTypePagination(Pagination):
-    items: List[EntityTypeRead]
+    items: list[EntityTypeRead]

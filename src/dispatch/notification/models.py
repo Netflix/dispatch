@@ -1,7 +1,4 @@
 from datetime import datetime
-from typing import Optional, List
-from pydantic import Field
-
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
@@ -63,27 +60,27 @@ class Notification(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 # Pydantic models
 class NotificationBase(EvergreenBase):
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
     type: NotificationTypeEnum
     target: str
-    enabled: Optional[bool]
+    enabled: bool | None
 
 
 class NotificationCreate(NotificationBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: list[SearchFilterRead | None]
     project: ProjectRead
 
 
 class NotificationUpdate(NotificationBase):
-    filters: Optional[List[SearchFilterUpdate]]
+    filters: list[SearchFilterUpdate | None]
 
 
 class NotificationRead(NotificationBase):
     id: PrimaryKey
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    filters: Optional[List[SearchFilterRead]]
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    filters: list[SearchFilterRead | None]
 
 
 class NotificationPagination(Pagination):
-    items: List[NotificationRead] = []
+    items: list[NotificationRead] = []

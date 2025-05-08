@@ -3,7 +3,6 @@ from datetime import datetime
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from typing import List, Optional
 
 from dispatch.database.core import Base
 from dispatch.case_cost_type.models import CaseCostTypeRead
@@ -35,7 +34,7 @@ class CaseCostCreate(CaseCostBase):
 
 
 class CaseCostUpdate(CaseCostBase):
-    id: Optional[PrimaryKey] = None
+    id: PrimaryKey | None = None
     case_cost_type: CaseCostTypeRead
 
 
@@ -46,8 +45,8 @@ class CaseCostReadMinimal(DispatchBase):
 class CaseCostRead(CaseCostBase):
     id: PrimaryKey
     case_cost_type: CaseCostTypeRead
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
 
 class CaseCostPagination(Pagination):
-    items: List[CaseCostRead] = []
+    items: list[CaseCostRead] = []

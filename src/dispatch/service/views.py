@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Body, HTTPException, status, Query
 from pydantic import ValidationError
-from typing import List
 
 from sqlalchemy.exc import IntegrityError
 
@@ -28,10 +27,10 @@ def get_services(common: CommonParameters):
     return search_filter_sort_paginate(model="Service", **common)
 
 
-@router.get("/externalids", response_model=List[ServiceRead])
+@router.get("/externalids", response_model=list[ServiceRead])
 def get_services_by_external_ids(
     db_session: DbSession,
-    ids: List[str] = Query(..., alias="ids[]"),
+    ids: list[str] = Query(..., alias="ids[]"),
 ):
     """Retrieves all services given list of external ids."""
     return get_all_by_external_ids(db_session=db_session, external_ids=ids)

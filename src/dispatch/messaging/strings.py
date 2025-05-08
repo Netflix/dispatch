@@ -1,6 +1,5 @@
 import copy
 
-from typing import List, Optional
 
 from dispatch.messaging.email.filters import env
 from dispatch.conversation.enums import ConversationButtonActions
@@ -1230,7 +1229,7 @@ ONCALL_SHIFT_FEEDBACK_RECEIVED = [
 ]
 
 
-def render_message_template(message_template: List[dict], **kwargs):
+def render_message_template(message_template: list[dict], **kwargs):
     """Renders the jinja data included in the template itself."""
     data = []
     new_copy = copy.deepcopy(message_template)
@@ -1302,7 +1301,7 @@ def render_message_template(message_template: List[dict], **kwargs):
 
 def generate_welcome_message(
     welcome_message: EmailTemplates, is_incident: bool = True
-) -> Optional[List[dict]]:
+) -> list[dict | None]:
     """Generates the welcome message."""
     if welcome_message is None:
         if is_incident:

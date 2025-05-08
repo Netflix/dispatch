@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import Field, SecretStr
 from dispatch.config import BaseConfigurationModel
 
@@ -12,7 +11,7 @@ class SlackConfiguration(BaseConfigurationModel):
     api_bot_token: SecretStr = Field(
         title="API Bot Token", description="Token to use when plugin is in http/api mode."
     )
-    socket_mode_app_token: Optional[SecretStr] = Field(
+    socket_mode_app_token: SecretStr | None = Field(
         title="Socket Mode App Token", description="Token used when plugin is in socket mode."
     )
     signing_secret: SecretStr = Field(
@@ -24,16 +23,16 @@ class SlackConfiguration(BaseConfigurationModel):
 class SlackContactConfiguration(SlackConfiguration):
     """Slack contact configuration."""
 
-    profile_department_field_id: Optional[str] = Field(
+    profile_department_field_id: str | None = Field(
         None,
         title="Profile Department Field Id",
         description="Defines the field in the slack profile where Dispatch should fetch the users department.",
     )
-    profile_team_field_id: Optional[str] = Field(
+    profile_team_field_id: str | None = Field(
         title="Profile Team Field Id",
         description="Defines the field in the slack profile where Dispatch should fetch a users team.",
     )
-    profile_weblink_field_id: Optional[str] = Field(
+    profile_weblink_field_id: str | None = Field(
         title="Profile Weblink Field Id",
         description="Defines the field in the slack profile where Dispatch should fetch the users weblink.",
     )

@@ -1,16 +1,15 @@
-from typing import Optional
 
 from .models import Group, GroupCreate, GroupUpdate
 
 
-def get(*, db_session, group_id: int) -> Optional[Group]:
+def get(*, db_session, group_id: int) -> Group | None:
     """Returns a group given a group id."""
     return db_session.query(Group).filter(Group.id == group_id).one_or_none()
 
 
 def get_by_incident_id_and_resource_type(
     *, db_session, incident_id: str, resource_type: str
-) -> Optional[Group]:
+) -> Group | None:
     """Returns a group given an incident id and group resource type."""
     return (
         db_session.query(Group)

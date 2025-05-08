@@ -1,4 +1,3 @@
-from typing import Optional
 
 from dispatch.definition import service as definition_service
 from dispatch.project import service as project_service
@@ -6,11 +5,11 @@ from dispatch.project import service as project_service
 from .models import Term, TermCreate, TermUpdate
 
 
-def get(*, db_session, term_id: int) -> Optional[Term]:
+def get(*, db_session, term_id: int) -> Term | None:
     return db_session.query(Term).filter(Term.id == term_id).first()
 
 
-def get_by_text(*, db_session, text: str) -> Optional[Term]:
+def get_by_text(*, db_session, text: str) -> Term | None:
     return db_session.query(Term).filter(Term.text == text).first()
 
 

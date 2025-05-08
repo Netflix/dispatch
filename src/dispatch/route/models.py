@@ -1,4 +1,3 @@
-from typing import Optional
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, DateTime, String
@@ -35,7 +34,7 @@ class RecommendationMatchBase(DispatchBase):
 
 
 class RecommendationBase(DispatchBase):
-    matches: Optional[list[RecommendationMatchBase]]
+    matches: list[RecommendationMatchBase | None]
 
 
 class RouteBase(DispatchBase):

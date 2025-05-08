@@ -8,7 +8,6 @@
 import logging
 from schedule import every
 from typing import NoReturn
-
 from sqlalchemy.orm import Session
 
 from dispatch.decorators import scheduled_project_task, timer

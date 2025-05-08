@@ -9,8 +9,7 @@
 import io
 import json
 import logging
-from typing import Any, List, Optional
-
+from typing import Any
 from blockkit import Message
 from blockkit.surfaces import Block
 from slack_sdk.errors import SlackApiError
@@ -253,11 +252,11 @@ class SlackConversationPlugin(ConversationPlugin):
         self,
         conversation_id: str,
         text: str,
-        message_template: List[dict],
+        message_template: list[dict],
         notification_type: str,
-        items: Optional[List] = None,
-        blocks: Optional[List] = None,
-        ts: Optional[str] = None,
+        items: list | None = None,
+        blocks: list | None = None,
+        ts: str | None = None,
         persist: bool = False,
         **kwargs,
     ):
@@ -298,9 +297,9 @@ class SlackConversationPlugin(ConversationPlugin):
         text: str,
         message_template: dict,
         notification_type: str,
-        items: Optional[List] = None,
-        ts: Optional[str] = None,
-        blocks: Optional[List] = None,
+        items: list | None = None,
+        ts: str | None = None,
+        blocks: list | None = None,
         **kwargs,
     ):
         """Sends a message directly to a user if the user exists."""
@@ -323,8 +322,8 @@ class SlackConversationPlugin(ConversationPlugin):
         text: str,
         message_template: dict = None,
         notification_type: str = None,
-        items: Optional[List] = None,
-        blocks: Optional[List] = None,
+        items: list | None = None,
+        blocks: list | None = None,
         **kwargs,
     ):
         """Sends an ephemeral message to a user in a channel if the user exists."""
@@ -342,7 +341,7 @@ class SlackConversationPlugin(ConversationPlugin):
         if not archived:
             send_ephemeral_message(client, conversation_id, user_id, text, blocks)
 
-    def add(self, conversation_id: str, participants: List[str]):
+    def add(self, conversation_id: str, participants: list[str]):
         """Adds users to conversation if it is not archived."""
         client = create_slack_client(self.configuration)
         archived = conversation_archived(client, conversation_id)
@@ -350,7 +349,7 @@ class SlackConversationPlugin(ConversationPlugin):
             participants = [resolve_user(client, p)["id"] for p in set(participants)]
             add_users_to_conversation(client, conversation_id, participants)
 
-    def add_to_thread(self, conversation_id: str, thread_id: str, participants: List[str]):
+    def add_to_thread(self, conversation_id: str, thread_id: str, participants: list[str]):
         """Adds users to a thread conversation."""
         client = create_slack_client(self.configuration)
         user_ids = emails_to_user_ids(client=client, participants=participants)

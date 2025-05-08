@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
 from dispatch.incident import service as incident_service
@@ -12,22 +11,22 @@ from .models import (
 )
 
 
-def get(*, db_session, monitor_id: int) -> Optional[Monitor]:
+def get(*, db_session, monitor_id: int) -> Monitor | None:
     """Returns a monitor based on the given monitor id."""
     return db_session.query(Monitor).filter(Monitor.id == monitor_id).one_or_none()
 
 
-def get_all(*, db_session) -> List[Optional[Monitor]]:
+def get_all(*, db_session) -> list[Monitor | None]:
     """Returns all monitors."""
     return db_session.query(Monitor)
 
 
-def get_enabled(*, db_session) -> List[Optional[Monitor]]:
+def get_enabled(*, db_session) -> list[Monitor | None]:
     """Fetches all enabled monitors."""
     return db_session.query(Monitor).filter(Monitor.enabled == true()).all()
 
 
-def get_by_weblink(*, db_session, weblink: str) -> Optional[Monitor]:
+def get_by_weblink(*, db_session, weblink: str) -> Monitor | None:
     """Fetches a monitor by it's weblink"""
     return db_session.query(Monitor).filter(Monitor.weblink == weblink).one_or_none()
 

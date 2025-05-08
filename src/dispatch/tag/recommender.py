@@ -6,9 +6,8 @@
 """
 
 import logging
-from typing import List, Any
 from collections import defaultdict
-
+from typing import Any
 import tempfile
 import pandas as pd
 from pandas.core.frame import DataFrame
@@ -65,7 +64,7 @@ def correlate_with_every_tag(df, tag_a):
     return correlation_list
 
 
-def get_unique_tags(items: List[Any]):
+def get_unique_tags(items: list[Any]):
     """Get unique tags."""
     unique_tags = {}
     for i in items:
@@ -88,7 +87,7 @@ def create_correlation_dataframe(dataframe):
     return correlated_dataframe.set_index("index")
 
 
-def create_boolean_dataframe(items: List[Any]):
+def create_boolean_dataframe(items: list[Any]):
     """Create a boolean dataframe with tag and item data."""
     unique_tags = get_unique_tags(items)
     boolean_df = pd.DataFrame(columns=unique_tags.values())
@@ -139,7 +138,7 @@ def find_highest_correlations(correlated_dataframe, recommendations):
 
 def get_recommendations(
     db_session: Session,
-    tag_ids: List[str],
+    tag_ids: list[str],
     organization_slug: str,
     project_slug: str,
     model_name: str,
@@ -176,7 +175,7 @@ def get_recommendations(
     return tags
 
 
-def build_model(items: List[Any], organization_slug: str, project_slug: str, model_name: str):
+def build_model(items: list[Any], organization_slug: str, project_slug: str, model_name: str):
     """Builds the correlation dataframe for items."""
     boolean_dataframe = create_boolean_dataframe(items)
     correlation_dataframe = create_correlation_dataframe(boolean_dataframe)

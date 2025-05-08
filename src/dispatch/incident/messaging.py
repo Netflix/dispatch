@@ -6,7 +6,6 @@
 """
 
 import logging
-from typing import Optional
 
 from slack_sdk.errors import SlackApiError
 from sqlalchemy.orm import Session
@@ -83,7 +82,7 @@ def send_welcome_ephemeral_message_to_participant(
     participant_email: str,
     incident: Incident,
     db_session: Session,
-    welcome_template: Optional[EmailTemplates] = None,
+    welcome_template: EmailTemplates | None = None,
 ):
     """Sends an ephemeral welcome message to the participant."""
     if not incident.conversation:
@@ -164,7 +163,7 @@ def send_welcome_email_to_participant(
     participant_email: str,
     incident: Incident,
     db_session: Session,
-    welcome_template: Optional[EmailTemplates] = None,
+    welcome_template: EmailTemplates | None = None,
 ):
     """Sends a welcome email to the participant."""
     # we load the incident instance

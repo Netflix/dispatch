@@ -1,5 +1,4 @@
 from sqlalchemy.sql.expression import true
-from typing import List, Optional
 
 from dispatch.project import service as project_service
 
@@ -10,7 +9,7 @@ from .models import (
 )
 
 
-def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]:
+def get(*, db_session, incident_cost_type_id: int) -> IncidentCostType | None:
     """Gets an incident cost type by its id."""
     return (
         db_session.query(IncidentCostType)
@@ -19,7 +18,7 @@ def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]
     )
 
 
-def get_default(*, db_session, project_id: int) -> Optional[IncidentCostType]:
+def get_default(*, db_session, project_id: int) -> IncidentCostType | None:
     """Returns the default incident cost type."""
     return (
         db_session.query(IncidentCostType)
@@ -31,7 +30,7 @@ def get_default(*, db_session, project_id: int) -> Optional[IncidentCostType]:
 
 def get_by_name(
     *, db_session, project_id: int, incident_cost_type_name: str
-) -> Optional[IncidentCostType]:
+) -> IncidentCostType | None:
     """Gets an incident cost type by its name."""
     return (
         db_session.query(IncidentCostType)
@@ -41,7 +40,7 @@ def get_by_name(
     )
 
 
-def get_all(*, db_session) -> List[Optional[IncidentCostType]]:
+def get_all(*, db_session) -> list[IncidentCostType | None]:
     """Gets all incident cost types."""
     return db_session.query(IncidentCostType).all()
 

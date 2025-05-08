@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from pydantic import ValidationError
 from sqlalchemy.orm import Query, Session
@@ -11,12 +10,12 @@ from .models import EntityType, EntityTypeCreate, EntityTypeRead, EntityTypeUpda
 logger = logging.getLogger(__name__)
 
 
-def get(*, db_session, entity_type_id: int) -> Optional[EntityType]:
+def get(*, db_session, entity_type_id: int) -> EntityType | None:
     """Gets a entity type by its id."""
     return db_session.query(EntityType).filter(EntityType.id == entity_type_id).one_or_none()
 
 
-def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[EntityType]:
+def get_by_name(*, db_session: Session, project_id: int, name: str) -> EntityType | None:
     """Gets a entity type by its name."""
     return (
         db_session.query(EntityType)

@@ -1,7 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends, Response
 from pydantic import ValidationError
-from typing import List
 
 from sqlalchemy.exc import IntegrityError
 
@@ -84,7 +83,7 @@ def create_forms(
 )
 def export_forms(
     db_session: DbSession,
-    ids: List[int],
+    ids: list[int],
 ):
     """Exports forms."""
     return export(db_session=db_session, ids=ids)

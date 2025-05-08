@@ -1,7 +1,5 @@
 """Models and schemas for the Dispatch case severity system."""
 
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.event import listen
@@ -41,9 +39,9 @@ listen(CaseSeverity.default, "set", ensure_unique_default_per_project)
 # Pydantic models
 class CaseSeverityBase(DispatchBase):
     """Base Pydantic model for case severity data."""
-    color: str | None = Field(None, nullable=True)
+    color: str | None = None
     default: bool | None
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     enabled: bool | None
     name: NameStr
     project: ProjectRead | None

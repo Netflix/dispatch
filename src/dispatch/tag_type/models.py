@@ -1,6 +1,3 @@
-from typing import List, Optional
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import Boolean
@@ -40,18 +37,18 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
 # Pydantic models
 class TagTypeBase(DispatchBase):
     name: NameStr
-    exclusive: Optional[bool] = False
-    required: Optional[bool] = False
-    discoverable_case: Optional[bool] = True
-    discoverable_incident: Optional[bool] = True
-    discoverable_query: Optional[bool] = True
-    discoverable_signal: Optional[bool] = True
-    discoverable_source: Optional[bool] = True
-    discoverable_document: Optional[bool] = True
-    description: Optional[str] = Field(None, nullable=True)
-    color: Optional[str] = Field(None, nullable=True)
-    icon: Optional[str] = Field(None, nullable=True)
-    use_for_project_folder: Optional[bool] = False
+    exclusive: bool | None = False
+    required: bool | None = False
+    discoverable_case: bool | None = True
+    discoverable_incident: bool | None = True
+    discoverable_query: bool | None = True
+    discoverable_signal: bool | None = True
+    discoverable_source: bool | None = True
+    discoverable_document: bool | None = True
+    description: str | None = None
+    color: str | None = None
+    icon: str | None = None
+    use_for_project_folder: bool | None = False
 
 
 class TagTypeCreate(TagTypeBase):
@@ -59,7 +56,7 @@ class TagTypeCreate(TagTypeBase):
 
 
 class TagTypeUpdate(TagTypeBase):
-    id: PrimaryKey = None
+    id: PrimaryKey | None = None
 
 
 class TagTypeRead(TagTypeBase):
@@ -68,4 +65,4 @@ class TagTypeRead(TagTypeBase):
 
 
 class TagTypePagination(Pagination):
-    items: List[TagTypeRead]
+    items: list[TagTypeRead]

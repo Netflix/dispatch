@@ -2,7 +2,6 @@ import pytest
 import json
 from json.decoder import JSONDecodeError
 from sqlalchemy_filters.exceptions import BadFilterFormat
-
 from dispatch.database.service import (
     Operator,
     Filter,

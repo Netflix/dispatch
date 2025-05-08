@@ -5,9 +5,9 @@
 :license: Apache, see LICENSE for more details.
 """
 
-from typing import Any
 import json
 import logging
+from typing import Any
 
 import requests
 from requests.auth import HTTPBasicAuth

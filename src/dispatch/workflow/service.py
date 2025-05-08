@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
@@ -26,12 +25,12 @@ from .models import (
 from pydantic import ValidationError
 
 
-def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
+def get(*, db_session, workflow_id: int) -> Workflow | None:
     """Returns a workflow based on the given workflow id."""
     return db_session.query(Workflow).filter(Workflow.id == workflow_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Workflow]:
+def get_by_name(*, db_session, name: str) -> Workflow | None:
     """Returns a workflow based on the given workflow name."""
     return db_session.query(Workflow).filter(Workflow.name == name).one_or_none()
 
@@ -49,12 +48,12 @@ def get_by_name_or_raise(*, db_session: Session, workflow_in: WorkflowRead) -> W
     return workflow
 
 
-def get_all(*, db_session) -> List[Optional[Workflow]]:
+def get_all(*, db_session) -> list[Workflow | None]:
     """Returns all workflows."""
     return db_session.query(Workflow)
 
 
-def get_enabled(*, db_session, project_id: int = None) -> List[Optional[Workflow]]:
+def get_enabled(*, db_session, project_id: int = None) -> list[Workflow | None]:
     """Fetches all enabled workflows."""
     if project_id:
         return (
@@ -117,7 +116,7 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
     )
 
 
-def get_running_instances(*, db_session, project_id: int) -> List[WorkflowInstance]:
+def get_running_instances(*, db_session, project_id: int) -> list[WorkflowInstance]:
     """Fetches all running instances."""
     return (
         db_session.query(WorkflowInstance)

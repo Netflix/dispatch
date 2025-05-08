@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from dispatch.participant import service as participant_service
 
@@ -11,7 +10,7 @@ from .models import (
 )
 
 
-def get(*, db_session, participant_role_id: int) -> Optional[ParticipantRole]:
+def get(*, db_session, participant_role_id: int) -> ParticipantRole | None:
     """Returns a participant role based on the given id."""
     return (
         db_session.query(ParticipantRole).filter(ParticipantRole.id == participant_role_id).first()
@@ -22,7 +21,7 @@ def get_last_active_role(
     *,
     db_session,
     participant_id: int,
-) -> Optional[ParticipantRole]:
+) -> ParticipantRole | None:
     """Returns the participant's last active role."""
     return (
         db_session.query(ParticipantRole)
@@ -32,7 +31,7 @@ def get_last_active_role(
     )
 
 
-def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[ParticipantRole]]:
+def get_all_active_roles(*, db_session, participant_id: int) -> list[ParticipantRole | None]:
     """Returns all active roles for the given participant id."""
     return (
         db_session.query(ParticipantRole)

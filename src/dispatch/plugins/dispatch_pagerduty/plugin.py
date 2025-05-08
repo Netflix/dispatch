@@ -7,7 +7,6 @@
 
 from pdpyras import APISession
 from pydantic import Field, SecretStr, EmailStr
-from typing import Optional
 import logging
 
 from dispatch.config import BaseConfigurationModel
@@ -86,7 +85,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
             event_type=kwargs.get("event_type", "incident"),
         )
 
-    def did_oncall_just_go_off_shift(self, schedule_id: str, hour: int) -> Optional[dict]:
+    def did_oncall_just_go_off_shift(self, schedule_id: str, hour: int) -> dict | None:
         client = APISession(self.configuration.api_key.get_secret_value())
         client.url = self.configuration.pagerduty_api_url
         return oncall_shift_check(
@@ -95,7 +94,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
             hour=hour,
         )
 
-    def get_schedule_id_from_service_id(self, service_id: str) -> Optional[str]:
+    def get_schedule_id_from_service_id(self, service_id: str) -> str | None:
         if not service_id:
             return None
 
@@ -118,7 +117,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
             log.error("Error trying to retrieve schedule_id from service_id")
             log.exception(e)
 
-    def get_service_url(self, service_id: str) -> Optional[str]:
+    def get_service_url(self, service_id: str) -> str | None:
         if not service_id:
             return None
 
@@ -132,7 +131,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
             log.exception(e)
             return None
 
-    def get_next_oncall(self, service_id: str) -> Optional[str]:
+    def get_next_oncall(self, service_id: str) -> str | None:
         schedule_id = self.get_schedule_id_from_service_id(service_id)
 
         client = APISession(self.configuration.api_key.get_secret_value())

@@ -10,7 +10,6 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -40,7 +39,7 @@ def group_tasks_by_assignee(tasks):
     return grouped
 
 
-def create_reminder(db_session: Session, assignee_email: str, tasks: List[Task], project_id: int):
+def create_reminder(db_session: Session, assignee_email: str, tasks: list[Task], project_id: int):
     """Contains the logic for incident task reminders."""
     # send email
     plugin = plugin_service.get_active_instance(
@@ -94,7 +93,7 @@ def send_task_notification(
     incident: Incident,
     message_template: str,
     creator: Participant,
-    assignees: List[Participant],
+    assignees: list[Participant],
     description: str,
     weblink: str,
     db_session: Session,

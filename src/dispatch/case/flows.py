@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -742,8 +741,8 @@ def send_escalation_messages_for_channel_case(
 
 
 def map_case_roles_to_incident_roles(
-    participant_roles: List[ParticipantRole], incident: Incident, db_session: Session
-) -> Optional[List[ParticipantRoleType]]:
+    participant_roles: list[ParticipantRole], incident: Incident, db_session: Session
+) -> list[ParticipantRoleType | None]:
     # Map the case role to an incident role
     incident_roles = set()
     for role in participant_roles:
@@ -1001,8 +1000,8 @@ def case_create_conversation_flow(
 def case_create_resources_flow(
     db_session: Session,
     case_id: int,
-    individual_participants: List[str],
-    team_participants: List[str],
+    individual_participants: list[str],
+    team_participants: list[str],
     conversation_target: str = None,
     create_all_resources: bool = True,
 ) -> None:

@@ -1,7 +1,6 @@
 # Representation of document in the Google Docs API.
 # See https://developers.google.com/docs/api/samples/output-json.
 
-
 def test_find_links():
     """Tests the find_links function returns the expected urls."""
     from dispatch.plugins.dispatch_google.docs.plugin import find_links

@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import Field
 
 from sqlalchemy import Column, ForeignKey, Integer, String
@@ -20,18 +19,18 @@ class Alert(Base, TimeStampMixin):
 
 # Pydantic models
 class AlertBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=False)
-    description: Optional[str] = Field(None, nullable=True)
-    originator: Optional[str] = Field(None, nullable=True)
-    external_link: Optional[str] = Field(None, nullable=True)
+    name: str | None = Field(None, nullable=False)
+    description: str | None = None
+    originator: str | None = None
+    external_link: str | None = None
 
 
 class AlertCreate(AlertBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
 
 
 class AlertUpdate(AlertBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
 
 
 class AlertRead(AlertBase):
@@ -39,4 +38,4 @@ class AlertRead(AlertBase):
 
 
 class AlertPagination(Pagination):
-    items: List[AlertRead]
+    items: list[AlertRead]

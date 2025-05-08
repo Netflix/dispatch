@@ -3,7 +3,6 @@ from datetime import datetime
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
-from typing import List, Optional
 
 from dispatch.database.core import Base
 from dispatch.incident_cost_type.models import IncidentCostTypeRead
@@ -35,15 +34,15 @@ class IncidentCostCreate(IncidentCostBase):
 
 
 class IncidentCostUpdate(IncidentCostBase):
-    id: Optional[PrimaryKey] = None
+    id: PrimaryKey | None = None
     incident_cost_type: IncidentCostTypeRead
 
 
 class IncidentCostRead(IncidentCostBase):
     id: PrimaryKey
     incident_cost_type: IncidentCostTypeRead
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
 
 class IncidentCostPagination(Pagination):
-    items: List[IncidentCostRead] = []
+    items: list[IncidentCostRead] = []

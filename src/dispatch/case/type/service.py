@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
 
@@ -13,7 +12,7 @@ from dispatch.service import service as service_service
 from .models import CaseType, CaseTypeCreate, CaseTypeRead, CaseTypeUpdate
 
 
-def get(*, db_session, case_type_id: int) -> Optional[CaseType]:
+def get(*, db_session, case_type_id: int) -> CaseType | None:
     """Returns a case type based on the given type id."""
     return db_session.query(CaseType).filter(CaseType.id == case_type_id).one_or_none()
 
@@ -37,7 +36,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> CaseType:
     return case_type
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[CaseType]:
+def get_by_name(*, db_session, project_id: int, name: str) -> CaseType | None:
     """Returns a case type based on the given type name."""
     return (
         db_session.query(CaseType)
@@ -67,7 +66,7 @@ def get_by_name_or_default(*, db_session, project_id: int, case_type_in=CaseType
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[CaseType]:
+def get_by_slug(*, db_session, project_id: int, slug: str) -> CaseType | None:
     """Returns a case type based on the given type slug."""
     return (
         db_session.query(CaseType)
@@ -77,14 +76,14 @@ def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[CaseType]
     )
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[CaseType]]:
+def get_all(*, db_session, project_id: int = None) -> list[CaseType | None]:
     """Returns all case types."""
     if project_id:
         return db_session.query(CaseType).filter(CaseType.project_id == project_id)
     return db_session.query(CaseType)
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[CaseType]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[CaseType | None]:
     """Returns all enabled case types."""
     if project_id:
         return (
