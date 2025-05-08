@@ -7,7 +7,7 @@
 
 import logging
 import time
-from typing import Any, List
+from typing import Any
 
 from googleapiclient.errors import HttpError
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
     retry=retry_if_exception_type(TryAgain),
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
-def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool = False, **kwargs):
+def make_call(client: Any, func: Any, delay: int | None = None, propagate_errors: bool = False, **kwargs):
     """Make an google client api call."""
     try:
         data = getattr(client, func)(**kwargs).execute()
@@ -144,7 +144,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         ]
 
     def create(
-        self, name: str, participants: List[str], description: str = None, role: str = "MEMBER"
+        self, name: str, participants: list[str], description: str = None, role: str = "MEMBER"
     ):
         """Creates a new Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
@@ -166,13 +166,13 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         )
         return group
 
-    def add(self, email: str, participants: List[str], role: str = "MEMBER"):
+    def add(self, email: str, participants: list[str], role: str = "MEMBER"):
         """Adds participants to an existing Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
         for p in participants:
             add_member(client, email, p, role)
 
-    def remove(self, email: str, participants: List[str]):
+    def remove(self, email: str, participants: list[str]):
         """Removes participants from an existing Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
         for p in participants:

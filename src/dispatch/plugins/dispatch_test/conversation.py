@@ -1,6 +1,7 @@
 from datetime import datetime
-from slack_sdk import WebClient
 from typing import Any
+
+from slack_sdk import WebClient
 
 from dispatch.plugins.bases import ConversationPlugin
 from dispatch.plugins.dispatch_slack.events import ChannelActivityEvent
@@ -31,7 +32,7 @@ class TestConversationPlugin(ConversationPlugin):
     def fetch_events(self, subject: Any, **kwargs):
         client = TestWebClient()
         for plugin_event in self.plugin_events:
-            plugin_event.fetch_activity(client=client, subject=subject)
+            plugin_event().fetch_activity(client=client, subject=subject)
         return [
             (datetime.utcfromtimestamp(1512085950.000216), "0XDECAFBAD"),
             (datetime.utcfromtimestamp(1512104434.000490), "0XDECAFBAD"),

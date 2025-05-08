@@ -1,6 +1,5 @@
 from pydantic import EmailStr
 from slugify import slugify
-from typing import List, Optional
 from pydantic import Field
 from pydantic import ConfigDict
 
@@ -92,38 +91,38 @@ class Project(Base):
 
 class Service(DispatchBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
     external_id: str
-    is_active: Optional[bool] = None
+    is_active: bool | None = None
     name: NameStr
-    type: Optional[str] = Field(None, nullable=True)
+    type: str | None = None
 
 
 class ProjectBase(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
-    display_name: Optional[str] = Field("", nullable=False)
-    owner_email: Optional[EmailStr] = Field(None, nullable=True)
-    owner_conversation: Optional[str] = Field(None, nullable=True)
-    annual_employee_cost: Optional[int]
-    business_year_hours: Optional[int]
-    description: Optional[str] = Field(None, nullable=True)
+    display_name: str | None = Field("", nullable=False)
+    owner_email: EmailStr | None = None
+    owner_conversation: str | None = None
+    annual_employee_cost: int | None
+    business_year_hours: int | None
+    description: str | None = None
     default: bool = False
-    color: Optional[str] = Field(None, nullable=True)
-    send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    send_weekly_reports: Optional[bool] = Field(False, nullable=True)
-    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
-    enabled: Optional[bool] = Field(True, nullable=True)
-    storage_folder_one: Optional[str] = Field(None, nullable=True)
-    storage_folder_two: Optional[str] = Field(None, nullable=True)
-    storage_use_folder_one_as_primary: Optional[bool] = Field(True, nullable=True)
-    storage_use_title: Optional[bool] = Field(False, nullable=True)
-    allow_self_join: Optional[bool] = Field(True, nullable=True)
-    select_commander_visibility: Optional[bool] = Field(True, nullable=True)
-    report_incident_instructions: Optional[str] = Field(None, nullable=True)
-    report_incident_title_hint: Optional[str] = Field(None, nullable=True)
-    report_incident_description_hint: Optional[str] = Field(None, nullable=True)
-    snooze_extension_oncall_service: Optional[Service] = None
+    color: str | None = None
+    send_daily_reports: bool | None = Field(True, nullable=True)
+    send_weekly_reports: bool | None = Field(False, nullable=True)
+    weekly_report_notification_id: int | None = None
+    enabled: bool | None = Field(True, nullable=True)
+    storage_folder_one: str | None = None
+    storage_folder_two: str | None = None
+    storage_use_folder_one_as_primary: bool | None = Field(True, nullable=True)
+    storage_use_title: bool | None = Field(False, nullable=True)
+    allow_self_join: bool | None = Field(True, nullable=True)
+    select_commander_visibility: bool | None = Field(True, nullable=True)
+    report_incident_instructions: str | None = None
+    report_incident_title_hint: str | None = None
+    report_incident_description_hint: str | None = None
+    snooze_extension_oncall_service: Service | None = None
 
 
 class ProjectCreate(ProjectBase):
@@ -131,19 +130,19 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    send_weekly_reports: Optional[bool] = Field(False, nullable=True)
-    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
-    stable_priority_id: Optional[int]
-    snooze_extension_oncall_service_id: Optional[int]
+    send_daily_reports: bool | None = Field(True, nullable=True)
+    send_weekly_reports: bool | None = Field(False, nullable=True)
+    weekly_report_notification_id: int | None = None
+    stable_priority_id: int | None
+    snooze_extension_oncall_service_id: int | None
 
 
 class ProjectRead(ProjectBase):
-    id: Optional[PrimaryKey]
-    stable_priority: Optional[IncidentPriorityRead] = None
+    id: PrimaryKey | None
+    stable_priority: IncidentPriorityRead | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectPagination(Pagination):
-    items: List[ProjectRead] = []
+    items: list[ProjectRead] = []

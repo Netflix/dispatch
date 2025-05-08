@@ -1,6 +1,5 @@
 import logging
 import json
-from typing import List, Optional
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -17,7 +16,7 @@ from dispatch.project import service as project_service
 log = logging.getLogger(__name__)
 
 
-def get(*, forms_id: int, db_session: Session) -> Optional[Forms]:
+def get(*, forms_id: int, db_session: Session) -> Forms | None:
     """Gets a from by its id."""
     return db_session.query(Forms).filter(Forms.id == forms_id).one_or_none()
 
@@ -97,7 +96,7 @@ def build_form_doc(form_schema: str, form_data: str) -> str:
     return "\n".join(output_qa)
 
 
-def export(*, db_session: Session, ids: List[int]) -> List[str]:
+def export(*, db_session: Session, ids: list[int]) -> list[str]:
     """Exports forms."""
     folders = []
     # get all the forms given the ids

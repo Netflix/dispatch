@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import ValidationError
 
@@ -6,12 +5,12 @@ from pydantic import ValidationError
 from .models import Alert, AlertCreate, AlertRead, AlertUpdate
 
 
-def get(*, db_session, alert_id: int) -> Optional[Alert]:
+def get(*, db_session, alert_id: int) -> Alert | None:
     """Gets an alert by its id."""
     return db_session.query(Alert).filter(Alert.id == alert_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Alert]:
+def get_by_name(*, db_session, name: str) -> Alert | None:
     """Gets a alert by its name."""
     return db_session.query(Alert).filter(Alert.name == name).one_or_none()
 

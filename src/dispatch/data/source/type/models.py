@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import Field
 
 from sqlalchemy import (
@@ -24,8 +23,8 @@ class SourceType(Base, ProjectMixin):
 
 
 class SourceTypeBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=False)
-    description: Optional[str] = Field(None, nullable=True)
+    name: str | None = Field(None, nullable=False)
+    description: str | None = None
 
 
 class SourceTypeRead(SourceTypeBase):
@@ -42,4 +41,4 @@ class SourceTypeUpdate(SourceTypeBase):
 
 
 class SourceTypePagination(Pagination):
-    items: List[SourceTypeRead]
+    items: list[SourceTypeRead]

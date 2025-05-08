@@ -1,8 +1,7 @@
 import logging
 
-from pydantic import Field, SecretStr
+from pydantic import SecretStr
 from pydantic.json import pydantic_encoder
-from typing import Any, List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -16,6 +15,7 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey, NameStr
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -163,14 +163,14 @@ class PluginRead(PluginBase):
     type: str
     multiple: bool
     configuration_schema: Any
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
 
 
 class PluginEventBase(DispatchBase):
     name: NameStr
     slug: str
     plugin: PluginRead
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
 
 
 class PluginEventRead(PluginEventBase):
@@ -182,54 +182,54 @@ class PluginEventCreate(PluginEventBase):
 
 
 class PluginEventPagination(Pagination):
-    items: List[PluginEventRead] = []
+    items: list[PluginEventRead] = []
 
 
 class PluginInstanceRead(PluginBase):
     id: PrimaryKey
-    enabled: Optional[bool]
-    configuration: Optional[dict]
+    enabled: bool | None
+    configuration: dict | None
     configuration_schema: Any
     plugin: PluginRead
-    project: Optional[ProjectRead]
-    broken: Optional[bool]
+    project: ProjectRead | None
+    broken: bool | None
 
 
 class PluginInstanceReadMinimal(PluginBase):
     id: PrimaryKey
-    enabled: Optional[bool]
+    enabled: bool | None
     configuration_schema: Any
     plugin: PluginRead
-    project: Optional[ProjectRead]
-    broken: Optional[bool]
+    project: ProjectRead | None
+    broken: bool | None
 
 
 class PluginInstanceCreate(PluginBase):
-    enabled: Optional[bool]
-    configuration: Optional[dict]
+    enabled: bool | None
+    configuration: dict | None
     plugin: PluginRead
     project: ProjectRead
 
 
 class PluginInstanceUpdate(PluginBase):
     id: PrimaryKey = None
-    enabled: Optional[bool]
-    configuration: Optional[dict]
+    enabled: bool | None
+    configuration: dict | None
 
 
 class KeyValue(DispatchBase):
     key: str
-    value: str | List[str] | dict
+    value: str | list[str] | dict
 
 
 class PluginMetadata(DispatchBase):
     slug: str
-    metadata: List[KeyValue] = []
+    metadata: list[KeyValue] = []
 
 
 class PluginPagination(Pagination):
-    items: List[PluginRead] = []
+    items: list[PluginRead] = []
 
 
 class PluginInstancePagination(Pagination):
-    items: List[PluginInstanceReadMinimal] = []
+    items: list[PluginInstanceReadMinimal] = []

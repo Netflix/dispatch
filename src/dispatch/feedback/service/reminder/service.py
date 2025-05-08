@@ -1,4 +1,3 @@
-from typing import List, Optional
 from datetime import datetime, timedelta
 
 from .models import (
@@ -11,7 +10,7 @@ from dispatch.project.models import Project
 
 def get_all_expired_reminders_by_project_id(
     *, db_session, project_id: int
-) -> List[Optional[ServiceFeedbackReminder]]:
+) -> list[ServiceFeedbackReminder | None]:
     """Returns all expired reminders by project id."""
     return (
         db_session.query(ServiceFeedbackReminder)

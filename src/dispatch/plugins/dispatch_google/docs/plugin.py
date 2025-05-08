@@ -7,9 +7,9 @@
 """
 
 import logging
-from typing import Any
 from collections.abc import Generator
 import unicodedata
+from typing import Any
 
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
@@ -28,7 +28,7 @@ def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
 
-def find_links(obj: dict, find_key: str) -> iter(list[Any]):
+def find_links(obj: dict, find_key: str) -> Generator[list[Any], None, None]:
     """Enumerate all the links found.
     Returns a path of object, from leaf to parents to root.
 

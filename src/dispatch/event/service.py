@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import uuid4
 from datetime import datetime
 import logging
@@ -21,7 +20,7 @@ from dispatch.plugin import service as plugin_service
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, event_id: int) -> Optional[Event]:
+def get(*, db_session, event_id: int) -> Event | None:
     """Get an event by id."""
     return (
         db_session.query(Event)
@@ -44,7 +43,7 @@ def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
     )
 
 
-def get_by_uuid(*, db_session, uuid: str) -> list[Event | None]:
+def get_by_uuid(*, db_session, uuid: str) -> Event | None:
     """Get events by uuid."""
     return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
 

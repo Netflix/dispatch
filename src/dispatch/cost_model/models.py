@@ -86,7 +86,7 @@ class CostModelActivityUpdate(CostModelActivityBase):
 
 class CostModelBase(DispatchBase):
     name: NameStr
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     enabled: bool | None = Field(True, nullable=True)
     created_at: datetime | None = None
     updated_at: datetime | None = None

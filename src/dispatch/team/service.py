@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from dispatch.project import service as project_service
 from dispatch.project.models import Project
@@ -7,11 +6,11 @@ from dispatch.search_filter import service as search_filter_service
 from .models import TeamContact, TeamContactCreate, TeamContactUpdate
 
 
-def get(*, db_session, team_contact_id: int) -> Optional[TeamContact]:
+def get(*, db_session, team_contact_id: int) -> TeamContact | None:
     return db_session.query(TeamContact).filter(TeamContact.id == team_contact_id).first()
 
 
-def get_by_email(*, db_session, email: str, project_id: int) -> Optional[TeamContact]:
+def get_by_email(*, db_session, email: str, project_id: int) -> TeamContact | None:
     return (
         db_session.query(TeamContact)
         .filter(TeamContact.email == email)
@@ -20,7 +19,7 @@ def get_by_email(*, db_session, email: str, project_id: int) -> Optional[TeamCon
     )
 
 
-def get_all(*, db_session) -> List[Optional[TeamContact]]:
+def get_all(*, db_session) -> list[TeamContact | None]:
     return db_session.query(TeamContact)
 
 
@@ -34,7 +33,7 @@ def get_or_create(*, db_session, email: str, project: Project, **kwargs) -> Team
     return contact
 
 
-def get_overdue_evergreen_teams(*, db_session, project_id: int) -> List[Optional[TeamContact]]:
+def get_overdue_evergreen_teams(*, db_session, project_id: int) -> list[TeamContact | None]:
     """Returns all teams that have not had a recent evergreen notification."""
     query = (
         db_session.query(TeamContact)
@@ -64,7 +63,7 @@ def create(*, db_session, team_contact_in: TeamContactCreate) -> TeamContact:
     return team
 
 
-def create_all(*, db_session, team_contacts_in: List[TeamContactCreate]) -> List[TeamContact]:
+def create_all(*, db_session, team_contacts_in: list[TeamContactCreate]) -> list[TeamContact]:
     contacts = [TeamContact(**t.dict()) for t in team_contacts_in]
     db_session.bulk_save_objects(contacts)
     db_session.commit()

@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from pydantic import ValidationError
 from sqlalchemy.orm import Session, joinedload, load_only
-from typing import List, Optional
 
 from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
@@ -32,12 +31,12 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, case_id: int) -> Optional[Case]:
+def get(*, db_session, case_id: int) -> Case | None:
     """Returns a case based on the given id."""
     return db_session.query(Case).filter(Case.id == case_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Case]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Case | None:
     """Returns a case based on the given name."""
     return (
         db_session.query(Case)
@@ -64,12 +63,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_in: CaseRead) -> C
     return case
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[Case]]:
+def get_all(*, db_session, project_id: int) -> list[Case | None]:
     """Returns all cases."""
     return db_session.query(Case).filter(Case.project_id == project_id)
 
 
-def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional[Case]]:
+def get_all_open_by_case_type(*, db_session, case_type_id: int) -> list[Case | None]:
     """Returns all non-closed cases based on the given case type."""
     return (
         db_session.query(Case)
@@ -82,7 +81,7 @@ def get_all_open_by_case_type(*, db_session, case_type_id: int) -> List[Optional
 
 def get_all_by_status(
     *, db_session: Session, project_id: int, statuses: list[str]
-) -> List[Optional[Case]]:
+) -> list[Case | None]:
     """Returns all cases based on a given list of statuses."""
     return (
         db_session.query(Case)
@@ -103,7 +102,7 @@ def get_all_by_status(
     )
 
 
-def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Case]]:
+def get_all_last_x_hours(*, db_session, hours: int) -> list[Case | None]:
     """Returns all cases in the last x hours."""
     now = datetime.utcnow()
     return db_session.query(Case).filter(Case.created_at >= now - timedelta(hours=hours)).all()
@@ -111,7 +110,7 @@ def get_all_last_x_hours(*, db_session, hours: int) -> List[Optional[Case]]:
 
 def get_all_last_x_hours_by_status(
     *, db_session, project_id: int, status: str, hours: int
-) -> List[Optional[Case]]:
+) -> list[Case | None]:
     """Returns all cases of a given status in the last x hours."""
     now = datetime.utcnow()
 

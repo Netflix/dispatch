@@ -10,8 +10,8 @@ import functools
 import io
 import json
 import logging
-from typing import Any, List
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
@@ -178,7 +178,7 @@ def create_file(
     client: Any,
     parent_id: str,
     name: str,
-    members: List[str],
+    members: list[str],
     role: Roles = Roles.writer,
     file_type: str = "folder",
 ):

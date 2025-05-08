@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from dispatch.plugins.bases import ConferencePlugin
 from dispatch.plugins.dispatch_microsoft_teams import conference as teams_plugin
@@ -26,7 +25,7 @@ class MicrosoftTeamsConferencePlugin(ConferencePlugin):
     @apply(counter, exclude=["__init__"])
     @apply(timer, exclude=["__init__"])
     def create(
-        self, name: str, description: str = None, title: str = None, participants: List[str] = None
+        self, name: str, description: str = None, title: str = None, participants: list[str] = None
     ):
         try:
             client = MSTeamsClient(

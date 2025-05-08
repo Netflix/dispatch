@@ -1,4 +1,3 @@
-from typing import List, Optional
 from datetime import datetime, timezone
 
 from dispatch.case.enums import CostModelType
@@ -12,14 +11,14 @@ from .models import (
 )
 
 
-def get(*, db_session, case_cost_type_id: int) -> Optional[CaseCostType]:
+def get(*, db_session, case_cost_type_id: int) -> CaseCostType | None:
     """Gets a case cost type by its id."""
     return db_session.query(CaseCostType).filter(CaseCostType.id == case_cost_type_id).one_or_none()
 
 
 def get_response_cost_type(
     *, db_session, project_id: int, model_type: str
-) -> Optional[CaseCostType]:
+) -> CaseCostType | None:
     """Gets the default response cost type."""
     return (
         db_session.query(CaseCostType)
@@ -55,7 +54,7 @@ def get_or_create_response_cost_type(
 
 def get_all_response_case_cost_types(
     *, db_session, project_id: int
-) -> List[Optional[CaseCostType]]:
+) -> list[CaseCostType | None]:
     """Returns all response case cost types.
 
     This function queries the database for all case cost types that are marked as the response cost type.
@@ -77,7 +76,7 @@ def get_all_response_case_cost_types(
     )
 
 
-def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> Optional[CaseCostType]:
+def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> CaseCostType | None:
     """Gets a case cost type by its name."""
     return (
         db_session.query(CaseCostType)
@@ -87,7 +86,7 @@ def get_by_name(*, db_session, project_id: int, case_cost_type_name: str) -> Opt
     )
 
 
-def get_all(*, db_session) -> List[Optional[CaseCostType]]:
+def get_all(*, db_session) -> list[CaseCostType | None]:
     """Gets all case cost types."""
     return db_session.query(CaseCostType).all()
 

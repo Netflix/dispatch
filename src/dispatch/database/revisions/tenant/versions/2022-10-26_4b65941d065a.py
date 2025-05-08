@@ -13,8 +13,7 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session
 from pydantic import Field, StringConstraints
-from typing_extensions import Annotated
-
+from typing import Annotated
 
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
 NameStr = Annotated[str, StringConstraints(pattern=r"^.*\S.*$", strip_whitespace=True, min_length=3)]

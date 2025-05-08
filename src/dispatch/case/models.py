@@ -2,7 +2,6 @@
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any
-
 from pydantic import field_validator, Field
 from sqlalchemy import (
     Boolean,

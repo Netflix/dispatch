@@ -1,7 +1,4 @@
 from datetime import datetime
-from pydantic import Field
-from typing import Optional, List
-
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy_utils import TSVectorType
 
@@ -42,12 +39,12 @@ class Feedback(TimeStampMixin, FeedbackMixin, ProjectMixin, Base):
 
 # Pydantic models
 class FeedbackBase(DispatchBase):
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
     rating: FeedbackRating = FeedbackRating.very_satisfied
-    feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadBasic] = None
-    case: Optional[CaseReadMinimal] = None
-    participant: Optional[ParticipantRead] = None
+    feedback: str | None = None
+    incident: IncidentReadBasic | None = None
+    case: CaseReadMinimal | None = None
+    participant: ParticipantRead | None = None
 
 
 class FeedbackCreate(FeedbackBase):
@@ -60,8 +57,8 @@ class FeedbackUpdate(FeedbackBase):
 
 class FeedbackRead(FeedbackBase):
     id: PrimaryKey
-    project: Optional[ProjectRead]
+    project: ProjectRead | None
 
 
 class FeedbackPagination(Pagination):
-    items: List[FeedbackRead]
+    items: list[FeedbackRead]

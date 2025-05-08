@@ -4,7 +4,6 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import Annotated
 
 from fastapi import Depends, Query
 from pydantic import StringConstraints
@@ -42,6 +41,7 @@ from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
 from dispatch.tag_type.models import TagType
 from dispatch.task.models import Task
+from typing import Annotated
 
 log = logging.getLogger(__file__)
 

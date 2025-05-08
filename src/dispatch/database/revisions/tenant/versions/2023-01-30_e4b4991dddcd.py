@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql.expression import true
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.declarative import declarative_base
-from typing import Optional
 
 # revision identifiers, used by Alembic.
 revision = "e4b4991dddcd"
@@ -74,7 +73,7 @@ class ParticipantRoleType(DispatchEnum):
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
-    role: Optional[ParticipantRoleType] = None
+    role: ParticipantRoleType | None = None
 
 
 class ProjectMixin(object):

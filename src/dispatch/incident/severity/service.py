@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import ValidationError
 
 from sqlalchemy.sql.expression import true
@@ -13,7 +12,7 @@ from .models import (
 )
 
 
-def get(*, db_session, incident_severity_id: int) -> Optional[IncidentSeverity]:
+def get(*, db_session, incident_severity_id: int) -> IncidentSeverity | None:
     """Returns an incident severity based on the given severity id."""
     return (
         db_session.query(IncidentSeverity)
@@ -53,7 +52,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentSeverity:
     return incident_severity
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentSeverity]:
+def get_by_name(*, db_session, project_id: int, name: str) -> IncidentSeverity | None:
     """Returns an incident severity based on the given severity name."""
     return (
         db_session.query(IncidentSeverity)
@@ -99,7 +98,7 @@ def get_by_name_or_default(
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
-def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentSeverity]]:
+def get_all(*, db_session, project_id: int = None) -> list[IncidentSeverity | None]:
     """Returns all incident severities."""
     if project_id:
         return db_session.query(IncidentSeverity).filter(IncidentSeverity.project_id == project_id)
@@ -107,7 +106,7 @@ def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentSeve
     return db_session.query(IncidentSeverity).all()
 
 
-def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentSeverity]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> list[IncidentSeverity | None]:
     """Returns all enabled incident severities."""
     if project_id:
         return (

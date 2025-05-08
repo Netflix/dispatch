@@ -1,4 +1,3 @@
-from typing import Optional, List
 from pydantic import ValidationError
 
 from dispatch.project import service as project_service
@@ -11,12 +10,12 @@ from .models import (
 )
 
 
-def get(*, db_session, source_type_id: int) -> Optional[SourceType]:
+def get(*, db_session, source_type_id: int) -> SourceType | None:
     """Gets a source by its id."""
     return db_session.query(SourceType).filter(SourceType.id == source_type_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceType]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceType | None:
     """Gets a source by its name."""
     return (
         db_session.query(SourceType)
@@ -45,7 +44,7 @@ def get_by_name_or_raise(
     return source
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceType]]:
+def get_all(*, db_session, project_id: int) -> list[SourceType | None]:
     """Gets all source types."""
     return db_session.query(SourceType).filter(SourceType.project_id == project_id)
 

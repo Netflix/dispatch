@@ -1,7 +1,4 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
-from pydantic import Field
-
 from sqlalchemy import (
     Boolean,
     Column,
@@ -91,40 +88,40 @@ class Task(Base, ResourceMixin):
 
 # Pydantic models
 class TaskBase(ResourceBase):
-    assignees: List[Optional[ParticipantRead]] = []
-    created_at: Optional[datetime]
-    creator: Optional[ParticipantRead]
-    description: Optional[str] = Field(None, nullable=True)
+    assignees: list[ParticipantRead | None] = []
+    created_at: datetime | None
+    creator: ParticipantRead | None
+    description: str | None = None
     incident: IncidentReadBasic
-    owner: Optional[ParticipantRead]
-    priority: Optional[str] = Field(None, nullable=True)
-    resolve_by: Optional[datetime]
-    resolved_at: Optional[datetime]
-    resource_id: Optional[str] = Field(None, nullable=True)
-    source: Optional[str] = Field(None, nullable=True)
+    owner: ParticipantRead | None
+    priority: str | None = None
+    resolve_by: datetime | None
+    resolved_at: datetime | None
+    resource_id: str | None = None
+    source: str | None = None
     status: TaskStatus = TaskStatus.open
-    updated_at: Optional[datetime]
+    updated_at: datetime | None
 
 
 class TaskCreate(TaskBase):
-    assignees: List[Optional[ParticipantUpdate]] = []
-    creator: Optional[ParticipantUpdate]
-    owner: Optional[ParticipantUpdate]
-    resource_type: Optional[str]
+    assignees: list[ParticipantUpdate | None] = []
+    creator: ParticipantUpdate | None
+    owner: ParticipantUpdate | None
+    resource_type: str | None
     status: TaskStatus = TaskStatus.open
 
 
 class TaskUpdate(TaskBase):
-    assignees: List[Optional[ParticipantUpdate]] = []
-    owner: Optional[ParticipantUpdate]
-    creator: Optional[ParticipantUpdate]
+    assignees: list[ParticipantUpdate | None] = []
+    owner: ParticipantUpdate | None
+    creator: ParticipantUpdate | None
 
 
 class TaskRead(TaskBase):
     id: PrimaryKey
-    project: Optional[ProjectRead]
-    ticket: Optional[TicketRead] = None
+    project: ProjectRead | None
+    ticket: TicketRead | None = None
 
 
 class TaskPagination(Pagination):
-    items: List[TaskRead] = []
+    items: list[TaskRead] = []

@@ -2,7 +2,6 @@ import inspect
 import logging
 import time
 from functools import wraps
-from typing import Any, Callable, List
 
 from sqlalchemy.orm import scoped_session
 
@@ -21,7 +20,7 @@ def fullname(o):
 
 
 def _execute_task_in_project_context(
-    func: Callable,
+    func,
     *args,
     **kwargs,
 ) -> None:
@@ -68,7 +67,7 @@ def _execute_task_in_project_context(
         CoreSession.remove()
 
 
-def scheduled_project_task(func: Callable):
+def scheduled_project_task(func):
     """Decorator that sets up a background task function with
     a database session and exception tracking.
 
@@ -134,7 +133,7 @@ def background_task(func):
     return wrapper
 
 
-def timer(func: Any):
+def timer(func):
     """Timing decorator that sends a timing metric."""
 
     @wraps(func)
@@ -151,7 +150,7 @@ def timer(func: Any):
     return wrapper
 
 
-def counter(func: Any):
+def counter(func):
     """Counting decorator that sends a counting metric."""
 
     @wraps(func)
@@ -162,7 +161,7 @@ def counter(func: Any):
     return wrapper
 
 
-def apply(decorator: Any, exclude: List[str] = None):
+def apply(decorator, exclude: list[str] = None):
     """Class decorator that applies specified decorator to all class methods."""
     if not exclude:
         exclude = []
