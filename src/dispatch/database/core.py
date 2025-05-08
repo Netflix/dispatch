@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session, object_session, sessionmaker, DeclarativeBas
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
-
+from typing import Annotated, Any
 from dispatch import config
 from dispatch.search.fulltext import make_searchable
 from dispatch.database.logging import SessionTracker

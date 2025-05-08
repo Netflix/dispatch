@@ -6,6 +6,7 @@
 """
 
 import logging
+from typing import Annotated
 
 from fastapi import HTTPException, Depends
 from starlette.requests import Request

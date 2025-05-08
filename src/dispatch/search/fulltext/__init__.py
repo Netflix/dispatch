@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql.base import RESERVED_WORDS
 from sqlalchemy.engine import Connection
 from sqlalchemy.schema import DDL
 from sqlalchemy_utils import TSVectorType
+from typing import Any
 
 from .vectorizers import Vectorizer
 

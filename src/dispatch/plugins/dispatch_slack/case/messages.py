@@ -1,4 +1,6 @@
 import logging
+from typing import Any, NamedTuple
+
 
 from blockkit import (
     Actions,

@@ -11,6 +11,7 @@ from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from typing import Annotated, ClassVar
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]

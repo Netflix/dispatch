@@ -1,9 +1,11 @@
 """Models for Slack command payloads in the Dispatch application."""
 
-
+from typing import TypedDict, NewType
 from pydantic import BaseModel, AnyHttpUrl
-
+import logging
 from dispatch.enums import DispatchEnum
+
+log = logging.getLogger(__name__)
 
 
 class SlackCommandPayload(TypedDict):

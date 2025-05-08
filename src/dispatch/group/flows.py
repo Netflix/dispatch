@@ -1,5 +1,5 @@
 import logging
-
+from typing import TypeVar
 from sqlalchemy.orm import Session
 
 from dispatch.case.models import Case

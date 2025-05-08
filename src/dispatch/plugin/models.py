@@ -15,6 +15,7 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin, Pagination, PrimaryKey, NameStr
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
