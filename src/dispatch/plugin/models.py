@@ -54,7 +54,9 @@ class Plugin(Base):
         """Renders the plugin's schema to JSON Schema."""
         try:
             plugin = plugins.get(self.slug)
-            return plugin.configuration_schema.schema()
+            if getattr(plugin, "configuration_schema", None) is not None:
+                return plugin.configuration_schema.schema()
+            return None
         except Exception as e:
             logger.warning(
                 f"Error trying to load configuration_schema for plugin with slug {self.slug}: {e}"
@@ -120,7 +122,9 @@ class PluginInstance(Base, ProjectMixin):
         """Renders the plugin's schema to JSON Schema."""
         try:
             plugin = plugins.get(self.plugin.slug)
-            return plugin.configuration_schema.schema()
+            if getattr(plugin, "configuration_schema", None) is not None:
+                return plugin.configuration_schema.schema()
+            return None
         except Exception as e:
             logger.warning(
                 f"Error trying to load plugin {self.plugin.title} {self.plugin.description} with error {e}"
