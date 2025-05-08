@@ -2,6 +2,7 @@ from pydantic import EmailStr
 from slugify import slugify
 from typing import List, Optional
 from pydantic import Field
+from pydantic import ConfigDict
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
@@ -140,6 +141,8 @@ class ProjectUpdate(ProjectBase):
 class ProjectRead(ProjectBase):
     id: Optional[PrimaryKey]
     stable_priority: Optional[IncidentPriorityRead] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectPagination(Pagination):

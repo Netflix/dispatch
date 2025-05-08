@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from datetime import datetime
 
 from dispatch.enums import DocumentResourceReferenceTypes, DocumentResourceTemplateTypes

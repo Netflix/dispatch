@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.plugin.models import PluginInstance
-from dispatch.project.models import Project
+from dispatch.project.models import Project, ProjectRead
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -98,15 +98,22 @@ def get_or_create(
     kwargs["name"] = individual_info.get("fullname", email.split("@")[0].capitalize())
     kwargs["weblink"] = individual_info.get("weblink", "")
 
+    # Use Pydantic's model_validate to convert SQLAlchemy Project to ProjectRead
+    project_read = ProjectRead.model_validate(project)
+    if project_read.annual_employee_cost is None:
+        project_read.annual_employee_cost = 50000
+    if project_read.business_year_hours is None:
+        project_read.business_year_hours = 2080
+
     if not individual_contact:
         # we create a new contact
-        individual_contact_in = IndividualContactCreate(**kwargs, project=project)
+        individual_contact_in = IndividualContactCreate(**kwargs, project=project_read)
         individual_contact = create(
             db_session=db_session, individual_contact_in=individual_contact_in
         )
     else:
         # we update the existing contact
-        individual_contact_in = IndividualContactUpdate(**kwargs, project=project)
+        individual_contact_in = IndividualContactUpdate(**kwargs, project=project_read)
         individual_contact = update(
             db_session=db_session,
             individual_contact=individual_contact,
