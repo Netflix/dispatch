@@ -1,22 +1,18 @@
-from pydantic import EmailStr
+from pydantic import ConfigDict, EmailStr, Field
 from slugify import slugify
-from pydantic import Field
-from pydantic import ConfigDict
-
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
-from sqlalchemy.sql import false
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import false
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, PrimaryKey, Pagination
-
-from dispatch.organization.models import Organization, OrganizationRead
 from dispatch.incident.priority.models import (
     IncidentPriority,
     IncidentPriorityRead,
 )
+from dispatch.models import DispatchBase, NameStr, Pagination, PrimaryKey
+from dispatch.organization.models import Organization, OrganizationRead
 
 
 class Project(Base):
@@ -38,9 +34,7 @@ class Project(Base):
     organization = relationship("Organization")
 
     dispatch_user_project = relationship(
-        "DispatchUserProject",
-        cascade="all, delete-orphan",
-        overlaps="users"
+        "DispatchUserProject", cascade="all, delete-orphan", overlaps="users"
     )
 
     enabled = Column(Boolean, default=True, server_default="t")
@@ -82,7 +76,7 @@ class Project(Base):
 
     @hybrid_property
     def slug(self):
-        return slugify(self.name)
+        return slugify(str(self.name))
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -101,24 +95,24 @@ class Service(DispatchBase):
 class ProjectBase(DispatchBase):
     id: PrimaryKey | None
     name: NameStr
-    display_name: str | None = Field("", nullable=False)
+    display_name: str | None = Field("")
     owner_email: EmailStr | None = None
     owner_conversation: str | None = None
-    annual_employee_cost: int | None
-    business_year_hours: int | None
+    annual_employee_cost: int | None = 50000
+    business_year_hours: int | None = 2080
     description: str | None = None
     default: bool = False
     color: str | None = None
-    send_daily_reports: bool | None = Field(True, nullable=True)
-    send_weekly_reports: bool | None = Field(False, nullable=True)
+    send_daily_reports: bool | None = Field(True)
+    send_weekly_reports: bool | None = Field(False)
     weekly_report_notification_id: int | None = None
-    enabled: bool | None = Field(True, nullable=True)
+    enabled: bool | None = Field(True)
     storage_folder_one: str | None = None
     storage_folder_two: str | None = None
-    storage_use_folder_one_as_primary: bool | None = Field(True, nullable=True)
-    storage_use_title: bool | None = Field(False, nullable=True)
-    allow_self_join: bool | None = Field(True, nullable=True)
-    select_commander_visibility: bool | None = Field(True, nullable=True)
+    storage_use_folder_one_as_primary: bool | None = Field(True)
+    storage_use_title: bool | None = Field(False)
+    allow_self_join: bool | None = Field(True)
+    select_commander_visibility: bool | None = Field(True)
     report_incident_instructions: str | None = None
     report_incident_title_hint: str | None = None
     report_incident_description_hint: str | None = None
@@ -130,8 +124,8 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    send_daily_reports: bool | None = Field(True, nullable=True)
-    send_weekly_reports: bool | None = Field(False, nullable=True)
+    send_daily_reports: bool | None = Field(True)
+    send_weekly_reports: bool | None = Field(False)
     weekly_report_notification_id: int | None = None
     stable_priority_id: int | None
     snooze_extension_oncall_service_id: int | None
