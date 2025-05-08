@@ -1,48 +1,46 @@
+import json
 import logging
 from typing import Annotated
 
-import json
-
-from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-
 from sqlalchemy.exc import IntegrityError
+from starlette.requests import Request
 
 # NOTE: define permissions before enabling the code block below
 from dispatch.auth.permissions import (
     CaseEditPermission,
     CaseJoinPermission,
-    PermissionsDependency,
     CaseViewPermission,
+    PermissionsDependency,
 )
 from dispatch.auth.service import CurrentUser
 from dispatch.case.enums import CaseStatus
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
-from dispatch.models import OrganizationSlug, PrimaryKey
-from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.incident import service as incident_service
-from dispatch.participant.models import ParticipantUpdate, ParticipantRead, ParticipantReadMinimal
+from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.individual.models import IndividualContactRead
 from dispatch.individual.service import get_or_create
+from dispatch.models import OrganizationSlug, PrimaryKey
+from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
+from dispatch.project import service as project_service
 
 from .flows import (
     case_add_or_reactivate_participant_flow,
     case_closed_create_flow,
-    case_delete_flow,
-    case_escalated_create_flow,
-    case_to_incident_endpoint_escalate_flow,
-    case_new_create_flow,
-    case_triage_create_flow,
-    case_update_flow,
     case_create_conversation_flow,
     case_create_resources_flow,
+    case_delete_flow,
+    case_escalated_create_flow,
+    case_new_create_flow,
+    case_to_incident_endpoint_escalate_flow,
+    case_triage_create_flow,
+    case_update_flow,
     get_case_participants_flow,
 )
-from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate, CaseExpandedPagination
-from .service import create, delete, get, update, get_participants
-
+from .models import Case, CaseCreate, CaseExpandedPagination, CasePagination, CaseRead, CaseUpdate
+from .service import create, delete, get, get_participants, update
 
 log = logging.getLogger(__name__)
 
@@ -155,10 +153,14 @@ def create_case(
                 status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=[{"msg": "Project must be set to create reporter individual."}],
             )
+        # Fetch the full DB project instance
+        project = project_service.get_by_name_or_default(
+            db_session=db_session, project_in=case_in.project
+        )
         individual = get_or_create(
             db_session=db_session,
             email=current_user.email,
-            project=case_in.project,
+            project=project,
         )
         case_in.reporter = ParticipantUpdate(
             individual=IndividualContactRead(id=individual.id, email=individual.email)
