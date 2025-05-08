@@ -24,7 +24,7 @@ class SourceTransport(Base, ProjectMixin):
 
 class SourceTransportBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
 
 
 class SourceTransportRead(SourceTransportBase):

@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-from pydantic import Field
-
 from sqlalchemy import (
     Boolean,
     Column,
@@ -93,14 +91,14 @@ class TaskBase(ResourceBase):
     assignees: list[ParticipantRead | None] = []
     created_at: datetime | None
     creator: ParticipantRead | None
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     incident: IncidentReadBasic
     owner: ParticipantRead | None
-    priority: str | None = Field(None, nullable=True)
+    priority: str | None = None
     resolve_by: datetime | None
     resolved_at: datetime | None
-    resource_id: str | None = Field(None, nullable=True)
-    source: str | None = Field(None, nullable=True)
+    resource_id: str | None = None
+    source: str | None = None
     status: TaskStatus = TaskStatus.open
     updated_at: datetime | None
 

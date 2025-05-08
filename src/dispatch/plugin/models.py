@@ -162,14 +162,14 @@ class PluginRead(PluginBase):
     type: str
     multiple: bool
     configuration_schema: Any
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
 
 
 class PluginEventBase(DispatchBase):
     name: NameStr
     slug: str
     plugin: PluginRead
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
 
 
 class PluginEventRead(PluginEventBase):

@@ -111,7 +111,7 @@ class Link(DispatchBase):
 # Pydantic models
 class SourceBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     data_last_loaded_at: datetime | None = Field(None, nullable=True, title="Last Loaded")
     sampling_rate: int | None = Field(
         None,
@@ -121,12 +121,12 @@ class SourceBase(DispatchBase):
         gt=1,
         description="Rate at which data is sampled (as a percentage) 100% meaning all data is captured.",
     )
-    source_schema: str | None = Field(None, nullable=True)
-    documentation: str | None = Field(None, nullable=True)
-    retention: int | None = Field(None, nullable=True)
-    delay: int | None = Field(None, nullable=True)
-    size: int | None = Field(None, nullable=True)
-    external_id: str | None = Field(None, nullable=True)
+    source_schema: str | None = None
+    documentation: str | None = None
+    retention: int | None = None
+    delay: int | None = None
+    size: int | None = None
+    external_id: str | None = None
     aggregated: bool | None = Field(False, nullable=True)
     links: list[Link | None] = Field(default_factory=list)
     tags: list[TagRead | None] = []
@@ -134,7 +134,7 @@ class SourceBase(DispatchBase):
     queries: list[QueryReadMinimal | None] = []
     alerts: list[AlertRead | None] = []
     cost: float | None
-    owner: ServiceRead | None = Field(None, nullable=True)
+    owner: ServiceRead | None = None
     source_type: SourceTypeRead | None
     source_environment: SourceEnvironmentRead | None
     source_data_format: SourceDataFormatRead | None

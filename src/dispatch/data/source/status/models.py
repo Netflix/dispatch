@@ -24,7 +24,7 @@ class SourceStatus(Base, ProjectMixin):
 
 class SourceStatusBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
 
 
 class SourceStatusRead(SourceStatusBase):

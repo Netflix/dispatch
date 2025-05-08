@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -51,7 +49,7 @@ class DefinitionTerm(DispatchBase):
 # Pydantic models...
 class DefinitionBase(DispatchBase):
     text: str
-    source: str | None = Field(None, nullable=True)
+    source: str | None = None
 
 
 class DefinitionCreate(DefinitionBase):

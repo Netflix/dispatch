@@ -39,7 +39,7 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 
 # Pydantic models
 class ServiceFeedbackBase(DispatchBase):
-    feedback: str | None = Field(None, nullable=True)
+    feedback: str | None = None
     hours: float | None
     individual: IndividualContactReadMinimal | None
     rating: ServiceFeedbackRating = ServiceFeedbackRating.little_effort

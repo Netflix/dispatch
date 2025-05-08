@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from pydantic import Field
-
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -67,7 +65,7 @@ class NotificationRead(DispatchBase):
 
 
 class SearchFilterBase(DispatchBase):
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     enabled: bool | None
     expression: list[dict]
     name: NameStr

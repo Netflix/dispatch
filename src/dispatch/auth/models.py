@@ -7,7 +7,7 @@ from uuid import uuid4
 
 import bcrypt
 from jose import jwt
-from pydantic import field_validator, Field
+from pydantic import field_validator
 from pydantic import EmailStr
 
 from sqlalchemy import DateTime, Column, String, LargeBinary, Integer, Boolean
@@ -131,14 +131,14 @@ class UserProject(DispatchBase):
     """Pydantic model for a user's project membership."""
     project: ProjectRead
     default: bool | None = False
-    role: str | None = Field(None, nullable=True)
+    role: str | None = None
 
 
 class UserOrganization(DispatchBase):
     """Pydantic model for a user's organization membership."""
     organization: OrganizationRead
     default: bool | None = False
-    role: str | None = Field(None, nullable=True)
+    role: str | None = None
 
 
 class UserBase(DispatchBase):
@@ -171,7 +171,7 @@ class UserLogin(UserBase):
 
 class UserRegister(UserLogin):
     """Pydantic model for user registration data."""
-    password: str = Field(None, nullable=True)
+    password: str = None
 
     @field_validator("password", mode="before")
     @classmethod
@@ -184,13 +184,13 @@ class UserRegister(UserLogin):
 class UserLoginResponse(DispatchBase):
     """Pydantic model for the response after user login."""
     projects: list[UserProject] | None
-    token: str | None = Field(None, nullable=True)
+    token: str | None = None
 
 
 class UserRead(UserBase):
     """Pydantic model for reading user data."""
     id: PrimaryKey
-    role: str | None = Field(None, nullable=True)
+    role: str | None = None
     experimental_features: bool | None
 
 
@@ -200,7 +200,7 @@ class UserUpdate(DispatchBase):
     projects: list[UserProject] | None
     organizations: list[UserOrganization] | None
     experimental_features: bool | None
-    role: str | None = Field(None, nullable=True)
+    role: str | None = None
 
 
 class UserPasswordUpdate(DispatchBase):
@@ -249,10 +249,10 @@ class AdminPasswordReset(DispatchBase):
 class UserCreate(DispatchBase):
     """Pydantic model for creating a new user."""
     email: EmailStr
-    password: str | None = Field(None, nullable=True)
+    password: str | None = None
     projects: list[UserProject] | None
     organizations: list[UserOrganization] | None
-    role: str | None = Field(None, nullable=True)
+    role: str | None = None
 
     @field_validator("password", mode="before")
     @classmethod
@@ -263,7 +263,7 @@ class UserCreate(DispatchBase):
 
 class UserRegisterResponse(DispatchBase):
     """Pydantic model for the response after user registration."""
-    token: str | None = Field(None, nullable=True)
+    token: str | None = None
 
 
 class UserPagination(Pagination):

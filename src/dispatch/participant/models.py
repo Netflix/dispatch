@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -66,17 +64,17 @@ class Participant(Base):
 
 
 class ParticipantBase(DispatchBase):
-    location: str | None = Field(None, nullable=True)
-    team: str | None = Field(None, nullable=True)
-    department: str | None = Field(None, nullable=True)
-    added_reason: str | None = Field(None, nullable=True)
+    location: str | None = None
+    team: str | None = None
+    department: str | None = None
+    added_reason: str | None = None
 
 
 class ParticipantCreate(ParticipantBase):
     participant_roles: list[ParticipantRoleCreate] | None = []
-    location: str | None = Field(None, nullable=True)
-    team: str | None = Field(None, nullable=True)
-    department: str | None = Field(None, nullable=True)
+    location: str | None = None
+    team: str | None = None
+    department: str | None = None
     service: ServiceRead | None = None
 
 

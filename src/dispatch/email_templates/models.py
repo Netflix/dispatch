@@ -1,6 +1,4 @@
 from datetime import datetime
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String, Boolean, UniqueConstraint
 
 from dispatch.database.core import Base
@@ -21,10 +19,10 @@ class EmailTemplates(TimeStampMixin, ProjectMixin, Base):
 
 # Pydantic models
 class EmailTemplatesBase(DispatchBase):
-    email_template_type: str | None = Field(None, nullable=True)
-    welcome_text: str | None = Field(None, nullable=True)
-    welcome_body: str | None = Field(None, nullable=True)
-    components: str | None = Field(None, nullable=True)
+    email_template_type: str | None = None
+    welcome_text: str | None = None
+    welcome_body: str | None = None
+    components: str | None = None
     enabled: bool | None
 
 

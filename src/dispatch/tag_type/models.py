@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.sql.sqltypes import Boolean
@@ -47,9 +45,9 @@ class TagTypeBase(DispatchBase):
     discoverable_signal: bool | None = True
     discoverable_source: bool | None = True
     discoverable_document: bool | None = True
-    description: str | None = Field(None, nullable=True)
-    color: str | None = Field(None, nullable=True)
-    icon: str | None = Field(None, nullable=True)
+    description: str | None = None
+    color: str | None = None
+    icon: str | None = None
     use_for_project_folder: bool | None = False
 
 

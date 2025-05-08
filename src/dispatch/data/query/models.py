@@ -50,9 +50,9 @@ class Query(Base, TimeStampMixin, ProjectMixin):
 # Pydantic models
 class QueryBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
-    language: str | None = Field(None, nullable=True)
-    text: str | None = Field(None, nullable=True)
+    description: str | None = None
+    language: str | None = None
+    text: str | None = None
     tags: list[TagRead | None] = []
     source: SourceRead
     project: ProjectRead

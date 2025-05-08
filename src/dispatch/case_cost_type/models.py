@@ -37,8 +37,8 @@ class CaseCostType(Base, TimeStampMixin, ProjectMixin):
 # Pydantic Models
 class CaseCostTypeBase(DispatchBase):
     name: NameStr
-    description: str | None = Field(None, nullable=True)
-    category: str | None = Field(None, nullable=True)
+    description: str | None = None
+    category: str | None = None
     details: dict | None = {}
     created_at: datetime | None
     editable: bool | None

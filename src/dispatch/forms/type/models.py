@@ -1,6 +1,4 @@
 from datetime import datetime
-from pydantic import Field
-
 from sqlalchemy import Boolean, Column, Integer, ForeignKey, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
@@ -40,11 +38,11 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
 # Pydantic models
 class FormsTypeBase(DispatchBase):
     name: NameStr
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     enabled: bool | None
-    form_schema: str | None = Field(None, nullable=True)
-    attorney_form_schema: str | None = Field(None, nullable=True)
-    scoring_schema: str | None = Field(None, nullable=True)
+    form_schema: str | None = None
+    attorney_form_schema: str | None = None
+    scoring_schema: str | None = None
     creator: IndividualContactReadMinimal | None
     project: ProjectRead | None
     service: ServiceRead | None

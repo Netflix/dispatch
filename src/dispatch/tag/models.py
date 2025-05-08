@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -35,12 +33,12 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagBase(DispatchBase):
-    name: str | None = Field(None, nullable=True)
-    source: str | None = Field(None, nullable=True)
-    uri: str | None = Field(None, nullable=True)
+    name: str | None = None
+    source: str | None = None
+    uri: str | None = None
     discoverable: bool | None = True
-    external_id: str | None = Field(None, nullable=True)
-    description: str | None = Field(None, nullable=True)
+    external_id: str | None = None
+    description: str | None = None
 
 
 class TagCreate(TagBase):

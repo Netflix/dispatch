@@ -1,6 +1,4 @@
 from datetime import datetime
-from pydantic import Field
-
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
@@ -62,7 +60,7 @@ class Notification(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 # Pydantic models
 class NotificationBase(EvergreenBase):
     name: NameStr
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     type: NotificationTypeEnum
     target: str
     enabled: bool | None

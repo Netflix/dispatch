@@ -90,37 +90,37 @@ class Project(Base):
 
 class Service(DispatchBase):
     id: PrimaryKey
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     external_id: str
     is_active: bool | None = None
     name: NameStr
-    type: str | None = Field(None, nullable=True)
+    type: str | None = None
 
 
 class ProjectBase(DispatchBase):
     id: PrimaryKey | None
     name: NameStr
     display_name: str | None = Field("", nullable=False)
-    owner_email: EmailStr | None = Field(None, nullable=True)
-    owner_conversation: str | None = Field(None, nullable=True)
+    owner_email: EmailStr | None = None
+    owner_conversation: str | None = None
     annual_employee_cost: int | None
     business_year_hours: int | None
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     default: bool = False
-    color: str | None = Field(None, nullable=True)
+    color: str | None = None
     send_daily_reports: bool | None = Field(True, nullable=True)
     send_weekly_reports: bool | None = Field(False, nullable=True)
-    weekly_report_notification_id: int | None = Field(None, nullable=True)
+    weekly_report_notification_id: int | None = None
     enabled: bool | None = Field(True, nullable=True)
-    storage_folder_one: str | None = Field(None, nullable=True)
-    storage_folder_two: str | None = Field(None, nullable=True)
+    storage_folder_one: str | None = None
+    storage_folder_two: str | None = None
     storage_use_folder_one_as_primary: bool | None = Field(True, nullable=True)
     storage_use_title: bool | None = Field(False, nullable=True)
     allow_self_join: bool | None = Field(True, nullable=True)
     select_commander_visibility: bool | None = Field(True, nullable=True)
-    report_incident_instructions: str | None = Field(None, nullable=True)
-    report_incident_title_hint: str | None = Field(None, nullable=True)
-    report_incident_description_hint: str | None = Field(None, nullable=True)
+    report_incident_instructions: str | None = None
+    report_incident_title_hint: str | None = None
+    report_incident_description_hint: str | None = None
     snooze_extension_oncall_service: Service | None = None
 
 
@@ -131,7 +131,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(ProjectBase):
     send_daily_reports: bool | None = Field(True, nullable=True)
     send_weekly_reports: bool | None = Field(False, nullable=True)
-    weekly_report_notification_id: int | None = Field(None, nullable=True)
+    weekly_report_notification_id: int | None = None
     stable_priority_id: int | None
     snooze_extension_oncall_service_id: int | None
 

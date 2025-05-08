@@ -42,12 +42,12 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 
 # Pydantic models...
 class ServiceBase(EvergreenBase):
-    description: str | None = Field(None, nullable=True)
-    external_id: str | None = Field(None, nullable=True)
+    description: str | None = None
+    external_id: str | None = None
     health_metrics: bool | None = None
     is_active: bool | None = None
-    name: str | None = Field(None, nullable=True)
-    type: str | None = Field(None, nullable=True)
+    name: str | None = None
+    type: str | None = None
     shift_hours_type: int | None = Field(24, nullable=True)
 
 

@@ -24,7 +24,7 @@ class SourceEnvironment(Base, ProjectMixin):
 
 class SourceEnvironmentBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
 
 
 class SourceEnvironmentRead(SourceEnvironmentBase):

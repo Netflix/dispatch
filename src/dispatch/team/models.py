@@ -1,6 +1,4 @@
 from datetime import datetime
-from pydantic import Field
-
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -53,7 +51,7 @@ class TeamContact(Base, ContactMixin, ProjectMixin, EvergreenMixin):
 
 class TeamContactBase(ContactBase, EvergreenBase):
     name: NameStr
-    notes: str | None = Field(None, nullable=True)
+    notes: str | None = None
 
 
 class TeamContactCreate(TeamContactBase):

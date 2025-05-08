@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -49,10 +47,10 @@ class Entity(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class EntityBase(DispatchBase):
-    name: str | None = Field(None, nullable=True)
-    source: str | None = Field(None, nullable=True)
-    value: str | None = Field(None, nullable=True)
-    description: str | None = Field(None, nullable=True)
+    name: str | None = None
+    source: str | None = None
+    value: str | None = None
+    description: str | None = None
 
 
 class EntityCreate(EntityBase):
@@ -77,10 +75,10 @@ class EntityRead(EntityBase):
 
 class EntityReadMinimal(DispatchBase):
     id: PrimaryKey
-    name: str | None = Field(None, nullable=True)
-    source: str | None = Field(None, nullable=True)
-    value: str | None = Field(None, nullable=True)
-    description: str | None = Field(None, nullable=True)
+    name: str | None = None
+    source: str | None = None
+    value: str | None = None
+    description: str | None = None
     entity_type: EntityTypeReadMinimal | None
 
 

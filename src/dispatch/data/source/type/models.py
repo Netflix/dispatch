@@ -24,7 +24,7 @@ class SourceType(Base, ProjectMixin):
 
 class SourceTypeBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
 
 
 class SourceTypeRead(SourceTypeBase):

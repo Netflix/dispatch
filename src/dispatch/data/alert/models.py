@@ -20,9 +20,9 @@ class Alert(Base, TimeStampMixin):
 # Pydantic models
 class AlertBase(DispatchBase):
     name: str | None = Field(None, nullable=False)
-    description: str | None = Field(None, nullable=True)
-    originator: str | None = Field(None, nullable=True)
-    external_link: str | None = Field(None, nullable=True)
+    description: str | None = None
+    originator: str | None = None
+    external_link: str | None = None
 
 
 class AlertCreate(AlertBase):

@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
@@ -32,7 +30,7 @@ class Term(Base, ProjectMixin):
 # Pydantic models...
 class TermBase(DispatchBase):
     id: PrimaryKey | None = None
-    text: str | None = Field(None, nullable=True)
+    text: str | None = None
     discoverable: bool | None = True
 
 

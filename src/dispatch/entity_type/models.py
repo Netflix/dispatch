@@ -55,12 +55,12 @@ class SignalRead(DispatchBase):
 
 class EntityTypeBase(DispatchBase):
     name: NameStr | None
-    description: str | None = Field(None, nullable=True)
-    jpath: str | None = Field(None, nullable=True)
+    description: str | None = None
+    jpath: str | None = None
     scope: EntityScopeEnum | None = Field(EntityScopeEnum.single, nullable=False)
     enabled: bool | None
     signals: list[SignalRead | None] = Field([], nullable=True)
-    regular_expression: str | None = Field(None, nullable=True)
+    regular_expression: str | None = None
 
 
 class EntityTypeCreate(EntityTypeBase):
@@ -80,10 +80,10 @@ class EntityTypeRead(EntityTypeBase):
 class EntityTypeReadMinimal(DispatchBase):
     id: PrimaryKey
     name: NameStr
-    description: str | None = Field(None, nullable=True)
+    description: str | None = None
     scope: EntityScopeEnum
     enabled: bool | None
-    regular_expression: str | None = Field(None, nullable=True)
+    regular_expression: str | None = None
 
 
 class EntityTypePagination(Pagination):
