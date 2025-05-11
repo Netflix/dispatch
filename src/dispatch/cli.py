@@ -325,7 +325,8 @@ def database_init():
     default="dispatch-backup.dump",
     help="Path to a PostgreSQL text format dump file.",
 )
-def restore_database(dump_file):
+@click.option("--skip-check", is_flag=True, help="Skip confirmation check if flag is set.")
+def restore_database(dump_file, skip_check):
     """Restores the database via psql."""
     from sh import ErrorReturnCode_1, createdb, psql
 
@@ -336,7 +337,7 @@ def restore_database(dump_file):
         DATABASE_PORT,
     )
 
-    if not prompt_for_confirmation("restore"):
+    if not skip_check and not prompt_for_confirmation("restore"):
         click.secho("Aborting database restore.", fg="red")
         return
 
