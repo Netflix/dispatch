@@ -11,6 +11,7 @@ from dispatch.models import ResourceBase, ResourceMixin
 
 class Ticket(Base, ResourceMixin):
     """SQLAlchemy model for ticket resources."""
+
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
@@ -32,7 +33,8 @@ class TicketUpdate(TicketBase):
 
 class TicketRead(TicketBase):
     """Pydantic model for reading a ticket resource."""
-    description: str | None = None
+
+    description: str | None = TICKET_DESCRIPTION
 
     @field_validator("description", mode="before")
     @classmethod
