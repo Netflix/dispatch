@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -17,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def send_incident_feedback_daily_report(
-    commander_email: str, feedback: List[Feedback], project_id: int, db_session: Session
+    commander_email: str, feedback: list[Feedback], project_id: int, db_session: Session
 ):
     """Sends an incident feedback daily report to all incident commanders who received feedback."""
     plugin = plugin_service.get_active_instance(
@@ -67,7 +66,7 @@ def send_incident_feedback_daily_report(
 
 
 def send_case_feedback_daily_report(
-    assignee_email: str, feedback: List[Feedback], project_id: int, db_session: Session
+    assignee_email: str, feedback: list[Feedback], project_id: int, db_session: Session
 ):
     """Sends an case feedback daily report to all case assignees who received feedback."""
     plugin = plugin_service.get_active_instance(

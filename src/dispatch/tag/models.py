@@ -1,6 +1,3 @@
-from typing import Optional, List
-from pydantic import Field
-
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -36,30 +33,30 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagBase(DispatchBase):
-    name: Optional[str] = Field(None, nullable=True)
-    source: Optional[str] = Field(None, nullable=True)
-    uri: Optional[str] = Field(None, nullable=True)
-    discoverable: Optional[bool] = True
-    external_id: Optional[str] = Field(None, nullable=True)
-    description: Optional[str] = Field(None, nullable=True)
+    name: str | None = None
+    source: str | None = None
+    uri: str | None = None
+    discoverable: bool | None = True
+    external_id: str | None = None
+    description: str | None = None
 
 
 class TagCreate(TagBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None = None
     tag_type: TagTypeCreate
     project: ProjectRead
 
 
 class TagUpdate(TagBase):
-    id: Optional[PrimaryKey]
-    tag_type: Optional[TagTypeUpdate]
+    id: PrimaryKey | None = None
+    tag_type: TagTypeUpdate | None = None
 
 
 class TagRead(TagBase):
     id: PrimaryKey
-    tag_type: Optional[TagTypeRead]
+    tag_type: TagTypeRead | None
     project: ProjectRead
 
 
 class TagPagination(Pagination):
-    items: List[TagRead]
+    items: list[TagRead]

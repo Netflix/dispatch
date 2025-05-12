@@ -1,20 +1,17 @@
-from typing import Optional
+from pydantic import ValidationError
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.tag_type import service as tag_type_service
 
 from .models import Tag, TagCreate, TagRead, TagUpdate
 
 
-def get(*, db_session, tag_id: int) -> Optional[Tag]:
+def get(*, db_session, tag_id: int):
     """Gets a tag by its id."""
     return db_session.query(Tag).filter(Tag.id == tag_id).one_or_none()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
+def get_by_name(*, db_session, project_id: int, name: str):
     """Gets a tag by its project and name."""
     return (
         db_session.query(Tag)
@@ -24,23 +21,19 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
     )
 
 
-def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead) -> TagRead:
+def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead):
     """Returns the tag specified or raises ValidationError."""
     tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 
     if not tag:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Tag not found.",
-                        tag=tag_in.name,
-                    ),
-                    loc="tag",
-                )
-            ],
-            model=TagRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("tag",),
+                "msg": f"Tag not found: {tag_in.name}",
+                "type": "value_error",
+                "input": tag_in.name,
+            }
+        ])
 
     return tag
 
@@ -80,7 +73,7 @@ def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
 def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
     """Updates an existing tag."""
     tag_data = tag.dict()
-    update_data = tag_in.dict(skip_defaults=True, exclude={"tag_type"})
+    update_data = tag_in.dict(exclude_unset=True, exclude={"tag_type"})
 
     for field in tag_data:
         if field in update_data:

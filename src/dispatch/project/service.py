@@ -1,11 +1,8 @@
-from typing import List, Optional
 
 from pydantic import ValidationError
-from pydantic.error_wrappers import ErrorWrapper
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
-from dispatch.exceptions import NotFoundError
 
 from .models import Project, ProjectCreate, ProjectRead, ProjectUpdate
 
@@ -15,7 +12,7 @@ def get(*, db_session: Session, project_id: int) -> Project | None:
     return db_session.query(Project).filter(Project.id == project_id).first()
 
 
-def get_default(*, db_session: Session) -> Optional[Project]:
+def get_default(*, db_session: Session) -> Project | None:
     """Returns the default project."""
     return db_session.query(Project).filter(Project.default == true()).one_or_none()
 
@@ -25,19 +22,17 @@ def get_default_or_raise(*, db_session: Session) -> Project:
     project = get_default(db_session=db_session)
 
     if not project:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(msg="No default project defined."),
-                    loc="project",
-                )
-            ],
-            model=ProjectRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("project",),
+                "msg": "No default project defined.",
+                "type": "value_error",
+            }
+        ])
     return project
 
 
-def get_by_name(*, db_session: Session, name: str) -> Optional[Project]:
+def get_by_name(*, db_session: Session, name: str) -> Project | None:
     """Returns a project based on the given project name."""
     return db_session.query(Project).filter(Project.name == name).one_or_none()
 
@@ -49,12 +44,12 @@ def get_by_name_or_raise(*, db_session: Session, project_in: ProjectRead) -> Pro
     if not project:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(msg="Project not found.", name=project_in.name),
-                    loc="name",
-                )
-            ],
-            model=ProjectRead,
+                {
+                    "msg": "Project not found.",
+                    "name": project_in.name,
+                    "loc": "name",
+                }
+            ]
         )
 
     return project
@@ -68,7 +63,7 @@ def get_by_name_or_default(*, db_session, project_in: ProjectRead) -> Project:
     return get_default_or_raise(db_session=db_session)
 
 
-def get_all(*, db_session) -> List[Optional[Project]]:
+def get_all(*, db_session) -> list[Project | None]:
     """Returns all projects."""
     return db_session.query(Project)
 
@@ -107,7 +102,7 @@ def update(*, db_session, project: Project, project_in: ProjectUpdate) -> Projec
     """Updates a project."""
     project_data = project.dict()
 
-    update_data = project_in.dict(skip_defaults=True, exclude={})
+    update_data = project_in.dict(exclude_unset=True, exclude={})
 
     for field in project_data:
         if field in update_data:

@@ -2,12 +2,12 @@ import logging
 import time
 from contextvars import ContextVar
 from os import path
-from typing import Final, Optional
 from uuid import uuid1
-
+import warnings
+from typing import Final
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from sentry_asgi import SentryMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -31,6 +31,9 @@ from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
 from .rate_limiter import limiter
+
+# Filter out Pydantic migration warnings
+warnings.filterwarnings("ignore", message=".*has been moved to.*")
 
 log = logging.getLogger(__name__)
 
@@ -99,10 +102,10 @@ def get_path_template(request: Request) -> str:
 
 
 REQUEST_ID_CTX_KEY: Final[str] = "request_id"
-_request_id_ctx_var: ContextVar[Optional[str]] = ContextVar(REQUEST_ID_CTX_KEY, default=None)
+_request_id_ctx_var: ContextVar[str | None] = ContextVar(REQUEST_ID_CTX_KEY, default=None)
 
 
-def get_request_id() -> Optional[str]:
+def get_request_id() -> str | None:
     return _request_id_ctx_var.get()
 
 

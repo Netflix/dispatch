@@ -8,13 +8,12 @@ Create Date: 2023-01-30 10:52:31.676368
 from alembic import op
 
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 import sqlalchemy as sa
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql.expression import true
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.declarative import declarative_base
-from typing import Optional
 
 # revision identifiers, used by Alembic.
 revision = "e4b4991dddcd"
@@ -50,11 +49,7 @@ class Case(Base):
 
 # Pydantic models...
 class DispatchBase(BaseModel):
-    class Config:
-        orm_mode = True
-        validate_assignment = True
-        arbitrary_types_allowed = True
-        anystr_strip_whitespace = True
+    model_config = ConfigDict(from_attributes=True, validate_assignment=True, arbitrary_types_allowed=True, str_strip_whitespace=True)
 
 
 class DispatchEnum(str, Enum):
@@ -78,7 +73,7 @@ class ParticipantRoleType(DispatchEnum):
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
-    role: Optional[ParticipantRoleType]
+    role: ParticipantRoleType | None = None
 
 
 class ProjectMixin(object):

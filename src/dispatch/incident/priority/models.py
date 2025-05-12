@@ -1,6 +1,5 @@
-from typing import List, Optional
-from pydantic import StrictBool, Field
-from pydantic.color import Color
+"""Models for incident priority resources in the Dispatch application."""
+from pydantic import StrictBool
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -12,6 +11,8 @@ from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pag
 
 
 class IncidentPriority(Base, ProjectMixin):
+    """SQLAlchemy model for incident priority resources."""
+    __allow_unmapped__ = True
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -37,50 +38,57 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 
 
 class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    """Pydantic model for reading a project resource."""
+    id: PrimaryKey | None
     name: NameStr
-    display_name: Optional[str]
+    display_name: str | None
 
 
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
+    """Base Pydantic model for incident priority resources."""
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    page_commander: Optional[StrictBool]
-    tactical_report_reminder: Optional[int]
-    executive_report_reminder: Optional[int]
-    project: Optional[ProjectRead]
-    default: Optional[bool]
-    enabled: Optional[bool]
-    view_order: Optional[int]
-    color: Optional[Color] = Field(None, nullable=True)
-    disable_delayed_message_warning: Optional[bool]
+    description: str | None = None
+    page_commander: StrictBool | None = None
+    tactical_report_reminder: int | None = None
+    executive_report_reminder: int | None = None
+    project: ProjectRead | None = None
+    default: bool | None = None
+    enabled: bool | None = None
+    view_order: int | None = None
+    color: str | None = None
+    disable_delayed_message_warning: bool | None = None
 
 
 class IncidentPriorityCreate(IncidentPriorityBase):
+    """Pydantic model for creating an incident priority resource."""
     pass
 
 
 class IncidentPriorityUpdate(IncidentPriorityBase):
+    """Pydantic model for updating an incident priority resource."""
     pass
 
 
 class IncidentPriorityRead(IncidentPriorityBase):
+    """Pydantic model for reading an incident priority resource."""
     id: PrimaryKey
 
 
 class IncidentPriorityReadMinimal(DispatchBase):
+    """Pydantic model for reading a minimal incident priority resource."""
     id: PrimaryKey
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    page_commander: Optional[StrictBool]
-    tactical_report_reminder: Optional[int]
-    executive_report_reminder: Optional[int]
-    default: Optional[bool]
-    enabled: Optional[bool]
-    view_order: Optional[int]
-    color: Optional[Color] = Field(None, nullable=True)
+    description: str | None = None
+    page_commander: StrictBool | None = None
+    tactical_report_reminder: int | None = None
+    executive_report_reminder: int | None = None
+    default: bool | None = None
+    enabled: bool | None = None
+    view_order: int | None = None
+    color: str | None = None
 
 
 class IncidentPriorityPagination(Pagination):
-    items: List[IncidentPriorityRead] = []
+    """Pydantic model for paginated incident priority results."""
+    items: list[IncidentPriorityRead] = []

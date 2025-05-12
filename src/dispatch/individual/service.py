@@ -1,12 +1,10 @@
 from functools import lru_cache
-from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.plugin.models import PluginInstance
-from dispatch.project.models import Project
-from dispatch.exceptions import NotFoundError
+from dispatch.project.models import Project, ProjectRead
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -25,7 +23,7 @@ def resolve_user_by_email(email: str, db_session: Session):
     return plugin.instance.get(email)
 
 
-def get(*, db_session: Session, individual_contact_id: int) -> Optional[IndividualContact]:
+def get(*, db_session: Session, individual_contact_id: int) -> IndividualContact | None:
     """Returns an individual given an individual id."""
     return (
         db_session.query(IndividualContact)
@@ -36,7 +34,7 @@ def get(*, db_session: Session, individual_contact_id: int) -> Optional[Individu
 
 def get_by_email_and_project(
     *, db_session: Session, email: str, project_id: int
-) -> Optional[IndividualContact]:
+) -> IndividualContact | None:
     """Returns an individual given an email address and project id."""
     return (
         db_session.query(IndividualContact)
@@ -55,23 +53,19 @@ def get_by_email_and_project_id_or_raise(
     )
 
     if not individual_contact:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Individual not found.",
-                        individual=individual_contact_in.email,
-                    ),
-                    loc="individual",
-                )
-            ],
-            model=IndividualContactRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("individual",),
+                "msg": "Individual not found.",
+                "type": "value_error",
+                "input": individual_contact_in.email,
+            }
+        ])
 
     return individual_contact
 
 
-def get_all(*, db_session) -> List[Optional[IndividualContact]]:
+def get_all(*, db_session) -> list[IndividualContact | None]:
     """Returns all individuals."""
     return db_session.query(IndividualContact)
 
@@ -103,15 +97,22 @@ def get_or_create(
     kwargs["name"] = individual_info.get("fullname", email.split("@")[0].capitalize())
     kwargs["weblink"] = individual_info.get("weblink", "")
 
+    # Use Pydantic's model_validate to convert SQLAlchemy Project to ProjectRead
+    project_read = ProjectRead.model_validate(project)
+    if project_read.annual_employee_cost is None:
+        project_read.annual_employee_cost = 50000
+    if project_read.business_year_hours is None:
+        project_read.business_year_hours = 2080
+
     if not individual_contact:
         # we create a new contact
-        individual_contact_in = IndividualContactCreate(**kwargs, project=project)
+        individual_contact_in = IndividualContactCreate(**kwargs, project=project_read)
         individual_contact = create(
             db_session=db_session, individual_contact_in=individual_contact_in
         )
     else:
         # we update the existing contact
-        individual_contact_in = IndividualContactUpdate(**kwargs, project=project)
+        individual_contact_in = IndividualContactUpdate(**kwargs, project=project_read)
         individual_contact = update(
             db_session=db_session,
             individual_contact=individual_contact,
@@ -154,7 +155,7 @@ def update(
 ) -> IndividualContact:
     """Updates an individual."""
     individual_contact_data = individual_contact.dict()
-    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = individual_contact_in.dict(exclude_unset=True, exclude={"filters"})
 
     for field in individual_contact_data:
         if field in update_data:

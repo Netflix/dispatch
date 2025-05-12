@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
 
 from dispatch.auth.permissions import (
@@ -10,7 +10,6 @@ from dispatch.auth.permissions import (
 
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
-from dispatch.exceptions import ExistsError
 from dispatch.models import OrganizationSlug, PrimaryKey
 
 from .flows import project_init_flow
@@ -48,13 +47,21 @@ def create_project(
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A project with this name already exists."), loc="name")],
-            model=ProjectCreate,
+            [
+                {
+                    "msg": "A project with this name already exists.",
+                    "loc": "name",
+                }
+            ]
         )
     if project_in.id and get(db_session=db_session, project_id=project_in.id):
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A project with this id already exists."), loc="id")],
-            model=ProjectCreate,
+            [
+                {
+                    "msg": "A project with this id already exists.",
+                    "loc": "id",
+                }
+            ]
         )
 
     project = create(db_session=db_session, project_in=project_in)

@@ -1,4 +1,7 @@
-from pydantic.errors import PydanticValueError
+try:
+    from pydantic.v1 import PydanticValueError
+except ImportError:
+    from pydantic import PydanticValueError
 
 
 class DispatchException(Exception):

@@ -1,8 +1,6 @@
-from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import InvalidConfigurationError, NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.project.models import ProjectRead
@@ -11,22 +9,22 @@ from dispatch.search_filter import service as search_filter_service
 from .models import Service, ServiceCreate, ServiceRead, ServiceUpdate
 
 
-def get(*, db_session, service_id: int) -> Optional[Service]:
+def get(*, db_session, service_id: int) -> Service | None:
     """Gets a service by id."""
     return db_session.query(Service).filter(Service.id == service_id).first()
 
 
-def get_by_external_id(*, db_session, external_id: str) -> Optional[Service]:
+def get_by_external_id(*, db_session, external_id: str) -> Service | None:
     """Gets a service by external id (e.g. PagerDuty service id)."""
     return db_session.query(Service).filter(Service.external_id == external_id).first()
 
 
-def get_all_by_external_ids(*, db_session, external_ids: List[str]) -> Optional[List[Service]]:
+def get_all_by_external_ids(*, db_session, external_ids: list[str]) -> list[Service | None]:
     """Gets a service by external id (e.g. PagerDuty service id) and project id."""
     return db_session.query(Service).filter(Service.external_id.in_(external_ids)).all()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Service]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Service | None:
     """Gets a service by its name."""
     return (
         db_session.query(Service)
@@ -41,25 +39,21 @@ def get_by_name_or_raise(*, db_session, project_id, service_in: ServiceRead) -> 
     source = get_by_name(db_session=db_session, project_id=project_id, name=service_in.name)
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Service not found.",
-                        source=service_in.name,
-                    ),
-                    loc="service",
-                )
-            ],
-            model=ServiceRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("service",),
+                "msg": f"Service not found: {service_in.name}",
+                "type": "value_error",
+                "input": service_in.name,
+            }
+        ])
 
     return source
 
 
 def get_by_external_id_and_project_id(
     *, db_session, external_id: str, project_id: int
-) -> Optional[Service]:
+) -> Service | None:
     """Gets a service by external id (e.g. PagerDuty service id) and project id."""
     return (
         db_session.query(Service)
@@ -80,13 +74,10 @@ def get_by_external_id_and_project_id_or_raise(
     if not service:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Service not found.",
-                        incident_priority=service.external_id,
-                    ),
-                    loc="service",
-                )
+                {
+                    "msg": "Service not found.",
+                    "incident_priority": service.external_id,
+                }
             ],
             model=ServiceRead,
         )
@@ -94,7 +85,7 @@ def get_by_external_id_and_project_id_or_raise(
     return service
 
 
-def get_overdue_evergreen_services(*, db_session, project_id: int) -> List[Optional[Service]]:
+def get_overdue_evergreen_services(*, db_session, project_id: int) -> list[Service | None]:
     """Returns all services that have not had a recent evergreen notification."""
     query = (
         db_session.query(Service)
@@ -107,7 +98,7 @@ def get_overdue_evergreen_services(*, db_session, project_id: int) -> List[Optio
 
 def get_by_external_id_and_project_name(
     *, db_session, external_id: str, project_name: str
-) -> Optional[Service]:
+) -> Service | None:
     """Gets a service by external id (e.g. PagerDuty service id) and project name."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=ProjectRead(name=project_name)
@@ -130,7 +121,7 @@ def get_all_by_status(*, db_session, is_active: bool):
 
 def get_all_by_type_and_status(
     *, db_session, service_type: str, is_active: bool
-) -> List[Optional[Service]]:
+) -> list[Service | None]:
     """Gets services by type and status."""
     return (
         db_session.query(Service)
@@ -142,7 +133,7 @@ def get_all_by_type_and_status(
 
 def get_all_by_project_id_and_status(
     *, db_session, project_id: id, is_active: bool
-) -> List[Optional[Service]]:
+) -> list[Service | None]:
     """Gets services by project id and status."""
     return (
         db_session.query(Service)
@@ -154,7 +145,7 @@ def get_all_by_project_id_and_status(
 
 def get_all_by_health_metrics(
     *, db_session, service_type: str, health_metrics: bool, project_id: int
-) -> List[Optional[Service]]:
+) -> list[Service | None]:
     """Gets all services based on the given health metrics value for a given project."""
     return (
         db_session.query(Service)
@@ -189,7 +180,7 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     """Updates an existing service."""
     service_data = service.dict()
 
-    update_data = service_in.dict(skip_defaults=True, exclude={"filters"})
+    update_data = service_in.dict(exclude_unset=True, exclude={"filters"})
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
@@ -203,15 +194,10 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
         if not oncall_plugin_instance.enabled:
             raise ValidationError(
                 [
-                    ErrorWrapper(
-                        InvalidConfigurationError(
-                            (
-                                f"Cannot enable service {service.name}. Its associated plugin ",
-                                f"{oncall_plugin_instance.plugin.title} is not enabled.",
-                            )
-                        ),
-                        loc="type",
-                    )
+                    {
+                        "msg": "Cannot enable service. Its associated plugin is not enabled.",
+                        "loc": "type",
+                    }
                 ],
                 model=ServiceUpdate,
             )

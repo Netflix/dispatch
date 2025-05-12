@@ -1,3 +1,4 @@
+
 def test_configure():
     """Test that we can configure the plugin."""
     from dispatch.plugins.dispatch_slack.incident.interactive import (
@@ -59,9 +60,9 @@ def test_handle_list_incidents_command(session, incident, mock_slack_client):
 
     subject = SubjectMetadata(
         type=IncidentSubjects.incident,
-        id=incident.id,
+        id=str(incident.id),
         organization_slug=incident.project.slug,
-        project_id=incident.project.id,
+        project_id=str(incident.project.id),
     )
 
     bolt_context = {"subject": subject, "db_session": session}

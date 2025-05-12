@@ -7,7 +7,6 @@
 
 import logging
 
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -314,7 +313,7 @@ def send_case_welcome_participant_message(
     participant_email: str,
     case: Case,
     db_session: Session,
-    welcome_template: Optional[EmailTemplates] = None,
+    welcome_template: EmailTemplates | None = None,
 ):
     if not case.dedicated_channel:
         return

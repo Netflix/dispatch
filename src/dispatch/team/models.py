@@ -1,7 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
-from pydantic import Field
-
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -54,24 +51,24 @@ class TeamContact(Base, ContactMixin, ProjectMixin, EvergreenMixin):
 
 class TeamContactBase(ContactBase, EvergreenBase):
     name: NameStr
-    notes: Optional[str] = Field(None, nullable=True)
+    notes: str | None = None
 
 
 class TeamContactCreate(TeamContactBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: list[SearchFilterRead | None] = []
     project: ProjectRead
 
 
 class TeamContactUpdate(TeamContactBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: list[SearchFilterRead | None] = []
 
 
 class TeamContactRead(TeamContactBase):
     id: PrimaryKey
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: list[SearchFilterRead | None] = []
     created_at: datetime
     updated_at: datetime
 
 
 class TeamPagination(Pagination):
-    items: List[TeamContactRead] = []
+    items: list[TeamContactRead] = []

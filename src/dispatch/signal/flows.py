@@ -11,13 +11,18 @@ from dispatch.auth import service as user_service
 from dispatch.auth.models import DispatchUser, UserRegister
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
+from dispatch.case.enums import CaseStatus
 from dispatch.case.models import CaseCreate
 from dispatch.database.core import get_organization_session, get_session
 from dispatch.entity import service as entity_service
 from dispatch.entity_type import service as entity_type_service
 from dispatch.entity_type.models import EntityScopeEnum
+from dispatch.enums import Visibility
 from dispatch.exceptions import DispatchException
+from dispatch.individual.models import IndividualContactRead
+from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.organization.service import get_all as get_all_organizations
+from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.service import flows as service_flows
@@ -46,6 +51,9 @@ def signal_instance_create_flow(
     signal_instance = signal_service.get_signal_instance(
         db_session=db_session, signal_instance_id=signal_instance_id
     )
+    if signal_instance is None:
+        log.error("signal_instance is None for id: %%s", signal_instance_id)
+        return None
     # fetch `all` entities that should be associated with all signal definitions
     entity_types = entity_type_service.get_all(
         db_session=db_session, scope=EntityScopeEnum.all
@@ -118,27 +126,67 @@ def signal_instance_create_flow(
     assignee = None
     if oncall_service:
         email = service_flows.resolve_oncall(service=oncall_service, db_session=db_session)
-        assignee = {"individual": {"email": email}}
+        if email:
+            assignee = ParticipantUpdate(
+                individual=IndividualContactRead(
+                    id=1,
+                    email=str(email),
+                ),
+                location=None,
+                team=None,
+                department=None,
+                added_reason=None,
+            )
 
     # create a case if not duplicate or snoozed and case creation is enabled
+    case_severity = (
+        getattr(signal_instance, "case_severity", None)
+        or getattr(signal_instance.signal, "case_severity", None)
+        or getattr(case_type, "case_severity", None)
+    )
+
+    reporter = None
+    if current_user and hasattr(current_user, "email"):
+        reporter = ParticipantUpdate(
+            individual=IndividualContactRead(
+                id=1,
+                email=str(current_user.email),
+            ),
+            location=None,
+            team=None,
+            department=None,
+            added_reason=None,
+        )
+
     case_in = CaseCreate(
         title=signal_instance.signal.name,
         description=signal_instance.signal.description,
+        resolution=CASE_RESOLUTION_DEFAULT,
+        resolution_reason=None,
+        status=CaseStatus.new,
+        visibility=Visibility.open,
         case_priority=case_priority,
+        case_severity=case_severity,
         project=signal_instance.project,
         case_type=case_type,
         assignee=assignee,
+        dedicated_channel=False,
+        reporter=reporter,
     )
     case = case_service.create(db_session=db_session, case_in=case_in, current_user=current_user)
     signal_instance.case = case
 
     db_session.commit()
 
+    # Ensure valid types for case_new_create_flow arguments
+    org_slug = None
+    svc_id = None
+    conv_target = conversation_target if isinstance(conversation_target, str) else None
     case_flows.case_new_create_flow(
         db_session=db_session,
-        organization_slug=None,
-        service_id=None,
-        conversation_target=conversation_target,
+        organization_slug=org_slug,
+        service_id=svc_id,
+        conversation_target=conv_target,
         case_id=case.id,
         create_all_resources=False,
     )

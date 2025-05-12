@@ -1,7 +1,5 @@
-from typing import Optional
-
-from pydantic import validator, Field
-from pydantic.networks import EmailStr
+"""Models for group resources in the Dispatch application."""
+from pydantic import field_validator, EmailStr
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 
@@ -12,6 +10,7 @@ from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Group(Base, ResourceMixin):
+    """SQLAlchemy model for group resources."""
     id = Column(Integer, primary_key=True)
     name = Column(String)
     email = Column(String)
@@ -21,23 +20,28 @@ class Group(Base, ResourceMixin):
 
 # Pydantic models...
 class GroupBase(ResourceBase):
+    """Base Pydantic model for group resources."""
     name: NameStr
     email: EmailStr
 
 
 class GroupCreate(GroupBase):
+    """Pydantic model for creating a group resource."""
     pass
 
 
 class GroupUpdate(GroupBase):
-    id: PrimaryKey = None
+    """Pydantic model for updating a group resource."""
+    id: PrimaryKey | None = None
 
 
 class GroupRead(GroupBase):
+    """Pydantic model for reading a group resource."""
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
 
-    @validator("description", pre=True, always=True)
+    @field_validator("description", mode="before")
+    @classmethod
     def set_description(cls, v):
-        """Sets the description"""
+        """Sets the description for the group resource."""
         return TACTICAL_GROUP_DESCRIPTION

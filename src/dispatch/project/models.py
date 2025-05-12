@@ -1,22 +1,18 @@
-from pydantic.networks import EmailStr
+from pydantic import ConfigDict, EmailStr, Field
 from slugify import slugify
-from typing import List, Optional
-from pydantic import Field
-
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
-from sqlalchemy.sql import false
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import false
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, PrimaryKey, Pagination
-
-from dispatch.organization.models import Organization, OrganizationRead
 from dispatch.incident.priority.models import (
     IncidentPriority,
     IncidentPriorityRead,
 )
+from dispatch.models import DispatchBase, NameStr, Pagination, PrimaryKey
+from dispatch.organization.models import Organization, OrganizationRead
 
 
 class Project(Base):
@@ -38,9 +34,7 @@ class Project(Base):
     organization = relationship("Organization")
 
     dispatch_user_project = relationship(
-        "DispatchUserProject",
-        cascade="all, delete-orphan",
-        overlaps="users"
+        "DispatchUserProject", cascade="all, delete-orphan", overlaps="users"
     )
 
     enabled = Column(Boolean, default=True, server_default="t")
@@ -82,7 +76,7 @@ class Project(Base):
 
     @hybrid_property
     def slug(self):
-        return slugify(self.name)
+        return slugify(str(self.name))
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -91,38 +85,38 @@ class Project(Base):
 
 class Service(DispatchBase):
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
     external_id: str
-    is_active: Optional[bool] = None
+    is_active: bool | None = None
     name: NameStr
-    type: Optional[str] = Field(None, nullable=True)
+    type: str | None = None
 
 
 class ProjectBase(DispatchBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
     name: NameStr
-    display_name: Optional[str] = Field("", nullable=False)
-    owner_email: Optional[EmailStr] = Field(None, nullable=True)
-    owner_conversation: Optional[str] = Field(None, nullable=True)
-    annual_employee_cost: Optional[int]
-    business_year_hours: Optional[int]
-    description: Optional[str] = Field(None, nullable=True)
+    display_name: str | None = Field("")
+    owner_email: EmailStr | None = None
+    owner_conversation: str | None = None
+    annual_employee_cost: int | None = 50000
+    business_year_hours: int | None = 2080
+    description: str | None = None
     default: bool = False
-    color: Optional[str] = Field(None, nullable=True)
-    send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    send_weekly_reports: Optional[bool] = Field(False, nullable=True)
-    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
-    enabled: Optional[bool] = Field(True, nullable=True)
-    storage_folder_one: Optional[str] = Field(None, nullable=True)
-    storage_folder_two: Optional[str] = Field(None, nullable=True)
-    storage_use_folder_one_as_primary: Optional[bool] = Field(True, nullable=True)
-    storage_use_title: Optional[bool] = Field(False, nullable=True)
-    allow_self_join: Optional[bool] = Field(True, nullable=True)
-    select_commander_visibility: Optional[bool] = Field(True, nullable=True)
-    report_incident_instructions: Optional[str] = Field(None, nullable=True)
-    report_incident_title_hint: Optional[str] = Field(None, nullable=True)
-    report_incident_description_hint: Optional[str] = Field(None, nullable=True)
-    snooze_extension_oncall_service: Optional[Service]
+    color: str | None = None
+    send_daily_reports: bool | None = Field(True)
+    send_weekly_reports: bool | None = Field(False)
+    weekly_report_notification_id: int | None = None
+    enabled: bool | None = Field(True)
+    storage_folder_one: str | None = None
+    storage_folder_two: str | None = None
+    storage_use_folder_one_as_primary: bool | None = Field(True)
+    storage_use_title: bool | None = Field(False)
+    allow_self_join: bool | None = Field(True)
+    select_commander_visibility: bool | None = Field(True)
+    report_incident_instructions: str | None = None
+    report_incident_title_hint: str | None = None
+    report_incident_description_hint: str | None = None
+    snooze_extension_oncall_service: Service | None = None
 
 
 class ProjectCreate(ProjectBase):
@@ -130,17 +124,19 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    send_daily_reports: Optional[bool] = Field(True, nullable=True)
-    send_weekly_reports: Optional[bool] = Field(False, nullable=True)
-    weekly_report_notification_id: Optional[int] = Field(None, nullable=True)
-    stable_priority_id: Optional[int]
-    snooze_extension_oncall_service_id: Optional[int]
+    send_daily_reports: bool | None = Field(True)
+    send_weekly_reports: bool | None = Field(False)
+    weekly_report_notification_id: int | None = None
+    stable_priority_id: int | None
+    snooze_extension_oncall_service_id: int | None
 
 
 class ProjectRead(ProjectBase):
-    id: Optional[PrimaryKey]
-    stable_priority: Optional[IncidentPriorityRead] = None
+    id: PrimaryKey | None
+    stable_priority: IncidentPriorityRead | None = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectPagination(Pagination):
-    items: List[ProjectRead] = []
+    items: list[ProjectRead] = []

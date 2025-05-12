@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import logging
 import math
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -27,19 +26,19 @@ SECONDS_IN_HOUR = 3600
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session: Session, incident_cost_id: int) -> Optional[IncidentCost]:
+def get(*, db_session: Session, incident_cost_id: int) -> IncidentCost | None:
     """Gets an incident cost by its id."""
     return db_session.query(IncidentCost).filter(IncidentCost.id == incident_cost_id).one_or_none()
 
 
-def get_by_incident_id(*, db_session: Session, incident_id: int) -> List[Optional[IncidentCost]]:
+def get_by_incident_id(*, db_session: Session, incident_id: int) -> list[IncidentCost | None]:
     """Gets incident costs by their incident id."""
     return db_session.query(IncidentCost).filter(IncidentCost.incident_id == incident_id).all()
 
 
 def get_by_incident_id_and_incident_cost_type_id(
     *, db_session: Session, incident_id: int, incident_cost_type_id: int
-) -> Optional[IncidentCost]:
+) -> IncidentCost | None:
     """Gets incident costs by their incident id and incident cost type id."""
     return (
         db_session.query(IncidentCost)
@@ -49,7 +48,7 @@ def get_by_incident_id_and_incident_cost_type_id(
     )
 
 
-def get_all(*, db_session) -> List[Optional[IncidentCost]]:
+def get_all(*, db_session) -> list[IncidentCost | None]:
     """Gets all incident costs."""
     return db_session.query(IncidentCost)
 
@@ -87,7 +86,7 @@ def update(
 ) -> IncidentCost:
     """Updates an incident cost."""
     incident_cost_data = incident_cost.dict()
-    update_data = incident_cost_in.dict(skip_defaults=True)
+    update_data = incident_cost_in.dict(exclude_unset=True)
 
     for field in incident_cost_data:
         if field in update_data:
@@ -154,7 +153,7 @@ def calculate_response_cost(
 
 def get_default_incident_response_cost(
     incident: Incident, db_session: Session
-) -> Optional[IncidentCost]:
+) -> IncidentCost | None:
     response_cost_type = incident_cost_type_service.get_default(
         db_session=db_session, project_id=incident.project.id
     )
@@ -174,7 +173,7 @@ def get_default_incident_response_cost(
 
 def get_or_create_default_incident_response_cost(
     incident: Incident, db_session: Session
-) -> Optional[IncidentCost]:
+) -> IncidentCost | None:
     """Gets or creates the default incident cost for an incident.
 
     The default incident cost is the cost associated with the participant effort in an incident's response.
@@ -211,7 +210,7 @@ def get_or_create_default_incident_response_cost(
 
 def fetch_incident_events(
     incident: Incident, activity: CostModelActivity, oldest: str, db_session: Session
-) -> List[Optional[tuple[datetime.timestamp, str]]]:
+) -> list[tuple[datetime.timestamp, str | None]]:
     plugin_instance = plugin_service.get_active_instance_by_slug(
         db_session=db_session,
         slug=activity.plugin_event.plugin.slug,

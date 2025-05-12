@@ -36,8 +36,8 @@ class ParticipantActivityBase(DispatchBase):
     started_at: datetime | None
     ended_at: datetime | None
     participant: ParticipantRead
-    incident: IncidentRead | None
-    case: CaseRead | None
+    incident: IncidentRead | None = None
+    case: CaseRead | None = None
 
 
 class ParticipantActivityRead(ParticipantActivityBase):

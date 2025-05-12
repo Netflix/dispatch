@@ -1,7 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends, Response
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from typing import List
+from pydantic import ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
@@ -14,7 +13,6 @@ from dispatch.database.core import DbSession
 from dispatch.auth.service import CurrentUser
 from dispatch.database.service import search_filter_sort_paginate, CommonParameters
 from dispatch.models import PrimaryKey
-from dispatch.exceptions import ExistsError
 from dispatch.forms.type.service import send_email_to_service
 
 from .models import FormsRead, FormsUpdate, FormsPagination
@@ -70,11 +68,11 @@ def create_forms(
     except IntegrityError:
         raise ValidationError(
             [
-                ErrorWrapper(
-                    ExistsError(msg="A search filter with this name already exists."), loc="name"
-                )
+                {
+                    "msg": "A search filter with this name already exists.",
+                    "loc": "name",
+                }
             ],
-            model=FormsRead,
         ) from None
 
 
@@ -85,7 +83,7 @@ def create_forms(
 )
 def export_forms(
     db_session: DbSession,
-    ids: List[int],
+    ids: list[int],
 ):
     """Exports forms."""
     return export(db_session=db_session, ids=ids)
@@ -112,8 +110,12 @@ def update_forms(
         forms = update(db_session=db_session, forms=forms, forms_in=forms_in)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A form with this name already exists."), loc="name")],
-            model=FormsUpdate,
+            [
+                {
+                    "msg": "A form with this name already exists.",
+                    "loc": "name",
+                }
+            ],
         ) from None
     return forms
 

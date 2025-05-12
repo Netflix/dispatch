@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-from typing import List
 
 from .models import (
     CostModel,
@@ -40,7 +39,7 @@ def get_default(*, db_session, project_id: int) -> CostModel:
     )
 
 
-def get_all(*, db_session, project_id: int) -> List[CostModel]:
+def get_all(*, db_session, project_id: int) -> list[CostModel]:
     """Returns all cost models."""
     if project_id:
         return db_session.query(CostModel).filter(CostModel.project_id == project_id)

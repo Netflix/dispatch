@@ -1,7 +1,5 @@
-from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -12,7 +10,7 @@ from .models import (
 )
 
 
-def get(*, db_session, source_transport_id: int) -> Optional[SourceTransport]:
+def get(*, db_session, source_transport_id: int) -> SourceTransport | None:
     """Gets a source transport by its id."""
     return (
         db_session.query(SourceTransport)
@@ -21,7 +19,7 @@ def get(*, db_session, source_transport_id: int) -> Optional[SourceTransport]:
     )
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceTransport]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceTransport | None:
     """Gets a source transport by its name."""
     return (
         db_session.query(SourceTransport)
@@ -40,23 +38,19 @@ def get_by_name_or_raise(
     )
 
     if not source:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceTransport not found.",
-                        source=source_transport_in.name,
-                    ),
-                    loc="source",
-                )
-            ],
-            model=SourceTransportRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("source",),
+                "msg": f"SourceTransport not found: {source_transport_in.name}",
+                "type": "value_error",
+                "input": source_transport_in.name,
+            }
+        ])
 
     return source
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceTransport]]:
+def get_all(*, db_session, project_id: int) -> list[SourceTransport | None]:
     """Gets all source transports."""
     return db_session.query(SourceTransport).filter(SourceTransport.project_id == project_id)
 
@@ -100,7 +94,7 @@ def update(
 ) -> SourceTransport:
     """Updates an existing source transport."""
     source_transport_data = source_transport.dict()
-    update_data = source_transport_in.dict(skip_defaults=True, exclude={})
+    update_data = source_transport_in.dict(exclude_unset=True, exclude={})
 
     for field in source_transport_data:
         if field in update_data:

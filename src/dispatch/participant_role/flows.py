@@ -7,7 +7,6 @@
 
 import logging
 from typing import Any
-
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_table_name_by_class_instance

@@ -9,9 +9,8 @@ import base64
 import json
 import logging
 import time
-from typing import Literal
 from uuid import UUID
-
+from typing import Literal
 import requests
 from cachetools import cached, TTLCache
 from fastapi import HTTPException
@@ -76,6 +75,7 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
+    configuration_schema = None
 
     def get_current_user(self, request: Request, **kwargs):
         authorization: str = request.headers.get("Authorization")
@@ -106,6 +106,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
+    configuration_schema = None
 
     def get_current_user(self, request: Request, **kwargs):
         credentials_exception = HTTPException(
@@ -158,6 +159,7 @@ class HeaderAuthProviderPlugin(AuthenticationProviderPlugin):
 
     author = "Filippo Giunchedi"
     author_url = "https://github.com/filippog"
+    configuration_schema = None
 
     def get_current_user(self, request: Request, **kwargs):
         value: str = request.headers.get(DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME)
@@ -177,6 +179,7 @@ class AwsAlbAuthProviderPlugin(AuthenticationProviderPlugin):
 
     author = "ManyPets"
     author_url = "https://manypets.com/"
+    configuration_schema = None
 
     @cached(cache=TTLCache(maxsize=1024, ttl=DISPATCH_AUTHENTICATION_PROVIDER_AWS_ALB_PUBLIC_KEY_CACHE_SECONDS))
     def get_public_key(self, kid: str, region: str):
@@ -365,6 +368,7 @@ class DispatchMfaPlugin(MultiFactorAuthenticationPlugin):
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
+    configuration_schema = None
 
     def wait_for_challenge(
         self,
@@ -479,6 +483,7 @@ class DispatchContactPlugin(ContactPlugin):
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
+    configuration_schema = None
 
     def get(self, email, db_session=None):
         individual = individual_service.get_by_email_and_project(
@@ -500,6 +505,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
+    configuration_schema = None
 
     def get(
         self,

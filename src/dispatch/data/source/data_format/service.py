@@ -1,7 +1,5 @@
-from typing import Optional, List
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
 from .models import (
@@ -12,7 +10,7 @@ from .models import (
 )
 
 
-def get(*, db_session, source_data_format_id: int) -> Optional[SourceDataFormat]:
+def get(*, db_session, source_data_format_id: int) -> SourceDataFormat | None:
     """Gets a data source by its id."""
     return (
         db_session.query(SourceDataFormat)
@@ -21,7 +19,7 @@ def get(*, db_session, source_data_format_id: int) -> Optional[SourceDataFormat]
     )
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceDataFormat]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SourceDataFormat | None:
     """Gets a source by its name."""
     return (
         db_session.query(SourceDataFormat)
@@ -40,23 +38,19 @@ def get_by_name_or_raise(
     )
 
     if not data_format:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="SourceDataFormat not found.",
-                        source=source_data_format_in.name,
-                    ),
-                    loc="dataFormat",
-                )
-            ],
-            model=SourceDataFormatRead,
-        )
+        raise ValidationError([
+            {
+                "loc": ("dataFormat",),
+                "msg": f"SourceDataFormat not found: {source_data_format_in.name}",
+                "type": "value_error",
+                "input": source_data_format_in.name,
+            }
+        ])
 
     return data_format
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[SourceDataFormat]]:
+def get_all(*, db_session, project_id: int) -> list[SourceDataFormat | None]:
     """Gets all sources."""
     return db_session.query(SourceDataFormat).filter(SourceDataFormat.project_id == project_id)
 
@@ -102,7 +96,7 @@ def update(
 ) -> SourceDataFormat:
     """Updates an existing source."""
     source_data_format_data = source_data_format.dict()
-    update_data = source_data_format_in.dict(skip_defaults=True, exclude={})
+    update_data = source_data_format_in.dict(exclude_unset=True, exclude={})
 
     for field in source_data_format_data:
         if field in update_data:

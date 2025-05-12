@@ -1,6 +1,3 @@
-from typing import Optional, List
-from pydantic import Field
-
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -67,35 +64,35 @@ class Participant(Base):
 
 
 class ParticipantBase(DispatchBase):
-    location: Optional[str] = Field(None, nullable=True)
-    team: Optional[str] = Field(None, nullable=True)
-    department: Optional[str] = Field(None, nullable=True)
-    added_reason: Optional[str] = Field(None, nullable=True)
+    location: str | None = None
+    team: str | None = None
+    department: str | None = None
+    added_reason: str | None = None
 
 
 class ParticipantCreate(ParticipantBase):
-    participant_roles: Optional[List[ParticipantRoleCreate]] = []
-    location: Optional[str] = Field(None, nullable=True)
-    team: Optional[str] = Field(None, nullable=True)
-    department: Optional[str] = Field(None, nullable=True)
-    service: Optional[ServiceRead]
+    participant_roles: list[ParticipantRoleCreate] | None = []
+    location: str | None = None
+    team: str | None = None
+    department: str | None = None
+    service: ServiceRead | None = None
 
 
 class ParticipantUpdate(ParticipantBase):
-    individual: Optional[IndividualContactRead]
+    individual: IndividualContactRead | None = None
 
 
 class ParticipantRead(ParticipantBase):
     id: PrimaryKey
-    participant_roles: Optional[List[ParticipantRoleRead]] = []
-    individual: Optional[IndividualContactRead]
+    participant_roles: list[ParticipantRoleRead] | None = []
+    individual: IndividualContactRead | None = None
 
 
 class ParticipantReadMinimal(ParticipantBase):
     id: PrimaryKey
-    participant_roles: Optional[List[ParticipantRoleReadMinimal]] = []
-    individual: Optional[IndividualContactReadMinimal]
+    participant_roles: list[ParticipantRoleReadMinimal] | None = []
+    individual: IndividualContactReadMinimal | None = None
 
 
 class ParticipantPagination(Pagination):
-    items: List[ParticipantRead] = []
+    items: list[ParticipantRead] = []

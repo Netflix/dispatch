@@ -1,16 +1,15 @@
-from typing import Optional
 
 from .models import Group, GroupCreate, GroupUpdate
 
 
-def get(*, db_session, group_id: int) -> Optional[Group]:
+def get(*, db_session, group_id: int) -> Group | None:
     """Returns a group given a group id."""
     return db_session.query(Group).filter(Group.id == group_id).one_or_none()
 
 
 def get_by_incident_id_and_resource_type(
     *, db_session, incident_id: str, resource_type: str
-) -> Optional[Group]:
+) -> Group | None:
     """Returns a group given an incident id and group resource type."""
     return (
         db_session.query(Group)
@@ -36,7 +35,7 @@ def create(*, db_session, group_in: GroupCreate) -> Group:
 def update(*, db_session, group: Group, group_in: GroupUpdate) -> Group:
     """Updates a group."""
     group_data = group.dict()
-    update_data = group_in.dict(skip_defaults=True)
+    update_data = group_in.dict(exclude_unset=True)
 
     for field in group_data:
         if field in update_data:

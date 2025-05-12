@@ -1,9 +1,8 @@
+"""Models and schemas for the Dispatch case management system."""
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Any, List, Optional
-
-from pydantic import Field, validator
-from dispatch.case_cost.models import CaseCostReadMinimal
+from typing import Any
+from pydantic import field_validator, Field
 from sqlalchemy import (
     Boolean,
     Column,
@@ -21,6 +20,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
 from dispatch.case.enums import CostModelType
+from dispatch.case_cost.models import CaseCostReadMinimal
 from dispatch.case.priority.models import CasePriorityBase, CasePriorityCreate, CasePriorityRead
 from dispatch.case.severity.models import CaseSeverityBase, CaseSeverityCreate, CaseSeverityRead
 from dispatch.case.type.models import CaseTypeBase, CaseTypeCreate, CaseTypeRead
@@ -77,6 +77,7 @@ assoc_cases_incidents = Table(
 
 
 class Case(Base, TimeStampMixin, ProjectMixin):
+    """SQLAlchemy model for a Case, representing an incident or issue in the system."""
     __table_args__ = (UniqueConstraint("name", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -182,27 +183,32 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     @observes("participants")
     def participant_observer(self, participants):
+        """Update team and location fields based on the most common values among participants."""
         self.participants_team = Counter(p.team for p in participants).most_common(1)[0][0]
         self.participants_location = Counter(p.location for p in participants).most_common(1)[0][0]
 
     @property
     def has_channel(self) -> bool:
+        """Return True if the case has a conversation channel but not a thread."""
         if not self.conversation:
             return False
         return True if not self.conversation.thread_id else False
 
     @property
     def has_thread(self) -> bool:
+        """Return True if the case has a conversation thread."""
         if not self.conversation:
             return False
         return True if self.conversation.thread_id else False
 
     @property
     def participant_emails(self) -> list:
+        """Return a list of emails for all participants in the case."""
         return [participant.individual.email for participant in self.participants]
 
     @hybrid_property
     def total_cost_classic(self):
+        """Calculate the total cost for classic cost model types."""
         total_cost = 0
         if self.case_costs:
             for cost in self.case_costs:
@@ -213,6 +219,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     @hybrid_property
     def total_cost_new(self):
+        """Calculate the total cost for new cost model types."""
         total_cost = 0
         if self.case_costs:
             for cost in self.case_costs:
@@ -223,76 +230,88 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
 
 class SignalRead(DispatchBase):
+    """Pydantic model for reading signal data."""
     id: PrimaryKey
     name: str
     owner: str
-    description: Optional[str]
-    variant: Optional[str]
+    description: str | None
+    variant: str | None
     external_id: str
-    external_url: Optional[str]
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
+    external_url: str | None
+    workflow_instances: list[WorkflowInstanceRead] | None = []
 
 
 class SignalInstanceRead(DispatchBase):
+    """Pydantic model for reading signal instance data."""
     created_at: datetime
-    entities: Optional[List[EntityRead]] = []
+    entities: list[EntityRead] | None = []
     raw: Any
     signal: SignalRead
-    tags: Optional[List[TagRead]] = []
+    tags: list[TagRead] | None = []
 
 
 class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    """Pydantic model for reading project data."""
+    id: PrimaryKey | None
     name: NameStr
-    display_name: Optional[str]
-    color: Optional[str]
-    allow_self_join: Optional[bool] = Field(True, nullable=True)
+    display_name: str | None
+    color: str | None
+    allow_self_join: bool | None = Field(True, nullable=True)
 
 # Pydantic models...
 class CaseBase(DispatchBase):
+    """Base Pydantic model for case data."""
     title: str
-    description: Optional[str]
-    resolution: Optional[str]
-    resolution_reason: Optional[CaseResolutionReason]
-    status: Optional[CaseStatus]
-    visibility: Optional[Visibility]
+    description: str | None
+    resolution: str | None
+    resolution_reason: CaseResolutionReason | None
+    status: CaseStatus | None
+    visibility: Visibility | None
 
-    @validator("title")
+    @field_validator("title")
+    @classmethod
     def title_required(cls, v):
+        """Ensure the title field is not empty."""
         if not v:
             raise ValueError("must not be empty string")
         return v
 
-    @validator("description")
+    @field_validator("description")
+    @classmethod
     def description_required(cls, v):
+        """Ensure the description field is not empty."""
         if not v:
             raise ValueError("must not be empty string")
         return v
 
 
 class CaseCreate(CaseBase):
-    assignee: Optional[ParticipantUpdate]
-    case_priority: Optional[CasePriorityCreate]
-    case_severity: Optional[CaseSeverityCreate]
-    case_type: Optional[CaseTypeCreate]
-    dedicated_channel: Optional[bool]
-    project: Optional[ProjectRead]
-    reporter: Optional[ParticipantUpdate]
-    tags: Optional[List[TagRead]] = []
-    event: Optional[bool] = False
+    """Pydantic model for creating a new case."""
+    assignee: ParticipantUpdate | None
+    case_priority: CasePriorityCreate | None
+    case_severity: CaseSeverityCreate | None
+    case_type: CaseTypeCreate | None
+    dedicated_channel: bool | None
+    project: ProjectRead | None
+    reporter: ParticipantUpdate | None
+    tags: list[TagRead] | None = []
+    event: bool | None = False
 
 
 class CaseReadBasic(DispatchBase):
+    """Pydantic model for reading basic case data."""
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class IncidentReadBasic(DispatchBase):
+    """Pydantic model for reading basic incident data."""
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class CaseReadMinimal(CaseBase):
+    """Pydantic model for reading minimal case data."""
     id: PrimaryKey
     name: NameStr | None
     status: CaseStatus | None  # Used in table and for action disabling
@@ -311,58 +330,62 @@ CaseReadMinimal.update_forward_refs()
 
 
 class CaseRead(CaseBase):
+    """Pydantic model for reading detailed case data."""
     id: PrimaryKey
-    assignee: Optional[ParticipantRead]
-    case_costs: List[CaseCostRead] = []
+    assignee: ParticipantRead | None
+    case_costs: list[CaseCostRead] = []
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    closed_at: Optional[datetime] = None
-    conversation: Optional[ConversationRead] = None
-    created_at: Optional[datetime] = None
-    documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[CaseReadBasic]] = []
-    escalated_at: Optional[datetime] = None
-    events: Optional[List[EventRead]] = []
-    genai_analysis: Optional[dict[str, Any]] = {}
-    groups: Optional[List[GroupRead]] = []
-    incidents: Optional[List[IncidentReadBasic]] = []
-    name: Optional[NameStr]
-    participants: Optional[List[ParticipantRead]] = []
+    closed_at: datetime | None = None
+    conversation: ConversationRead | None = None
+    created_at: datetime | None = None
+    documents: list[DocumentRead] | None = []
+    duplicates: list[CaseReadBasic] | None = []
+    escalated_at: datetime | None = None
+    events: list[EventRead] | None = []
+    genai_analysis: dict[str, Any] | None = {}
+    groups: list[GroupRead] | None = []
+    incidents: list[IncidentReadBasic] | None = []
+    name: NameStr | None
+    participants: list[ParticipantRead] | None = []
     project: ProjectRead
-    related: Optional[List[CaseReadMinimal]] = []
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
-    signal_instances: Optional[List[SignalInstanceRead]] = []
-    storage: Optional[StorageRead] = None
-    tags: Optional[List[TagRead]] = []
-    ticket: Optional[TicketRead] = None
+    related: list[CaseReadMinimal] | None = []
+    reported_at: datetime | None = None
+    reporter: ParticipantRead | None
+    signal_instances: list[SignalInstanceRead] | None = []
+    storage: StorageRead | None = None
+    tags: list[TagRead] | None = []
+    ticket: TicketRead | None = None
     total_cost_classic: float | None
     total_cost_new: float | None
-    triage_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
-    event: Optional[bool] = False
+    triage_at: datetime | None = None
+    updated_at: datetime | None = None
+    workflow_instances: list[WorkflowInstanceRead] | None = []
+    event: bool | None = False
 
 
 class CaseUpdate(CaseBase):
-    assignee: Optional[ParticipantUpdate]
-    case_costs: List[CaseCostUpdate] = []
-    case_priority: Optional[CasePriorityBase]
-    case_severity: Optional[CaseSeverityBase]
-    case_type: Optional[CaseTypeBase]
-    closed_at: Optional[datetime] = None
-    duplicates: Optional[List[CaseReadBasic]] = []
-    related: Optional[List[CaseRead]] = []
-    reporter: Optional[ParticipantUpdate]
-    escalated_at: Optional[datetime] = None
-    incidents: Optional[List[IncidentReadBasic]] = []
-    reported_at: Optional[datetime] = None
-    tags: Optional[List[TagRead]] = []
-    triage_at: Optional[datetime] = None
+    """Pydantic model for updating case data."""
+    assignee: ParticipantUpdate | None
+    case_costs: list[CaseCostUpdate] = []
+    case_priority: CasePriorityBase | None
+    case_severity: CaseSeverityBase | None
+    case_type: CaseTypeBase | None
+    closed_at: datetime | None = None
+    duplicates: list[CaseReadBasic] | None = []
+    related: list[CaseRead] | None = []
+    reporter: ParticipantUpdate | None
+    escalated_at: datetime | None = None
+    incidents: list[IncidentReadBasic] | None = []
+    reported_at: datetime | None = None
+    tags: list[TagRead] | None = []
+    triage_at: datetime | None = None
 
-    @validator("tags")
-    def find_exclusive(cls, tags: Optional[List[TagRead]]) -> Optional[List[TagRead]]:
+    @field_validator("tags")
+    @classmethod
+    def find_exclusive(cls, tags: list[TagRead] | None) -> list[TagRead] | None:
+        """Ensure only one exclusive tag per tag type is present."""
         if not tags:
             return tags
 
@@ -384,8 +407,10 @@ class CaseUpdate(CaseBase):
 
 
 class CasePagination(Pagination):
-    items: List[CaseReadMinimal] = []
+    """Pydantic model for paginated minimal case results."""
+    items: list[CaseReadMinimal] = []
 
 
 class CaseExpandedPagination(Pagination):
-    items: List[CaseRead] = []
+    """Pydantic model for paginated expanded case results."""
+    items: list[CaseRead] = []

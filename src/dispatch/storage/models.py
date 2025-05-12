@@ -1,6 +1,6 @@
-from pydantic import validator, Field
+"""Models for storage functionality in the Dispatch application."""
 
-from typing import Optional
+from pydantic import field_validator
 
 from sqlalchemy import Column, Integer, ForeignKey
 
@@ -10,6 +10,7 @@ from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Storage(Base, ResourceMixin):
+    """SQLAlchemy model for storage resources."""
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
@@ -17,21 +18,23 @@ class Storage(Base, ResourceMixin):
 
 # Pydantic models...
 class StorageBase(ResourceBase):
-    pass
+    """Base Pydantic model for storage resources."""
 
 
 class StorageCreate(StorageBase):
-    pass
+    """Pydantic model for creating a storage resource."""
 
 
 class StorageUpdate(StorageBase):
-    pass
+    """Pydantic model for updating a storage resource."""
 
 
 class StorageRead(StorageBase):
-    description: Optional[str] = Field(None, nullable=True)
+    """Pydantic model for reading a storage resource."""
+    description: str | None = None
 
-    @validator("description", pre=True, always=True)
-    def set_description(cls, v):
-        """Sets the description"""
+    @field_validator("description", mode="before")
+    @classmethod
+    def set_description(cls, _v: str):
+        """Sets the description."""
         return STORAGE_DESCRIPTION

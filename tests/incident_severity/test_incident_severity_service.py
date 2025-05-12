@@ -15,7 +15,7 @@ def test_get_default(session, incident_severity):
 
 
 def test_get_default_or_raise__fail(session, incident_severity):
-    from pydantic.error_wrappers import ValidationError
+    from pydantic import ValidationError
     from dispatch.incident.severity.service import get_default_or_raise
 
     incident_severity.default = False
@@ -39,7 +39,7 @@ def test_get_by_name(session, incident_severity):
 
 def get_by_name_or_raise__fail(session, incident_severity):
     """Returns the incident severity specified or raises ValidationError."""
-    from pydantic.error_wrappers import ValidationError
+    from pydantic import ValidationError
     from dispatch.incident.severity.models import IncidentSeverityRead
     from dispatch.incident.severity.service import get_by_name_or_raise
 
@@ -134,8 +134,9 @@ def test_update(session, incident_severity):
 
     expected_name = incident_severity.name + "_updated"
     incident_severity_in = IncidentSeverityUpdate.from_orm(incident_severity)
-
     incident_severity_in.name = expected_name
+    incident_severity_in.enabled = True
+    incident_severity_in.default = False
 
     t_incident_severity = update(
         db_session=session,

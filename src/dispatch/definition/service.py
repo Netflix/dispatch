@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from dispatch.project import service as project_service
 from dispatch.term import service as term_service
@@ -6,17 +5,17 @@ from dispatch.term import service as term_service
 from .models import Definition, DefinitionCreate, DefinitionUpdate
 
 
-def get(*, db_session, definition_id: int) -> Optional[Definition]:
+def get(*, db_session, definition_id: int) -> Definition | None:
     """Gets a definition by its id."""
     return db_session.query(Definition).filter(Definition.id == definition_id).first()
 
 
-def get_by_text(*, db_session, text: str) -> Optional[Definition]:
+def get_by_text(*, db_session, text: str) -> Definition | None:
     """Gets a definition by its text."""
     return db_session.query(Definition).filter(Definition.text == text).first()
 
 
-def get_all(*, db_session) -> List[Optional[Definition]]:
+def get_all(*, db_session) -> list[Definition | None]:
     """Gets all definitions."""
     return db_session.query(Definition)
 
@@ -38,7 +37,7 @@ def create(*, db_session, definition_in: DefinitionCreate) -> Definition:
     return definition
 
 
-def create_all(*, db_session, definitions_in: List[DefinitionCreate]) -> List[Definition]:
+def create_all(*, db_session, definitions_in: list[DefinitionCreate]) -> list[Definition]:
     """Creates a definitions in bulk."""
     definitions = [Definition(text=d.text) for d in definitions_in]
     db_session.bulk_save_insert(definitions)
@@ -54,7 +53,7 @@ def update(*, db_session, definition: Definition, definition_in: DefinitionUpdat
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t) for t in definition_in.terms
     ]
-    update_data = definition_in.dict(skip_defaults=True, exclude={"terms"})
+    update_data = definition_in.dict(exclude_unset=True, exclude={"terms"})
 
     for field in definition_data:
         if field in update_data:

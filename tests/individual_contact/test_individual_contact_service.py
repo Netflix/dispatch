@@ -21,6 +21,15 @@ def test_get_or_create(session, project, individual_contact):
         office_phone = "111-111-1111"
         weblink = "https://www.example.com/"
 
+        # Create a complete project representation with all required fields
+        project_data = {
+            "id": project.id,
+            "name": project.name,
+            "annual_employee_cost": project.annual_employee_cost or 50000,
+            "business_year_hours": project.business_year_hours or 2080,
+            "snooze_extension_oncall_service": None,
+        }
+
         individual_contact_in = IndividualContactCreate(
             name=name,
             title=title,
@@ -28,7 +37,7 @@ def test_get_or_create(session, project, individual_contact):
             mobile_phone=mobile_phone,
             office_phone=office_phone,
             weblink=weblink,
-            project=project.__dict__,
+            project=project_data,
         )
         contact = create(db_session=session, individual_contact_in=individual_contact_in)
 
@@ -46,6 +55,15 @@ def test_create(session, project):
     office_phone = "111-111-1111"
     weblink = "https://www.example.com/"
 
+    # Create a complete project representation with all required fields
+    project_data = {
+        "id": project.id,
+        "name": project.name,
+        "annual_employee_cost": project.annual_employee_cost or 50000,
+        "business_year_hours": project.business_year_hours or 2080,
+        "snooze_extension_oncall_service": None,
+    }
+
     individual_contact_in = IndividualContactCreate(
         name=name,
         title=title,
@@ -53,7 +71,7 @@ def test_create(session, project):
         mobile_phone=mobile_phone,
         office_phone=office_phone,
         weblink=weblink,
-        project=project,
+        project=project_data,
     )
     individual_contact = create(db_session=session, individual_contact_in=individual_contact_in)
     assert individual_contact

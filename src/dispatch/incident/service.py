@@ -7,15 +7,13 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional
 
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.case import service as case_service
 from dispatch.decorators import timer
 from dispatch.event import service as event_service
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
 from dispatch.incident.type import service as incident_type_service
@@ -63,12 +61,12 @@ def resolve_and_associate_role(db_session: Session, incident: Incident, role: Pa
 
 
 @timer
-def get(*, db_session: Session, incident_id: int) -> Optional[Incident]:
+def get(*, db_session: Session, incident_id: int) -> Incident | None:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
 
-def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[Incident]:
+def get_by_name(*, db_session: Session, project_id: int, name: str) -> Incident | None:
     """Returns an incident based on the given name."""
     return (
         db_session.query(Incident)
@@ -80,7 +78,7 @@ def get_by_name(*, db_session: Session, project_id: int, name: str) -> Optional[
 
 def get_all_open_by_incident_type(
     *, db_session: Session, incident_type_id: int
-) -> List[Optional[Incident]]:
+) -> list[Incident | None]:
     """Returns all non-closed incidents based on the given incident type."""
     return (
         db_session.query(Incident)
@@ -97,29 +95,23 @@ def get_by_name_or_raise(
     incident = get_by_name(db_session=db_session, project_id=project_id, name=incident_in.name)
 
     if not incident:
-        raise ValidationError(
-            [
-                ErrorWrapper(
-                    NotFoundError(
-                        msg="Incident not found.",
-                        query=incident_in.name,
-                    ),
-                    loc="incident",
-                )
-            ],
-            model=IncidentRead,
-        )
+        raise ValidationError([
+            {
+                "msg": "Incident not found.",
+                "loc": "name",
+            }
+        ])
     return incident
 
 
-def get_all(*, db_session: Session, project_id: int) -> List[Optional[Incident]]:
+def get_all(*, db_session: Session, project_id: int) -> list[Incident | None]:
     """Returns all incidents."""
     return db_session.query(Incident).filter(Incident.project_id == project_id)
 
 
 def get_all_by_status(
     *, db_session: Session, status: str, project_id: int
-) -> List[Optional[Incident]]:
+) -> list[Incident | None]:
     """Returns all incidents based on the given status."""
     return (
         db_session.query(Incident)
@@ -129,7 +121,7 @@ def get_all_by_status(
     )
 
 
-def get_all_last_x_hours(*, db_session: Session, hours: int) -> List[Optional[Incident]]:
+def get_all_last_x_hours(*, db_session: Session, hours: int) -> list[Incident | None]:
     """Returns all incidents in the last x hours."""
     now = datetime.utcnow()
     return (
@@ -139,7 +131,7 @@ def get_all_last_x_hours(*, db_session: Session, hours: int) -> List[Optional[In
 
 def get_all_last_x_hours_by_status(
     *, db_session: Session, status: str, hours: int, project_id: int
-) -> List[Optional[Incident]]:
+) -> list[Incident | None]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
 
@@ -394,7 +386,7 @@ def update(*, db_session: Session, incident: Incident, incident_in: IncidentUpda
             )
 
     update_data = incident_in.dict(
-        skip_defaults=True,
+        exclude_unset=True,
         exclude={
             "cases",
             "commander",

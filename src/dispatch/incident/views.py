@@ -2,8 +2,7 @@ import calendar
 import json
 import logging
 from datetime import date, datetime
-from typing import Annotated, List
-
+from typing import Annotated
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
@@ -25,8 +24,10 @@ from dispatch.event import flows as event_flows
 from dispatch.event.models import EventCreateMinimal, EventUpdate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
+from dispatch.individual.service import get_or_create
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 
@@ -73,7 +74,7 @@ CurrentIncident = Annotated[Incident, Depends(get_current_incident)]
 @router.get("", summary="Retrieve a list of incidents.")
 def get_incidents(
     common: CommonParameters,
-    include: List[str] = Query([], alias="include[]"),
+    include: list[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
 ):
     """Retrieves a list of incidents."""
@@ -121,8 +122,23 @@ def create_incident(
 ):
     """Creates a new incident."""
     if not incident_in.reporter:
+        # Ensure the individual exists, create if not
+        if incident_in.project is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=[{"msg": "Project must be set to create reporter individual."}],
+            )
+        # Fetch the full DB project instance
+        project = project_service.get_by_name_or_default(
+            db_session=db_session, project_in=incident_in.project
+        )
+        individual = get_or_create(
+            db_session=db_session,
+            email=current_user.email,
+            project=project,
+        )
         incident_in.reporter = ParticipantUpdate(
-            individual=IndividualContactRead(email=current_user.email)
+            individual=IndividualContactRead(id=individual.id, email=individual.email)
         )
     incident = create(db_session=db_session, incident_in=incident_in)
 

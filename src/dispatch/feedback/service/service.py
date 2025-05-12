@@ -1,11 +1,10 @@
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
 from .models import ServiceFeedback, ServiceFeedbackCreate, ServiceFeedbackUpdate
 
 
-def get(*, service_feedback_id: int, db_session: Session) -> Optional[ServiceFeedback]:
+def get(*, service_feedback_id: int, db_session: Session) -> ServiceFeedback | None:
     """Gets a piece of service feedback by its id."""
     return (
         db_session.query(ServiceFeedback)
@@ -46,7 +45,7 @@ def update(
 ) -> ServiceFeedback:
     """Updates a piece of service feedback."""
     service_feedback_data = service_feedback.dict()
-    update_data = service_feedback_in.dict(skip_defaults=True)
+    update_data = service_feedback_in.dict(exclude_unset=True)
 
     for field in service_feedback_data:
         if field in update_data:

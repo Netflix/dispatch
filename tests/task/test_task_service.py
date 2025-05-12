@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timezone
 
 
 def test_get(session, task):
@@ -24,7 +25,7 @@ def test_create(
     assert task
 
 
-def test_update(session, task, incident, incident_type, incident_priority, project):
+def test_update(session, task, incident, incident_type, incident_priority, project, participant):
     from dispatch.task.service import update
     from dispatch.task.models import TaskUpdate
 
@@ -34,7 +35,16 @@ def test_update(session, task, incident, incident_type, incident_priority, proje
     incident.project = project
     task.incident = incident
 
-    task_in = TaskUpdate(description=description, incident=incident)
+    task_in = TaskUpdate(
+        description=description,
+        incident=incident,
+        created_at=datetime.now(timezone.utc),
+        creator=participant,
+        owner=participant,
+        resolve_by=datetime.now(timezone.utc),
+        resolved_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
     task = update(
         db_session=session,
         task=task,

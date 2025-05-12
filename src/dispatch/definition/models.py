@@ -1,6 +1,3 @@
-from typing import List, Optional
-from pydantic import Field
-
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -45,29 +42,29 @@ class Definition(Base, ProjectMixin):
 
 
 class DefinitionTerm(DispatchBase):
-    id: Optional[PrimaryKey]
-    text: Optional[str]
+    id: PrimaryKey | None
+    text: str | None
 
 
 # Pydantic models...
 class DefinitionBase(DispatchBase):
     text: str
-    source: Optional[str] = Field(None, nullable=True)
+    source: str | None = None
 
 
 class DefinitionCreate(DefinitionBase):
-    terms: Optional[List[DefinitionTerm]] = []
+    terms: list[DefinitionTerm | None] = []
     project: ProjectRead
 
 
 class DefinitionUpdate(DefinitionBase):
-    terms: Optional[List[DefinitionTerm]] = []
+    terms: list[DefinitionTerm | None] = []
 
 
 class DefinitionRead(DefinitionBase):
     id: PrimaryKey
-    terms: Optional[List[DefinitionTerm]]
+    terms: list[DefinitionTerm | None]
 
 
 class DefinitionPagination(Pagination):
-    items: List[DefinitionRead] = []
+    items: list[DefinitionRead] = []

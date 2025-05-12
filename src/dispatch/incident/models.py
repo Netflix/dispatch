@@ -1,8 +1,9 @@
+"""Models for incident resources in the Dispatch application."""
+
 from collections import Counter, defaultdict
 from datetime import datetime
-from typing import List, Optional
 
-from pydantic import validator, Field, AnyHttpUrl
+from pydantic import field_validator, AnyHttpUrl
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -237,122 +238,146 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
 
 class ProjectRead(DispatchBase):
-    id: Optional[PrimaryKey]
+    """Pydantic model for reading a project resource."""
+
+    id: PrimaryKey | None
     name: NameStr
-    color: Optional[str]
-    stable_priority: Optional[IncidentPriorityRead] = None
-    allow_self_join: Optional[bool] = Field(True, nullable=True)
-    display_name: Optional[str] = Field(None, nullable=True)
+    color: str | None
+    stable_priority: IncidentPriorityRead | None = None
+    allow_self_join: bool | None = True
+    display_name: str | None = None
 
 
 class CaseRead(DispatchBase):
+    """Pydantic model for reading a case resource."""
+
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class TaskRead(DispatchBase):
+    """Pydantic model for reading a task resource."""
+
     id: PrimaryKey
-    assignees: List[Optional[ParticipantRead]] = []
-    created_at: Optional[datetime]
-    description: Optional[str] = Field(None, nullable=True)
+    assignees: list[ParticipantRead | None] = []
+    created_at: datetime | None
+    description: str | None = None
     status: TaskStatus = TaskStatus.open
-    owner: Optional[ParticipantRead]
-    weblink: Optional[AnyHttpUrl] = Field(None, nullable=True)
-    resolve_by: Optional[datetime]
-    resolved_at: Optional[datetime]
-    ticket: Optional[TicketRead] = None
+    owner: ParticipantRead | None
+    weblink: AnyHttpUrl | None = None
+    resolve_by: datetime | None
+    resolved_at: datetime | None
+    ticket: TicketRead | None = None
 
 
 class TaskReadMinimal(DispatchBase):
+    """Pydantic model for reading a minimal task resource."""
+
     id: PrimaryKey
-    description: Optional[str] = Field(None, nullable=True)
+    description: str | None = None
     status: TaskStatus = TaskStatus.open
 
 
 # Pydantic models...
 class IncidentBase(DispatchBase):
+    """Base Pydantic model for incident resources."""
+
     title: str
     description: str
-    resolution: Optional[str]
-    status: Optional[IncidentStatus]
-    visibility: Optional[Visibility]
+    resolution: str | None
+    status: IncidentStatus | None
+    visibility: Visibility | None
 
-    @validator("title")
-    def title_required(cls, v):
+    @field_validator("title")
+    @classmethod
+    def title_required(cls, v: str) -> str:
+        """Ensures the title is not an empty string."""
         if not v:
             raise ValueError("must not be empty string")
         return v
 
-    @validator("description")
-    def description_required(cls, v):
+    @field_validator("description")
+    @classmethod
+    def description_required(cls, v: str) -> str:
+        """Ensures the description is not an empty string."""
         if not v:
             raise ValueError("must not be empty string")
         return v
 
 
 class IncidentCreate(IncidentBase):
-    commander: Optional[ParticipantUpdate]
-    commander_email: Optional[str]
-    incident_priority: Optional[IncidentPriorityCreate]
-    incident_severity: Optional[IncidentSeverityCreate]
-    incident_type: Optional[IncidentTypeCreate]
-    project: Optional[ProjectRead]
-    reporter: Optional[ParticipantUpdate]
-    tags: Optional[List[TagRead]] = []
+    """Pydantic model for creating an incident resource."""
+
+    commander: ParticipantUpdate | None = None
+    commander_email: str | None = None
+    incident_priority: IncidentPriorityCreate | None
+    incident_severity: IncidentSeverityCreate | None
+    incident_type: IncidentTypeCreate | None
+    project: ProjectRead | None
+    reporter: ParticipantUpdate | None
+    tags: list[TagRead] | None = []
 
 
 class IncidentReadBasic(DispatchBase):
+    """Pydantic model for reading a basic incident resource."""
+
     id: PrimaryKey
-    name: Optional[NameStr]
+    name: NameStr | None
 
 
 class IncidentReadMinimal(IncidentBase):
+    """Pydantic model for reading a minimal incident resource."""
+
     id: PrimaryKey
-    closed_at: Optional[datetime] = None
-    commander: Optional[ParticipantReadMinimal]
-    commanders_location: Optional[str]
-    created_at: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadBasic]] = []
-    incident_costs: Optional[List[IncidentCostRead]] = []
-    incident_document: Optional[DocumentRead] = None
+    closed_at: datetime | None = None
+    commander: ParticipantReadMinimal | None
+    commanders_location: str | None
+    created_at: datetime | None = None
+    duplicates: list[IncidentReadBasic] | None = []
+    incident_costs: list[IncidentCostRead] | None = []
+    incident_document: DocumentRead | None = None
     incident_priority: IncidentPriorityReadMinimal
-    incident_review_document: Optional[DocumentRead] = None
+    incident_review_document: DocumentRead | None = None
     incident_severity: IncidentSeverityReadMinimal
     incident_type: IncidentTypeReadMinimal
-    name: Optional[NameStr]
-    participants_location: Optional[str]
-    participants_team: Optional[str]
+    name: NameStr | None
+    participants_location: str | None
+    participants_team: str | None
     project: ProjectRead
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantReadMinimal]
-    reporters_location: Optional[str]
-    stable_at: Optional[datetime] = None
-    storage: Optional[StorageRead] = None
-    summary: Optional[str] = None
-    tags: Optional[List[TagRead]] = []
-    tasks: Optional[List[TaskReadMinimal]] = []
-    total_cost: Optional[float]
+    reported_at: datetime | None = None
+    reporter: ParticipantReadMinimal | None
+    reporters_location: str | None
+    stable_at: datetime | None = None
+    storage: StorageRead | None = None
+    summary: str | None = None
+    tags: list[TagRead] | None = []
+    tasks: list[TaskReadMinimal] | None = []
+    total_cost: float | None
 
 
 class IncidentUpdate(IncidentBase):
-    cases: Optional[List[CaseRead]] = []
-    commander: Optional[ParticipantUpdate]
-    delay_executive_report_reminder: Optional[datetime] = None
-    delay_tactical_report_reminder: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadBasic]] = []
-    incident_costs: Optional[List[IncidentCostUpdate]] = []
+    """Pydantic model for updating an incident resource."""
+
+    cases: list[CaseRead] | None = []
+    commander: ParticipantUpdate | None
+    delay_executive_report_reminder: datetime | None = None
+    delay_tactical_report_reminder: datetime | None = None
+    duplicates: list[IncidentReadBasic] | None = []
+    incident_costs: list[IncidentCostUpdate] | None = []
     incident_priority: IncidentPriorityBase
     incident_severity: IncidentSeverityBase
     incident_type: IncidentTypeBase
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantUpdate]
-    stable_at: Optional[datetime] = None
-    summary: Optional[str] = None
-    tags: Optional[List[TagRead]] = []
-    terms: Optional[List[TermRead]] = []
+    reported_at: datetime | None = None
+    reporter: ParticipantUpdate | None
+    stable_at: datetime | None = None
+    summary: str | None = None
+    tags: list[TagRead] | None = []
+    terms: list[TermRead] | None = []
 
-    @validator("tags")
+    @field_validator("tags")
+    @classmethod
     def find_exclusive(cls, v):
+        """Ensures only one exclusive tag per tag type is applied."""
         if v:
             exclusive_tags = defaultdict(list)
             for tag in v:
@@ -368,49 +393,55 @@ class IncidentUpdate(IncidentBase):
 
 
 class IncidentRead(IncidentBase):
+    """Pydantic model for reading an incident resource."""
+
     id: PrimaryKey
-    cases: Optional[List[CaseRead]] = []
-    closed_at: Optional[datetime] = None
-    commander: Optional[ParticipantRead]
-    commanders_location: Optional[str]
-    conference: Optional[ConferenceRead] = None
-    conversation: Optional[ConversationRead] = None
-    created_at: Optional[datetime] = None
-    delay_executive_report_reminder: Optional[datetime] = None
-    delay_tactical_report_reminder: Optional[datetime] = None
-    documents: Optional[List[DocumentRead]] = []
-    duplicates: Optional[List[IncidentReadBasic]] = []
-    events: Optional[List[EventRead]] = []
-    incident_costs: Optional[List[IncidentCostRead]] = []
+    cases: list[CaseRead] | None = []
+    closed_at: datetime | None = None
+    commander: ParticipantRead | None
+    commanders_location: str | None
+    conference: ConferenceRead | None = None
+    conversation: ConversationRead | None = None
+    created_at: datetime | None = None
+    delay_executive_report_reminder: datetime | None = None
+    delay_tactical_report_reminder: datetime | None = None
+    documents: list[DocumentRead] | None = []
+    duplicates: list[IncidentReadBasic] | None = []
+    events: list[EventRead] | None = []
+    incident_costs: list[IncidentCostRead] | None = []
     incident_priority: IncidentPriorityRead
     incident_severity: IncidentSeverityRead
     incident_type: IncidentTypeRead
-    last_executive_report: Optional[ReportRead]
-    last_tactical_report: Optional[ReportRead]
-    name: Optional[NameStr]
-    participants: Optional[List[ParticipantRead]] = []
-    participants_location: Optional[str]
-    participants_team: Optional[str]
+    last_executive_report: ReportRead | None
+    last_tactical_report: ReportRead | None
+    name: NameStr | None
+    participants: list[ParticipantRead] | None = []
+    participants_location: str | None
+    participants_team: str | None
     project: ProjectRead
-    reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
-    reporters_location: Optional[str]
-    stable_at: Optional[datetime] = None
-    storage: Optional[StorageRead] = None
-    summary: Optional[str] = None
-    tags: Optional[List[TagRead]] = []
-    tasks: Optional[List[TaskRead]] = []
-    terms: Optional[List[TermRead]] = []
-    ticket: Optional[TicketRead] = None
-    total_cost: Optional[float]
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
+    reported_at: datetime | None = None
+    reporter: ParticipantRead | None
+    reporters_location: str | None
+    stable_at: datetime | None = None
+    storage: StorageRead | None = None
+    summary: str | None = None
+    tags: list[TagRead] | None = []
+    tasks: list[TaskRead] | None = []
+    terms: list[TermRead] | None = []
+    ticket: TicketRead | None = None
+    total_cost: float | None
+    workflow_instances: list[WorkflowInstanceRead] | None = []
 
 
 class IncidentExpandedPagination(Pagination):
+    """Pydantic model for paginated expanded incident results."""
+
     itemsPerPage: int
     page: int
-    items: List[IncidentRead] = []
+    items: list[IncidentRead] = []
 
 
 class IncidentPagination(Pagination):
-    items: List[IncidentReadMinimal] = []
+    """Pydantic model for paginated incident results."""
+
+    items: list[IncidentReadMinimal] = []

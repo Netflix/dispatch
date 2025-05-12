@@ -1,10 +1,8 @@
 import logging
 
-from typing import List, Optional
 from operator import attrgetter
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import ValidationError
 
-from dispatch.exceptions import NotFoundError
 from dispatch.incident.models import Incident, ProjectRead
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.type import service as incident_type_service
@@ -23,19 +21,21 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
-    """Gets an incident role by id."""
+def get(*, db_session, incident_role_id: int) -> IncidentRole | None:
+    """Returns an incident role based on the given id."""
     return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role_id).one_or_none()
 
 
-def get_all(*, db_session):
-    """Gets all incident role."""
+def get_all(*, db_session, project_id: int = None) -> list[IncidentRole | None]:
+    """Returns all incident roles."""
+    if project_id is not None:
+        return db_session.query(IncidentRole).filter(IncidentRole.project_id == project_id)
     return db_session.query(IncidentRole)
 
 
 def get_all_by_role(
     *, db_session, role: ParticipantRoleType, project_id: int
-) -> Optional[List[IncidentRole]]:
+) -> list[IncidentRole] | None:
     """Gets all policies for a given role."""
     return (
         db_session.query(IncidentRole)
@@ -47,7 +47,7 @@ def get_all_by_role(
 
 def get_all_enabled_by_role(
     *, db_session, role: ParticipantRoleType, project_id: int
-) -> Optional[List[IncidentRole]]:
+) -> list[IncidentRole] | None:
     """Gets all enabled incident roles."""
     return (
         db_session.query(IncidentRole)
@@ -62,8 +62,8 @@ def create_or_update(
     db_session,
     project_in: ProjectRead,
     role: ParticipantRoleType,
-    incident_roles_in: List[IncidentRoleCreateUpdate],
-) -> List[IncidentRole]:
+    incident_roles_in: list[IncidentRoleCreateUpdate],
+) -> list[IncidentRole]:
     """Updates a list of incident role policies."""
     role_policies = []
 
@@ -75,14 +75,16 @@ def create_or_update(
             role_policy = get(db_session=db_session, incident_role_id=role_policy_in.id)
 
             if not role_policy:
-                raise ValidationError(
+                raise ValidationError.from_exception_data(
+                    "IncidentRoleRead",
                     [
-                        ErrorWrapper(
-                            NotFoundError(msg="Role policy not found."),
-                            loc="id",
-                        )
-                    ],
-                    model=IncidentRoleCreateUpdate,
+                        {
+                            "type": "value_error",
+                            "loc": ("incident_role",),
+                            "msg": "Incident role not found.",
+                            "input": role_policy_in.name,
+                        }
+                    ]
                 )
 
         else:
@@ -91,7 +93,7 @@ def create_or_update(
 
         role_policy_data = role_policy.dict()
         update_data = role_policy_in.dict(
-            skip_defaults=True,
+            exclude_unset=True,
             exclude={
                 "role",  # we don't allow role to be updated
                 "tags",
@@ -175,7 +177,7 @@ def resolve_role(
     db_session,
     role: ParticipantRoleType,
     incident: Incident,
-) -> Optional[IncidentRole]:
+) -> IncidentRole | None:
     """Based on parameters currently associated to an incident determine who should be assigned which incident role."""
     incident_roles = get_all_enabled_by_role(
         db_session=db_session, role=role, project_id=incident.project.id

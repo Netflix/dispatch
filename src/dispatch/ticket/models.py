@@ -1,6 +1,6 @@
-from pydantic import validator, Field
+"""Models for ticket functionality in the Dispatch application."""
 
-from typing import Optional
+from pydantic import field_validator
 
 from sqlalchemy import Column, Integer, ForeignKey
 
@@ -10,6 +10,8 @@ from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Ticket(Base, ResourceMixin):
+    """SQLAlchemy model for ticket resources."""
+
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
@@ -18,21 +20,24 @@ class Ticket(Base, ResourceMixin):
 
 # Pydantic models...
 class TicketBase(ResourceBase):
-    pass
+    """Base Pydantic model for ticket resources."""
 
 
 class TicketCreate(TicketBase):
-    pass
+    """Pydantic model for creating a ticket resource."""
 
 
 class TicketUpdate(TicketBase):
-    pass
+    """Pydantic model for updating a ticket resource."""
 
 
 class TicketRead(TicketBase):
-    description: Optional[str] = Field(None, nullable=True)
+    """Pydantic model for reading a ticket resource."""
 
-    @validator("description", pre=True, always=True)
-    def set_description(cls, v):
-        """Sets the description"""
+    description: str | None = TICKET_DESCRIPTION
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def set_description(cls, _v: str | None):
+        """Sets the description."""
         return TICKET_DESCRIPTION

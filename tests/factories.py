@@ -725,6 +725,9 @@ class CaseTypeFactory(BaseFactory):
     conversation_target = FuzzyText()
     project = SubFactory(ProjectFactory)
     cost_model = SubFactory(CostModelFactory)
+    case_template_document = SubFactory(DocumentFactory)
+    oncall_service = SubFactory(ServiceFactory)
+    incident_type = SubFactory(IncidentTypeFactory)
 
     class Meta:
         """Factory Configuration."""

@@ -6,7 +6,7 @@
 """
 
 import logging
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import HTTPException, Depends
 from starlette.requests import Request
@@ -44,12 +44,12 @@ InvalidCredentialException = HTTPException(
 )
 
 
-def get(*, db_session, user_id: int) -> Optional[DispatchUser]:
+def get(*, db_session, user_id: int) -> DispatchUser | None:
     """Returns a user based on the given user id."""
     return db_session.query(DispatchUser).filter(DispatchUser.id == user_id).one_or_none()
 
 
-def get_by_email(*, db_session, email: str) -> Optional[DispatchUser]:
+def get_by_email(*, db_session, email: str) -> DispatchUser | None:
     """Returns a user object based on user email."""
     return db_session.query(DispatchUser).filter(DispatchUser.email == email).one_or_none()
 
@@ -215,7 +215,7 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
     user_data = user.dict()
 
     update_data = user_in.dict(
-        exclude={"password", "organizations", "projects"}, skip_defaults=True
+        exclude={"password", "organizations", "projects"}, exclude_unset=True
     )
     for field in user_data:
         if field in update_data:

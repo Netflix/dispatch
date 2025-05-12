@@ -209,7 +209,10 @@ def test_calculate_incident_response_cost_without_cost_model(
 ):
     """Tests that the incident response cost is created and calculated correctly with the classic cost model."""
     from datetime import timedelta, datetime, UTC
-    from dispatch.incident_cost.service import calculate_incident_response_cost_with_classic_model
+    from dispatch.incident_cost.service import (
+        calculate_incident_response_cost_with_classic_model,
+        get_or_create_default_incident_response_cost
+    )
     from dispatch.incident_cost_type import service as incident_cost_type_service
 
     # Set up a default incident costs type.
@@ -218,14 +221,25 @@ def test_calculate_incident_response_cost_without_cost_model(
     incident_cost_type.default = True
     incident_cost_type.project = incident.project
 
-    # Set up timestamps
-    incident.created_at = (datetime.now(UTC) - timedelta(hours=1)).replace(tzinfo=None)
+    # Set up timestamps with timezone-aware datetimes
+    one_hour_ago = datetime.now(UTC) - timedelta(hours=1)
+    incident.created_at = one_hour_ago
 
-    # Set up incident participants
+    # Ensure the start_at time is set properly in the incident_response_cost
+    incident_response_cost = get_or_create_default_incident_response_cost(
+        incident=incident, db_session=session
+    )
+    incident_response_cost.updated_at = one_hour_ago
+
+    # Set up incident participants with timezone-aware datetime
     participant_role.participant = participant
     participant_role.activity = 1
-    participant_role.assumed_at = (datetime.now(UTC) - timedelta(hours=1)).replace(tzinfo=None)
+    participant_role.assumed_at = one_hour_ago
     incident.participants.append(participant_role.participant)
+
+    session.add(incident)
+    session.add(incident_response_cost)
+    session.commit()
 
     updated_incident_cost = calculate_incident_response_cost_with_classic_model(
         incident=incident, db_session=session, incident_review=False
@@ -242,7 +256,7 @@ def test_calculate_incident_response_cost_without_cost_model__update_cost(
 
     from dispatch.incident import service as incident_service
     from dispatch.incident_cost.service import (
-        calculate_incident_response_cost_with_classic_model,
+        calculate_incident_response_cost_with_classic_model
     )
     from dispatch.incident_cost_type import service as incident_cost_type_service
 
@@ -257,20 +271,28 @@ def test_calculate_incident_response_cost_without_cost_model__update_cost(
     incident_cost_type.default = True
     incident_cost_type.project = incident.project
 
-    # Set up timestamps
-    incident.created_at = (datetime.now(UTC) - timedelta(hours=1)).replace(tzinfo=None)
+    # Set up timestamps with timezone-aware datetimes
+    one_hour_ago = datetime.now(UTC) - timedelta(hours=1)
+    incident.created_at = one_hour_ago
 
     # Create initial incident response cost.
     incident_cost.incident_cost_type = incident_cost_type
     incident_cost.incident = incident
 
-    # Set up incident participants.
+    # Ensure the updated_at time is set properly
+    incident_cost.updated_at = one_hour_ago
+
+    # Set up incident participants with timezone-aware datetime
     participant_role.participant = participant
     participant_role.activity = 1
-    participant_role.assumed_at = (datetime.now(UTC) - timedelta(hours=1)).replace(tzinfo=None)
+    participant_role.assumed_at = one_hour_ago
     incident.participants.append(participant_role.participant)
 
     initial_incident_cost = incident_cost.amount
+
+    session.add(incident)
+    session.add(incident_cost)
+    session.commit()
 
     updated_incident_cost = calculate_incident_response_cost_with_classic_model(
         incident=incident, db_session=session, incident_review=False

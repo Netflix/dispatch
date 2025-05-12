@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from sqlalchemy_filters import apply_filters
 
@@ -9,12 +8,12 @@ from dispatch.project import service as project_service
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 
 
-def get(*, db_session, search_filter_id: int) -> Optional[SearchFilter]:
+def get(*, db_session, search_filter_id: int) -> SearchFilter | None:
     """Gets a search filter by id."""
     return db_session.query(SearchFilter).filter(SearchFilter.id == search_filter_id).first()
 
 
-def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFilter]:
+def get_by_name(*, db_session, project_id: int, name: str) -> SearchFilter | None:
     """Gets a search filter by name."""
     return (
         db_session.query(SearchFilter)
@@ -24,7 +23,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFil
     )
 
 
-def match(*, db_session, subject: str, filter_spec: List[dict], class_instance: Base):
+def match(*, db_session, subject: str, filter_spec: list[dict], class_instance: Base):
     """Matches a class instance with a given search filter."""
     table_name = get_table_name_by_class_instance(class_instance)
 
@@ -76,7 +75,7 @@ def update(
 ) -> SearchFilter:
     """Updates a search filter."""
     search_filter_data = search_filter.dict()
-    update_data = search_filter_in.dict(skip_defaults=True)
+    update_data = search_filter_in.dict(exclude_unset=True)
 
     for field in search_filter_data:
         if field in update_data:

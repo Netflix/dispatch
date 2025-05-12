@@ -12,7 +12,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
-from typing import List, Optional
 
 from dispatch.database.core import Base
 from dispatch.models import (
@@ -67,13 +66,14 @@ class CostModel(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic Models
 class CostModelActivityBase(DispatchBase):
+    """Base class for cost model activity resources"""
     plugin_event: PluginEventRead
-    response_time_seconds: Optional[int] = 300
-    enabled: Optional[bool] = Field(True, nullable=True)
+    response_time_seconds: int | None = 300
+    enabled: bool | None = Field(True, nullable=True)
 
 
 class CostModelActivityCreate(CostModelActivityBase):
-    pass
+    id: PrimaryKey | None = None
 
 
 class CostModelActivityRead(CostModelActivityBase):
@@ -81,31 +81,31 @@ class CostModelActivityRead(CostModelActivityBase):
 
 
 class CostModelActivityUpdate(CostModelActivityBase):
-    id: Optional[PrimaryKey]
+    id: PrimaryKey | None
 
 
 class CostModelBase(DispatchBase):
     name: NameStr
-    description: Optional[str] = Field(None, nullable=True)
-    enabled: Optional[bool] = Field(True, nullable=True)
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    description: str | None = None
+    enabled: bool | None = Field(True, nullable=True)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
     project: ProjectRead
 
 
 class CostModelUpdate(CostModelBase):
     id: PrimaryKey
-    activities: Optional[List[CostModelActivityUpdate]] = []
+    activities: list[CostModelActivityUpdate] | None = []
 
 
 class CostModelCreate(CostModelBase):
-    activities: Optional[List[CostModelActivityCreate]] = []
+    activities: list[CostModelActivityCreate] | None = []
 
 
 class CostModelRead(CostModelBase):
     id: PrimaryKey
-    activities: Optional[List[CostModelActivityRead]] = []
+    activities: list[CostModelActivityRead] | None = []
 
 
 class CostModelPagination(Pagination):
-    items: List[CostModelRead] = []
+    items: list[CostModelRead] = []
