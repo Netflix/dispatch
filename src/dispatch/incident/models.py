@@ -1,4 +1,5 @@
 """Models for incident resources in the Dispatch application."""
+
 from collections import Counter, defaultdict
 from datetime import datetime
 
@@ -238,6 +239,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
 class ProjectRead(DispatchBase):
     """Pydantic model for reading a project resource."""
+
     id: PrimaryKey | None
     name: NameStr
     color: str | None
@@ -248,12 +250,14 @@ class ProjectRead(DispatchBase):
 
 class CaseRead(DispatchBase):
     """Pydantic model for reading a case resource."""
+
     id: PrimaryKey
     name: NameStr | None
 
 
 class TaskRead(DispatchBase):
     """Pydantic model for reading a task resource."""
+
     id: PrimaryKey
     assignees: list[ParticipantRead | None] = []
     created_at: datetime | None
@@ -268,6 +272,7 @@ class TaskRead(DispatchBase):
 
 class TaskReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal task resource."""
+
     id: PrimaryKey
     description: str | None = None
     status: TaskStatus = TaskStatus.open
@@ -276,6 +281,7 @@ class TaskReadMinimal(DispatchBase):
 # Pydantic models...
 class IncidentBase(DispatchBase):
     """Base Pydantic model for incident resources."""
+
     title: str
     description: str
     resolution: str | None
@@ -301,8 +307,9 @@ class IncidentBase(DispatchBase):
 
 class IncidentCreate(IncidentBase):
     """Pydantic model for creating an incident resource."""
-    commander: ParticipantUpdate | None
-    commander_email: str | None
+
+    commander: ParticipantUpdate | None = None
+    commander_email: str | None = None
     incident_priority: IncidentPriorityCreate | None
     incident_severity: IncidentSeverityCreate | None
     incident_type: IncidentTypeCreate | None
@@ -313,12 +320,14 @@ class IncidentCreate(IncidentBase):
 
 class IncidentReadBasic(DispatchBase):
     """Pydantic model for reading a basic incident resource."""
+
     id: PrimaryKey
     name: NameStr | None
 
 
 class IncidentReadMinimal(IncidentBase):
     """Pydantic model for reading a minimal incident resource."""
+
     id: PrimaryKey
     closed_at: datetime | None = None
     commander: ParticipantReadMinimal | None
@@ -348,6 +357,7 @@ class IncidentReadMinimal(IncidentBase):
 
 class IncidentUpdate(IncidentBase):
     """Pydantic model for updating an incident resource."""
+
     cases: list[CaseRead] | None = []
     commander: ParticipantUpdate | None
     delay_executive_report_reminder: datetime | None = None
@@ -384,6 +394,7 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentRead(IncidentBase):
     """Pydantic model for reading an incident resource."""
+
     id: PrimaryKey
     cases: list[CaseRead] | None = []
     closed_at: datetime | None = None
@@ -424,6 +435,7 @@ class IncidentRead(IncidentBase):
 
 class IncidentExpandedPagination(Pagination):
     """Pydantic model for paginated expanded incident results."""
+
     itemsPerPage: int
     page: int
     items: list[IncidentRead] = []
@@ -431,4 +443,5 @@ class IncidentExpandedPagination(Pagination):
 
 class IncidentPagination(Pagination):
     """Pydantic model for paginated incident results."""
+
     items: list[IncidentReadMinimal] = []

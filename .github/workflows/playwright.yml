@@ -56,7 +56,7 @@ jobs:
       - name: Install playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Setup sample database
-        run: dispatch database restore --dump-file data/dispatch-sample-data.dump && dispatch database upgrade
+        run: dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
       - name: Run tests
         run: npx playwright test --project=chromium
       - uses: actions/upload-artifact@v4
