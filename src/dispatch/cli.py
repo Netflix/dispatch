@@ -285,6 +285,7 @@ def prompt_for_confirmation(command: str) -> bool:
             f"Warning: You are about to {command} a remote database.",
             fg="yellow",
         )
+
     database_name = click.prompt(f"Please enter the database name (env = {DATABASE_NAME})")
     if database_name != DATABASE_NAME:
         click.secho(
@@ -292,8 +293,11 @@ def prompt_for_confirmation(command: str) -> bool:
             fg="red",
         )
         return False
-    sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
 
+    if command != "drop":
+        return True
+
+    sqlalchemy_database_uri = f"postgresql+psycopg2://{config._DATABASE_CREDENTIAL_USER}:{config._QUOTED_DATABASE_PASSWORD}@{database_hostname}:{config.DATABASE_PORT}/{database_name}"
     if database_exists(str(sqlalchemy_database_uri)):
         if click.confirm(
             f"Are you sure you want to {command} database: '{database_hostname}:{database_name}'?"
@@ -301,7 +305,7 @@ def prompt_for_confirmation(command: str) -> bool:
             return True
     else:
         click.secho(f"Database '{database_hostname}:{database_name}' does not exist!!!", fg="red")
-    return False
+        return False
 
 
 @dispatch_database.command("init")
