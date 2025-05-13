@@ -32,10 +32,5 @@
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "workbench.colorCustomizations": {
-    "activityBar.background": "#03352B",
-    "titleBar.activeBackground": "#044A3C",
-    "titleBar.activeForeground": "#ECFEFA"
   }
 }
