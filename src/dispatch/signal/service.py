@@ -87,12 +87,14 @@ def get_signal_engagement_by_name_or_raise(
     )
 
     if not signal_engagement:
-        raise ValidationError([
-            {
-                "msg": "Signal engagement not found.",
-                "loc": "signalEngagement",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "msg": "Signal engagement not found.",
+                    "loc": "signalEngagement",
+                }
+            ]
+        )
     return signal_engagement
 
 
@@ -254,12 +256,14 @@ def get_signal_filter_by_name_or_raise(
     )
 
     if not signal_filter:
-        raise ValidationError([
-            {
-                "msg": "Signal Filter not found.",
-                "loc": "signalFilter",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "msg": "Signal Filter not found.",
+                    "loc": "signalFilter",
+                }
+            ]
+        )
     return signal_filter
 
 
@@ -303,9 +307,7 @@ def get_default(*, db_session: Session, project_id: int) -> Signal | None:
     )
 
 
-def get_by_primary_or_external_id(
-    *, db_session: Session, signal_id: str | int
-) -> Signal | None:
+def get_by_primary_or_external_id(*, db_session: Session, signal_id: str | int) -> Signal | None:
     """Gets a signal by id or external_id."""
     if is_valid_uuid(signal_id):
         signal = db_session.query(Signal).filter(Signal.external_id == signal_id).one_or_none()
@@ -475,6 +477,7 @@ def update(
     signal: Signal,
     signal_in: SignalUpdate,
     user: DispatchUser | None = None,
+    update_filters: bool = False,
 ) -> Signal:
     """Updates a signal."""
     signal_data = signal.dict()
@@ -533,23 +536,21 @@ def update(
                 updates["engagements-removed"].append(se.name)
         signal.engagements = engagements
 
-    is_filters_updated = {filter.id for filter in signal.filters} != {
-        filter.id for filter in signal_in.filters
-    }
-
-    if is_filters_updated:
-        filters = []
-        for f in signal_in.filters:
-            signal_filter = get_signal_filter_by_name_or_raise(
-                db_session=db_session, project_id=signal.project.id, signal_filter_in=f
-            )
-            if signal_filter not in signal.filters:
-                updates["filters-added"].append(signal_filter.name)
-            filters.append(signal_filter)
-        for f in signal.filters:
-            if f not in filters:
-                updates["filters-removed"].append(f.name)
-        signal.filters = filters
+    # if update_filters, use only the filters from the signal_in, otherwise use the existing filters and add new filters
+    filter_set = set() if update_filters else set(signal.filters)
+    for f in signal_in.filters:
+        signal_filter = get_signal_filter_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, signal_filter_in=f
+        )
+        if signal_filter not in signal.filters:
+            updates["filters-added"].append(signal_filter.name)
+            filter_set.add(signal_filter)
+        elif update_filters:
+            filter_set.add(signal_filter)
+    for f in signal.filters:
+        if f not in filter_set:
+            updates["filters-removed"].append(f.name)
+    signal.filters = list(filter_set)
 
     if signal_in.workflows:
         workflows = []

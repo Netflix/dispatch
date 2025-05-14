@@ -318,7 +318,7 @@ def return_single_signal_stats(
                     "input": signal_id,
                     "ctx": {"error": ValueError("Signal not found.")},
                 }
-            ]
+            ],
         )
 
     signal_data = get_signal_stats(
@@ -345,7 +345,7 @@ def get_signal(db_session: DbSession, signal_id: str | PrimaryKey):
                     "input": signal_id,
                     "ctx": {"error": ValueError("Signal not found.")},
                 }
-            ]
+            ],
         )
     return signal
 
@@ -354,6 +354,48 @@ def get_signal(db_session: DbSession, signal_id: str | PrimaryKey):
 def create_signal(db_session: DbSession, signal_in: SignalCreate, current_user: CurrentUser):
     """Creates a new signal."""
     return create(db_session=db_session, signal_in=signal_in, user=current_user)
+
+
+def _update_signal(
+    db_session: DbSession,
+    signal_id: str | PrimaryKey,
+    signal_in: SignalUpdate,
+    current_user: CurrentUser,
+    update_filters: bool = False,
+):
+    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
+    if not signal:
+        raise ValidationError.from_exception_data(
+            "SignalRead",
+            [
+                {
+                    "type": "value_error",
+                    "loc": ("signal",),
+                    "input": signal_id,
+                    "ctx": {"error": ValueError("Signal not found.")},
+                }
+            ],
+        )
+
+    try:
+        signal = update(
+            db_session=db_session,
+            signal=signal,
+            signal_in=signal_in,
+            user=current_user,
+            update_filters=update_filters,
+        )
+    except IntegrityError:
+        raise ValidationError(
+            [
+                {
+                    "msg": "A signal with this name already exists.",
+                    "loc": "name",
+                }
+            ]
+        ) from None
+
+    return signal
 
 
 @router.put(
@@ -367,36 +409,35 @@ def update_signal(
     signal_in: SignalUpdate,
     current_user: CurrentUser,
 ):
-    """Updates an existing signal."""
-    signal = get_by_primary_or_external_id(db_session=db_session, signal_id=signal_id)
-    if not signal:
-        raise ValidationError.from_exception_data(
-            "SignalRead",
-            [
-                {
-                    "type": "value_error",
-                    "loc": ("signal",),
-                    "input": signal_id,
-                    "ctx": {"error": ValueError("Signal not found.")},
-                }
-            ]
-        )
+    """Updates an existing signal from API, no filters are updated."""
+    return _update_signal(
+        db_session=db_session,
+        signal_id=signal_id,
+        signal_in=signal_in,
+        current_user=current_user,
+        update_filters=False,
+    )
 
-    try:
-        signal = update(
-            db_session=db_session, signal=signal, signal_in=signal_in, user=current_user
-        )
-    except IntegrityError:
-        raise ValidationError(
-            [
-                {
-                    "msg": "A signal with this name already exists.",
-                    "loc": "name",
-                }
-            ]
-        ) from None
 
-    return signal
+@router.put(
+    "/update/{signal_id}",
+    response_model=SignalRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
+def update_signal_with_filters(
+    db_session: DbSession,
+    signal_id: str | PrimaryKey,
+    signal_in: SignalUpdate,
+    current_user: CurrentUser,
+):
+    """Updates an existing signal from the UI, also updates filters."""
+    return _update_signal(
+        db_session=db_session,
+        signal_id=signal_id,
+        signal_in=signal_in,
+        current_user=current_user,
+        update_filters=True,
+    )
 
 
 @router.delete(
@@ -417,6 +458,6 @@ def delete_signal(db_session: DbSession, signal_id: str | PrimaryKey):
                     "input": signal_id,
                     "ctx": {"error": ValueError("Signal not found.")},
                 }
-            ]
+            ],
         )
     delete(db_session=db_session, signal_id=signal.id)

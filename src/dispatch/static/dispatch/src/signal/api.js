@@ -18,7 +18,7 @@ export default {
   },
 
   update(signalId, payload) {
-    return API.put(`${resource}/${signalId}`, payload)
+    return API.put(`${resource}/update/${signalId}`, payload)
   },
 
   delete(signalId) {

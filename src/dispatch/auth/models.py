@@ -4,6 +4,7 @@ import string
 import secrets
 from datetime import datetime, timedelta
 from uuid import uuid4
+from typing import Optional
 
 import bcrypt
 from jose import jwt
@@ -52,6 +53,7 @@ def hash_password(password: str):
 
 class DispatchUser(Base, TimeStampMixin):
     """SQLAlchemy model for a Dispatch user."""
+
     __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
@@ -104,6 +106,7 @@ class DispatchUser(Base, TimeStampMixin):
 
 class DispatchUserOrganization(Base, TimeStampMixin):
     """SQLAlchemy model for the relationship between users and organizations."""
+
     __table_args__ = {"schema": "dispatch_core"}
     dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), primary_key=True)
     dispatch_user = relationship(DispatchUser, backref="organizations")
@@ -116,6 +119,7 @@ class DispatchUserOrganization(Base, TimeStampMixin):
 
 class DispatchUserProject(Base, TimeStampMixin):
     """SQLAlchemy model for the relationship between users and projects."""
+
     dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), primary_key=True)
     dispatch_user = relationship(DispatchUser, backref="projects")
 
@@ -129,6 +133,7 @@ class DispatchUserProject(Base, TimeStampMixin):
 
 class UserProject(DispatchBase):
     """Pydantic model for a user's project membership."""
+
     project: ProjectRead
     default: bool | None = False
     role: str | None = None
@@ -136,6 +141,7 @@ class UserProject(DispatchBase):
 
 class UserOrganization(DispatchBase):
     """Pydantic model for a user's organization membership."""
+
     organization: OrganizationRead
     default: bool | None = False
     role: str | None = None
@@ -143,6 +149,7 @@ class UserOrganization(DispatchBase):
 
 class UserBase(DispatchBase):
     """Base Pydantic model for user data."""
+
     email: EmailStr
     projects: list[UserProject] | None = []
     organizations: list[UserOrganization] | None = []
@@ -158,6 +165,7 @@ class UserBase(DispatchBase):
 
 class UserLogin(UserBase):
     """Pydantic model for user login data."""
+
     password: str
 
     @field_validator("password")
@@ -171,6 +179,7 @@ class UserLogin(UserBase):
 
 class UserRegister(UserLogin):
     """Pydantic model for user registration data."""
+
     password: str = None
 
     @field_validator("password", mode="before")
@@ -183,12 +192,14 @@ class UserRegister(UserLogin):
 
 class UserLoginResponse(DispatchBase):
     """Pydantic model for the response after user login."""
+
     projects: list[UserProject] | None
     token: str | None = None
 
 
 class UserRead(UserBase):
     """Pydantic model for reading user data."""
+
     id: PrimaryKey
     role: str | None = None
     experimental_features: bool | None
@@ -196,15 +207,17 @@ class UserRead(UserBase):
 
 class UserUpdate(DispatchBase):
     """Pydantic model for updating user data."""
+
     id: PrimaryKey
-    projects: list[UserProject] | None
-    organizations: list[UserOrganization] | None
-    experimental_features: bool | None
-    role: str | None = None
+    projects: Optional[list[UserProject]] = None
+    organizations: Optional[list[UserOrganization]]
+    experimental_features: Optional[bool] = None
+    role: Optional[str] = None
 
 
 class UserPasswordUpdate(DispatchBase):
     """Pydantic model for password updates only."""
+
     current_password: str
     new_password: str
 
@@ -231,6 +244,7 @@ class UserPasswordUpdate(DispatchBase):
 
 class AdminPasswordReset(DispatchBase):
     """Pydantic model for admin password resets."""
+
     new_password: str
 
     @field_validator("new_password")
@@ -248,6 +262,7 @@ class AdminPasswordReset(DispatchBase):
 
 class UserCreate(DispatchBase):
     """Pydantic model for creating a new user."""
+
     email: EmailStr
     password: str | None = None
     projects: list[UserProject] | None
@@ -263,16 +278,19 @@ class UserCreate(DispatchBase):
 
 class UserRegisterResponse(DispatchBase):
     """Pydantic model for the response after user registration."""
+
     token: str | None = None
 
 
 class UserPagination(Pagination):
     """Pydantic model for paginated user results."""
+
     items: list[UserRead] = []
 
 
 class MfaChallengeStatus(DispatchEnum):
     """Enumeration of possible MFA challenge statuses."""
+
     APPROVED = "approved"
     DENIED = "denied"
     EXPIRED = "expired"
@@ -281,6 +299,7 @@ class MfaChallengeStatus(DispatchEnum):
 
 class MfaChallenge(Base, TimeStampMixin):
     """SQLAlchemy model for an MFA challenge event."""
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     valid = Column(Boolean, default=False)
     reason = Column(String, nullable=True)
@@ -293,11 +312,13 @@ class MfaChallenge(Base, TimeStampMixin):
 
 class MfaPayloadResponse(DispatchBase):
     """Pydantic model for the response to an MFA challenge payload."""
+
     status: str
 
 
 class MfaPayload(DispatchBase):
     """Pydantic model for an MFA challenge payload."""
+
     action: str
     project_id: int
     challenge_id: str
