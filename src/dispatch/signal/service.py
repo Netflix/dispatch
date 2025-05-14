@@ -536,19 +536,21 @@ def update(
                 updates["engagements-removed"].append(se.name)
         signal.engagements = engagements
 
-    if update_filters:
-        filters = []
-        for f in signal_in.filters:
-            signal_filter = get_signal_filter_by_name_or_raise(
-                db_session=db_session, project_id=signal.project.id, signal_filter_in=f
-            )
-            if signal_filter not in signal.filters:
-                updates["filters-added"].append(signal_filter.name)
-            filters.append(signal_filter)
-        for f in signal.filters:
-            if f not in filters:
-                updates["filters-removed"].append(f.name)
-        signal.filters = filters
+    # if update_filters, use only the filters from the signal_in, otherwise use the existing filters and add new filters
+    filter_set = set() if update_filters else set(signal.filters)
+    for f in signal_in.filters:
+        signal_filter = get_signal_filter_by_name_or_raise(
+            db_session=db_session, project_id=signal.project.id, signal_filter_in=f
+        )
+        if signal_filter not in signal.filters:
+            updates["filters-added"].append(signal_filter.name)
+            filter_set.add(signal_filter)
+        elif update_filters:
+            filter_set.add(signal_filter)
+    for f in signal.filters:
+        if f not in filter_set:
+            updates["filters-removed"].append(f.name)
+    signal.filters = list(filter_set)
 
     if signal_in.workflows:
         workflows = []
