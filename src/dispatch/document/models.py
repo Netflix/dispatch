@@ -1,8 +1,9 @@
 """Models for document resources in the Dispatch application."""
+
 from datetime import datetime
 from collections import defaultdict
 
-from pydantic import field_validator
+from pydantic import field_validator, ValidationInfo
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -42,6 +43,7 @@ assoc_document_tags = Table(
 
 class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
     """SQLAlchemy model for document resources."""
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -63,6 +65,7 @@ class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
 # Pydantic models...
 class DocumentBase(ResourceBase, EvergreenBase):
     """Base Pydantic model for document resources."""
+
     description: str | None = None
     name: NameStr
     created_at: datetime | None = None
@@ -71,6 +74,7 @@ class DocumentBase(ResourceBase, EvergreenBase):
 
 class DocumentCreate(DocumentBase):
     """Pydantic model for creating a document resource."""
+
     filters: list[SearchFilterRead] | None = []
     project: ProjectRead
     tags: list[TagRead] | None = []
@@ -78,6 +82,7 @@ class DocumentCreate(DocumentBase):
 
 class DocumentUpdate(DocumentBase):
     """Pydantic model for updating a document resource."""
+
     filters: list[SearchFilterRead] | None
     tags: list[TagRead] | None = []
 
@@ -101,6 +106,7 @@ class DocumentUpdate(DocumentBase):
 
 class DocumentRead(DocumentBase):
     """Pydantic model for reading a document resource."""
+
     id: PrimaryKey
     filters: list[SearchFilterRead] | None = []
     project: ProjectRead | None
@@ -108,13 +114,15 @@ class DocumentRead(DocumentBase):
 
     @field_validator("description", mode="before")
     @classmethod
-    def set_description(cls, v, values):
+    def set_description(cls, v, info: ValidationInfo):
         """Sets the description for the document resource."""
         if not v:
-            return DOCUMENT_DESCRIPTIONS.get(values["resource_type"], "No Description")
+            resource_type = info.data.get("resource_type")
+            return DOCUMENT_DESCRIPTIONS.get(resource_type, "No Description")
         return v
 
 
 class DocumentPagination(Pagination):
     """Pydantic model for paginated document results."""
+
     items: list[DocumentRead] = []
