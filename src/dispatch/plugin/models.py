@@ -209,8 +209,8 @@ class PluginInstanceReadMinimal(PluginBase):
 
 
 class PluginInstanceCreate(PluginBase):
-    enabled: bool | None
-    configuration: dict | None
+    enabled: bool | None = None
+    configuration: dict | None = None
     plugin: PluginRead
     project: ProjectRead
 

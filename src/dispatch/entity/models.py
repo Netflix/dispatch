@@ -57,7 +57,7 @@ class EntityCreate(EntityBase):
     def __hash__(self):
         return hash((self.id, self.value))
 
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     entity_type: EntityTypeCreate
     project: ProjectRead
 
@@ -79,7 +79,7 @@ class EntityReadMinimal(DispatchBase):
     source: str | None = None
     value: str | None = None
     description: str | None = None
-    entity_type: EntityTypeReadMinimal | None
+    entity_type: EntityTypeReadMinimal | None = None
 
 
 class EntityPagination(Pagination):
