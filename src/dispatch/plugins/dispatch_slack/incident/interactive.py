@@ -246,7 +246,12 @@ def handle_tag_search_action(
 
     filter_spec = {
         "and": [
-            {"model": "Project", "op": "==", "field": "id", "value": context["subject"].project_id}
+            {
+                "model": "Project",
+                "op": "==",
+                "field": "id",
+                "value": int(context["subject"].project_id),
+            }
         ]
     }
 
@@ -290,9 +295,11 @@ def handle_update_incident_project_select_action(
     ack()
     values = body["view"]["state"]["values"]
 
-    project_id = values[DefaultBlockIds.project_select][IncidentUpdateActions.project_select][
-        "selected_option"
-    ]["value"]
+    project_id = int(
+        values[DefaultBlockIds.project_select][IncidentUpdateActions.project_select][
+            "selected_option"
+        ]["value"]
+    )
 
     context["subject"].project_id = project_id
 
@@ -301,7 +308,7 @@ def handle_update_incident_project_select_action(
         project_id=project_id,
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     blocks = [
         Context(elements=[MarkdownText(text="Use this form to update the incident's details.")]),
@@ -377,7 +384,9 @@ def handle_list_incidents_command(
 
     if context["subject"].type == IncidentSubjects.incident:
         # command was run in an incident conversation
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        incident = incident_service.get(
+            db_session=db_session, incident_id=int(context["subject"].id)
+        )
         projects.append(incident.project)
     else:
         # command was run in a non-incident conversation
@@ -481,10 +490,10 @@ def handle_list_participants_command(
     blocks = []
 
     participants = participant_service.get_all_by_incident_id(
-        db_session=db_session, incident_id=context["subject"].id
+        db_session=db_session, incident_id=int(context["subject"].id)
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
@@ -590,7 +599,7 @@ def handle_list_tasks_command(
 
     tasks = task_service.get_all_by_incident_id(
         db_session=db_session,
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
     )
 
     caller_only = False
@@ -791,7 +800,9 @@ def handle_timeline_added_event(
     if context["subject"].type == IncidentSubjects.incident:
         individual = None
         # we fetch the incident
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        incident = incident_service.get(
+            db_session=db_session, incident_id=int(context["subject"].id)
+        )
 
         # we fetch the individual who sent the message
         # if user is not found, we default to "Unknown"
@@ -824,7 +835,7 @@ def handle_timeline_added_event(
             db_session=db_session,
             source=source,
             description=message_text,
-            incident_id=context["subject"].id,
+            incident_id=int(context["subject"].id),
             individual_id=individual.id if individual else None,
             started_at=message_ts_utc,
             type=EventType.imported_message,
@@ -844,7 +855,7 @@ def handle_participant_role_activity(
     """
     ack()
     participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=context["subject"].id, email=user.email
+        db_session=db_session, incident_id=int(context["subject"].id), email=user.email
     )
 
     if participant:
@@ -872,7 +883,7 @@ def handle_participant_role_activity(
                             f"{participant.individual.name}'s role changed from {participant_role.role} to "
                             f"{ParticipantRoleType.participant} due to activity in the incident channel"
                         ),
-                        incident_id=context["subject"].id,
+                        incident_id=int(context["subject"].id),
                         type=EventType.participant_updated,
                     )
 
@@ -893,10 +904,10 @@ def handle_after_hours_message(
     """Notifies the user that this incident is currently in after hours mode."""
     ack()
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
     owner_email = incident.commander.individual.email
     participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=context["subject"].id, email=user.email
+        db_session=db_session, incident_id=int(context["subject"].id), email=user.email
     )
 
     # get incident priority settings and if delayed message warning is disabled, log and return
@@ -977,7 +988,7 @@ def handle_message_monitor(
     """Looks for strings that are available for monitoring (e.g. links)."""
     ack()
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
     project_id = incident.project.id
 
     plugins = plugin_service.get_active_instances(
@@ -1071,7 +1082,7 @@ def handle_member_joined_channel(
 
     if context["subject"].type == IncidentSubjects.incident:
         participant = incident_flows.incident_add_or_reactivate_participant_flow(
-            user_email=user.email, incident_id=context["subject"].id, db_session=db_session
+            user_email=user.email, incident_id=int(context["subject"].id), db_session=db_session
         )
 
         if not participant:
@@ -1080,7 +1091,9 @@ def handle_member_joined_channel(
 
         participant.user_conversation_id = context["user_id"]
 
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        incident = incident_service.get(
+            db_session=db_session, incident_id=int(context["subject"].id)
+        )
 
         # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
         # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
@@ -1094,7 +1107,9 @@ def handle_member_joined_channel(
             inviter_email = get_user_email(client=client, user_id=inviter)
             if inviter_email:
                 added_by_participant = participant_service.get_by_incident_id_and_email(
-                    db_session=db_session, incident_id=context["subject"].id, email=inviter_email
+                    db_session=db_session,
+                    incident_id=int(context["subject"].id),
+                    email=inviter_email,
                 )
                 participant.added_by = added_by_participant
 
@@ -1102,7 +1117,7 @@ def handle_member_joined_channel(
             # User joins via the `join` button on Web Application or Slack.
             # We default to the incident commander when we don't know who added the user or the user is the Dispatch bot.
             incident = incident_service.get(
-                db_session=db_session, incident_id=context["subject"].id
+                db_session=db_session, incident_id=int(context["subject"].id)
             )
             participant.added_by = incident.commander
 
@@ -1119,14 +1134,14 @@ def handle_member_joined_channel(
         db_session.commit()
 
     if context["subject"].type == CaseSubjects.case:
-        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+        case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
         if not case.dedicated_channel:
             return
 
         participant = case_flows.case_add_or_reactivate_participant_flow(
             user_email=user.email,
-            case_id=context["subject"].id,
+            case_id=int(context["subject"].id),
             db_session=db_session,
         )
 
@@ -1149,7 +1164,7 @@ def handle_member_joined_channel(
             if inviter_email:
                 added_by_participant = participant_service.get_by_case_id_and_email(
                     db_session=db_session,
-                    case_id=context["subject"].id,
+                    case_id=int(context["subject"].id),
                     email=inviter_email,
                 )
                 participant.added_by = added_by_participant
@@ -1190,14 +1205,14 @@ def handle_member_left_channel(
         )
 
     if context["subject"].type == CaseSubjects.case:
-        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+        case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
         if not case.dedicated_channel:
             return
 
         case_flows.case_remove_participant_flow(
             user_email=user.email,
-            case_id=context["subject"].id,
+            case_id=int(context["subject"].id),
             db_session=db_session,
         )
 
@@ -1290,7 +1305,7 @@ def handle_add_timeline_submission_event(
     event_description = form_data.get(DefaultBlockIds.description_input)
 
     participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=context["subject"].id, email=user.email
+        db_session=db_session, incident_id=int(context["subject"].id), email=user.email
     )
 
     event_timezone = event_timezone_selection
@@ -1307,7 +1322,7 @@ def handle_add_timeline_submission_event(
         source=f"Slack message from {participant.individual.name}",
         started_at=event_dt_utc,
         description=event_description,
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
         individual_id=participant.individual.id,
         type=EventType.imported_message,
         owner=participant.individual.name,
@@ -1334,7 +1349,7 @@ def handle_update_participant_command(
         raise CommandError("Command is not currently available for cases.")
 
     incident = incident_service.get(
-        db_session=context["db_session"], incident_id=context["subject"].id
+        db_session=context["db_session"], incident_id=int(context["subject"].id)
     )
 
     blocks = [
@@ -1419,7 +1434,7 @@ def handle_update_notifications_group_command(
     if context["subject"].type == CaseSubjects.case:
         raise CommandError("Command is not currently available for cases.")
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
@@ -1500,7 +1515,7 @@ def handle_update_notifications_group_submission_event(
     members_added = list(set(updated_members) - set(current_members))
     members_removed = list(set(current_members) - set(updated_members))
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
@@ -1589,7 +1604,7 @@ def handle_assign_role_submission_event(
 
     # we assign the role
     incident_flows.incident_assign_role_flow(
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
         assigner_email=user.email,
         assignee_email=assignee_email,
         assignee_role=assignee_role,
@@ -1602,7 +1617,7 @@ def handle_assign_role_submission_event(
     ):
         # we update the external ticket
         ticket_flows.update_incident_ticket(
-            incident_id=context["subject"].id, db_session=db_session
+            incident_id=int(context["subject"].id), db_session=db_session
         )
 
     send_success_modal(
@@ -1639,10 +1654,10 @@ def handle_create_task_command(
         return client.views_update(view_id=response.get("view").get("id"), view=modal)
 
     participants = participant_service.get_all_by_incident_id(
-        db_session=db_session, incident_id=context["subject"].id
+        db_session=db_session, incident_id=int(context["subject"].id)
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
@@ -1714,12 +1729,12 @@ def handle_create_task_submission_event(
 
     participant_email = form_data.get(CreateTaskBlockIds.assignee_select).get("value", "")
     assignee = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=context["subject"].id, email=participant_email
+        db_session=db_session, incident_id=int(context["subject"].id), email=participant_email
     )
     creator = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=context["subject"].id, email=user.email
+        db_session=db_session, incident_id=int(context["subject"].id), email=user.email
     )
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     task_in = TaskCreate(
         assignees=[ParticipantUpdate.from_orm(assignee)],
@@ -1749,12 +1764,14 @@ def handle_engage_oncall_command(
 
     project_id = None
     if context["subject"].type == CaseSubjects.case:
-        case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+        case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
         if not case.dedicated_channel:
             raise CommandError("Command is not currently available for threaded cases.")
         project_id = case.project.id
     else:
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        incident = incident_service.get(
+            db_session=db_session, incident_id=int(context["subject"].id)
+        )
         project_id = incident.project.id
 
     oncall_services = service_service.get_all_by_project_id_and_status(
@@ -1845,7 +1862,7 @@ def handle_engage_oncall_submission_event(
     oncall_individual, oncall_service = (
         case_flows.case_engage_oncall_flow(
             user_email=user.email,
-            case_id=context["subject"].id,
+            case_id=int(context["subject"].id),
             oncall_service_external_id=oncall_service_external_id,
             page=page,
             db_session=db_session,
@@ -1853,7 +1870,7 @@ def handle_engage_oncall_submission_event(
         if context["subject"].type == CaseSubjects.case
         else incident_flows.incident_engage_oncall_flow(
             user_email=user.email,
-            incident_id=context["subject"].id,
+            incident_id=int(context["subject"].id),
             oncall_service_external_id=oncall_service_external_id,
             page=page,
             db_session=db_session,
@@ -1893,7 +1910,7 @@ def handle_report_tactical_command(
     # we load the most recent tactical report
     tactical_report = report_service.get_most_recent_by_incident_id_and_type(
         db_session=db_session,
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
         report_type=ReportTypes.tactical_report,
     )
 
@@ -1903,7 +1920,7 @@ def handle_report_tactical_command(
         actions = tactical_report.details.get("actions")
         needs = tactical_report.details.get("needs")
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
     outstanding_actions = "" if actions is None else actions
     if incident.tasks:
         outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
@@ -1983,7 +2000,7 @@ def handle_report_tactical_submission_event(
 
     report_flows.create_tactical_report(
         user_email=user.email,
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
         tactical_report_in=tactical_report_in,
         organization_slug=context["subject"].organization_slug,
     )
@@ -2011,7 +2028,7 @@ def handle_report_executive_command(
 
     executive_report = report_service.get_most_recent_by_incident_id_and_type(
         db_session=db_session,
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
         report_type=ReportTypes.executive_report,
     )
 
@@ -2094,7 +2111,7 @@ def handle_report_executive_submission_event(
     """Handles the report executive submission."""
     ack_report_executive_submission_event(ack=ack)
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     executive_report_in = ExecutiveReportCreate(
         current_status=form_data[ReportExecutiveBlockIds.current_status],
@@ -2142,7 +2159,7 @@ def handle_update_incident_command(
     """Creates the incident update modal."""
     ack()
 
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     blocks = [
         Context(elements=[MarkdownText(text="Use this form to update the incident's details.")]),
@@ -2218,7 +2235,7 @@ def handle_update_incident_submission_event(
     user: DispatchUser,
 ) -> None:
     """Handles the update incident submission"""
-    incident_severity_id = form_data[DefaultBlockIds.incident_severity_select]["value"]
+    incident_severity_id = int(form_data[DefaultBlockIds.incident_severity_select]["value"])
     incident_severity = incident_severity_service.get(
         db_session=db_session, incident_severity_id=incident_severity_id
     )
@@ -2233,7 +2250,7 @@ def handle_update_incident_submission_event(
         return
 
     ack_incident_update_submission_event(ack=ack)
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     tags = []
     for t in form_data.get(DefaultBlockIds.tags_multi_select, []):
@@ -2498,9 +2515,11 @@ def handle_report_incident_project_select_action(
     ack()
     values = body["view"]["state"]["values"]
 
-    project_id = values[DefaultBlockIds.project_select][IncidentReportActions.project_select][
-        "selected_option"
-    ]["value"]
+    project_id = int(
+        values[DefaultBlockIds.project_select][IncidentReportActions.project_select][
+            "selected_option"
+        ]["value"]
+    )
 
     context["subject"].project_id = project_id
 
@@ -2551,7 +2570,7 @@ def handle_incident_notification_join_button_click(
 ):
     """Handles the incident join button click event."""
     ack()
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
@@ -2584,7 +2603,7 @@ def handle_incident_notification_subscribe_button_click(
 ):
     """Handles the incident subscribe button click event."""
     ack()
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
 
     if not incident:
         message = "Sorry, we can't invite you to this incident. The incident does not exist."
@@ -2684,7 +2703,7 @@ def monitor_link_button_click(
     """Core logic for handle_message_monitor() button click that builds MonitorCreate object and message."""
 
     button = MonitorMetadata.parse_raw((body["actions"][0]["value"]))
-    incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=button.plugin_instance_id
     )
@@ -2741,7 +2760,7 @@ def handle_update_task_status_button_click(
             db_session=db_session, resource_id=button.resource_id
         )
     else:
-        task = task_service.get(db_session=db_session, task_id=button.task_id)
+        task = task_service.get(db_session=db_session, task_id=int(button.task_id))
 
     # avoid external calls if we are already in the desired state
     if resolve and task.status == TaskStatus.resolved:
@@ -2768,7 +2787,7 @@ def handle_update_task_status_button_click(
 
     tasks = task_service.get_all_by_incident_id(
         db_session=db_session,
-        incident_id=context["subject"].id,
+        incident_id=int(context["subject"].id),
     )
 
     if not button.thread_id:
@@ -2804,7 +2823,9 @@ def handle_remind_again_select_action(
     """Handles remind again select event."""
     ack()
     try:
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        incident = incident_service.get(
+            db_session=db_session, incident_id=int(context["subject"].id)
+        )
 
         # User-selected option as org-id-report_type-delay
         value = body["actions"][0]["selected_option"]["value"]
@@ -2812,7 +2833,7 @@ def handle_remind_again_select_action(
         # Parse out report type and selected delay
         *_, report_type, selection = value.split("-")
         selection_as_message = reminder_select_values[selection]["message"]
-        hours = reminder_select_values[selection]["value"]
+        hours = float(reminder_select_values[selection]["value"])
 
         # Get new remind time
         delay_to_time = datetime.utcnow() + timedelta(hours=hours)

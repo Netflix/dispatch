@@ -172,7 +172,7 @@ def handle_escalate_case_command(
 ) -> None:
     """Handles list participants command."""
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     already_escalated = True if case.escalated_at else False
     if already_escalated:
         modal = Modal(
@@ -239,7 +239,7 @@ def handle_update_case_command(
 ) -> None:
     ack()
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     try:
         user_lookup_response = client.users_lookupByEmail(email=case.assignee.individual.email)
@@ -409,7 +409,7 @@ def engage(
     """Handles the engage user action."""
     ack()
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     if not case:
         log.error("Case not found when trying to engage user")
         return
@@ -841,7 +841,7 @@ def handle_snooze_preview_event(
 
         preview_signal_instances = entity_service.get_signal_instances_with_entities(
             db_session=db_session,
-            signal_id=context["subject"].id,
+            signal_id=int(context["subject"].id),
             entity_ids=entity_ids,
             days_back=90,
         )
@@ -1031,7 +1031,7 @@ def handle_snooze_submission_event(
             user=user,
             subject=context["subject"],
         )
-        signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+        signal = signal_service.get(db_session=db_session, signal_id=int(context["subject"].id))
         post_snooze_message(
             db_session=db_session,
             client=client,
@@ -1054,7 +1054,7 @@ def handle_snooze_submission_event(
             action="signal-snooze",
             current_user=user,
             db_session=db_session,
-            project_id=context["subject"].project_id,
+            project_id=int(context["subject"].project_id),
         )
         ack_mfa_required_submission_event(
             ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url
@@ -1072,7 +1072,7 @@ def handle_snooze_submission_event(
                 user=user,
                 subject=context["subject"],
             )
-            signal = signal_service.get(db_session=db_session, signal_id=context["subject"].id)
+            signal = signal_service.get(db_session=db_session, signal_id=int(context["subject"].id))
             post_snooze_message(
                 db_session=db_session,
                 client=client,
@@ -1209,7 +1209,7 @@ def handle_new_participant_message(
     """Looks for new participants that have starting chatting for the first time."""
     ack()
     participant = case_flows.case_add_or_reactivate_participant_flow(
-        case_id=context["subject"].id,
+        case_id=int(context["subject"].id),
         user_email=user.email,
         db_session=db_session,
         add_to_conversation=False,
@@ -1240,7 +1240,7 @@ def handle_new_participant_message(
                         f"{participant.individual.name}'s role changed from {participant_role.role} to "
                         f"{ParticipantRoleType.participant} due to activity in the case channel"
                     ),
-                    case_id=context["subject"].id,
+                    case_id=int(context["subject"].id),
                     type=EventType.participant_updated,
                 )
 
@@ -1256,7 +1256,7 @@ def handle_case_participant_role_activity(
     ack()
 
     participant = participant_service.get_by_case_id_and_email(
-        db_session=db_session, case_id=context["subject"].id, email=user.email
+        db_session=db_session, case_id=int(context["subject"].id), email=user.email
     )
 
     if participant:
@@ -1265,12 +1265,12 @@ def handle_case_participant_role_activity(
     else:
         # we have a new active participant lets add them
         participant = case_flows.case_add_or_reactivate_participant_flow(
-            case_id=context["subject"].id, user_email=user.email, db_session=db_session
+            case_id=int(context["subject"].id), user_email=user.email, db_session=db_session
         )
         participant.user_conversation_id = context["user_id"]
 
     # if a participant is active mark the case as being in the triaged state
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     if case.status == CaseStatus.new:
         case_flows.case_status_transition_flow_dispatcher(
@@ -1309,10 +1309,10 @@ def handle_case_after_hours_message(
     if "thread_ts" not in payload:
         return
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     owner_email = case.assignee.individual.email
     participant = participant_service.get_by_case_id_and_email(
-        db_session=db_session, case_id=context["subject"].id, email=user.email
+        db_session=db_session, case_id=int(context["subject"].id), email=user.email
     )
     # handle no participant found
     if not participant:
@@ -1355,7 +1355,7 @@ def reopen_button_click(
     db_session: Session,
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     case.status = CaseStatus.triage
 
     # we update the ticket
@@ -1382,7 +1382,7 @@ def escalate_button_click(
     db_session: Session,
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     blocks = [
         Context(elements=[MarkdownText(text="Accept the defaults or adjust as needed.")]),
         title_input(initial_value=case.title),
@@ -1432,9 +1432,11 @@ def handle_project_select_action(
     ack()
     values = body["view"]["state"]["values"]
 
-    project_id = values[DefaultBlockIds.project_select][CaseEscalateActions.project_select][
-        "selected_option"
-    ]["value"]
+    project_id = int(
+        values[DefaultBlockIds.project_select][CaseEscalateActions.project_select][
+            "selected_option"
+        ]["value"]
+    )
 
     project = project_service.get(db_session=db_session, project_id=project_id)
 
@@ -1514,7 +1516,7 @@ def handle_escalation_submission_event(
 
     from dispatch.incident.type.service import get_by_name
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     ack_handle_escalation_submission_event(ack=ack, case=case)
 
     case.status = CaseStatus.escalated
@@ -1691,7 +1693,7 @@ def handle_create_channel_event(
     user: DispatchUser,
 ):
     """Handles the escalation submission event."""
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     ack_handle_create_channel_event(ack=ack, case=case)
 
     case.dedicated_channel = True
@@ -1771,7 +1773,7 @@ def handle_user_mention(
     """Handles user posted message events."""
     ack()
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     if not case or case.dedicated_channel:
         # we do not need to handle mentions for cases with dedicated channels
         return
@@ -1781,7 +1783,7 @@ def handle_user_mention(
     for user_id in mentioned_users:
         user_email = dispatch_slack_service.get_user_email(client, user_id)
         if user_email and not participant_service.get_by_case_id_and_email(
-            db_session=db_session, case_id=context["subject"].id, email=user_email
+            db_session=db_session, case_id=int(context["subject"].id), email=user_email
         ):
             users_not_in_case.append(user_email)
 
@@ -1833,7 +1835,7 @@ def add_users_to_case(
 ):
     ack()
 
-    case_id = context["subject"].id
+    case_id = int(context["subject"].id)
 
     case = case_service.get(db_session=db_session, case_id=case_id)
     if not case:
@@ -1882,7 +1884,7 @@ def join_incident_button_click(
     ack: Ack, user: DispatchUser, db_session: Session, context: BoltContext
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     # we add the user to the incident conversation
     conversation_flows.add_incident_participants_to_conversation(
@@ -1907,7 +1909,7 @@ def handle_case_notification_join_button_click(
 ):
     """Handles the case join button click event."""
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     if not case:
         message = "Sorry, we can't invite you to this case. The case does not exist."
@@ -1939,7 +1941,7 @@ def edit_button_click(
     ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
         "user"
@@ -1994,7 +1996,7 @@ def handle_edit_submission_event(
     user: DispatchUser,
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     previous_case = CaseRead.from_orm(case)
 
     case_priority = None
@@ -2045,7 +2047,7 @@ def resolve_button_click(
     ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     reason = case.resolution_reason
     blocks = [
@@ -2073,7 +2075,7 @@ def triage_button_click(
     ack: Ack, body: dict, db_session: Session, context: BoltContext, client: WebClient
 ):
     ack()
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     # we run the case status transition flow
     case_flows.case_status_transition_flow_dispatcher(
         case=case,
@@ -2105,7 +2107,7 @@ def handle_resolve_submission_event(
 ):
     ack()
     # we get the current case and store it as previous case
-    current_case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    current_case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     previous_case = CaseRead.from_orm(current_case)
 
     # we update the case with the new resolution, resolution reason and status
@@ -2207,9 +2209,11 @@ def handle_report_project_select_action(
     ack()
     values = body["view"]["state"]["values"]
 
-    project_id = values[DefaultBlockIds.project_select][CaseReportActions.project_select][
-        "selected_option"
-    ]["value"]
+    project_id = int(
+        values[DefaultBlockIds.project_select][CaseReportActions.project_select]["selected_option"][
+            "value"
+        ]
+    )
 
     project = project_service.get(
         db_session=db_session,
@@ -2274,13 +2278,17 @@ def handle_report_case_type_select_action(
     ack()
     values = body["view"]["state"]["values"]
 
-    project_id = values[DefaultBlockIds.project_select][CaseReportActions.project_select][
-        "selected_option"
-    ]["value"]
+    project_id = int(
+        values[DefaultBlockIds.project_select][CaseReportActions.project_select]["selected_option"][
+            "value"
+        ]
+    )
 
-    case_type_id = values[DefaultBlockIds.case_type_select][CaseReportActions.case_type_select][
-        "selected_option"
-    ]["value"]
+    case_type_id = int(
+        values[DefaultBlockIds.case_type_select][CaseReportActions.case_type_select][
+            "selected_option"
+        ]["value"]
+    )
 
     project = project_service.get(
         db_session=db_session,
@@ -2554,7 +2562,7 @@ def engagement_button_approve_click(
     )
 
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
+        db_session=db_session, project_id=int(context["subject"].project_id), plugin_type="auth-mfa"
     )
 
     require_mfa = engagement.require_mfa if engagement else True
@@ -2669,11 +2677,11 @@ def handle_engagement_submission_event(
 
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
-        signal_engagement_id=metadata["engagement_id"],
+        signal_engagement_id=int(metadata["engagement_id"]),
     )
 
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
+        db_session=db_session, project_id=int(context["subject"].project_id), plugin_type="auth-mfa"
     )
     if not mfa_plugin:
         log.error("Unable to engage user. No enabled MFA plugin found.")
@@ -2686,12 +2694,12 @@ def handle_engagement_submission_event(
         action="signal-engagement-confirmation",
         current_user=user,
         db_session=db_session,
-        project_id=context["subject"].project_id,
+        project_id=int(context["subject"].project_id),
     )
 
     ack_mfa_required_submission_event(ack=ack, mfa_enabled=mfa_enabled, challenge_url=challenge_url)
 
-    case = case_service.get(db_session=db_session, case_id=metadata["id"])
+    case = case_service.get(db_session=db_session, case_id=int(metadata["id"]))
     signal_instance = (
         signal_service.get_signal_instance(
             db_session=db_session, signal_instance_id=UUID(metadata["signal_instance_id"])
@@ -2999,7 +3007,7 @@ def investigate_button_click(
 ):
     ack()
 
-    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
     if not case:
         log.error("Unable to open an investigation. Case not found.")
