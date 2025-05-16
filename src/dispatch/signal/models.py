@@ -387,21 +387,21 @@ class SignalStats(DispatchBase):
 
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead | None
-    case: CaseReadMinimal | None
+    case: CaseReadMinimal | None = None
     canary: bool | None = False
     entities: list[EntityRead] | None = []
     raw: dict[str, Any]
-    external_id: str | None
+    external_id: str | None = None
     filter_action: SignalFilterAction | None = None
     created_at: datetime | None = None
 
 
 class SignalInstanceCreate(SignalInstanceBase):
-    signal: SignalRead | None
-    case_priority: CasePriorityRead | None
-    case_type: CaseTypeRead | None
-    conversation_target: str | None
-    oncall_service: ServiceRead | None
+    signal: SignalRead | None = None
+    case_priority: CasePriorityRead | None = None
+    case_type: CaseTypeRead | None = None
+    conversation_target: str | None = None
+    oncall_service: ServiceRead | None = None
 
 
 class SignalInstanceRead(SignalInstanceBase):

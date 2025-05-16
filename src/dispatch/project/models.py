@@ -132,7 +132,7 @@ class ProjectUpdate(ProjectBase):
 
 
 class ProjectRead(ProjectBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     stable_priority: IncidentPriorityRead | None = None
 
     model_config = ConfigDict(from_attributes=True)
