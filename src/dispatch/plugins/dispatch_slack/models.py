@@ -1,7 +1,7 @@
 """Models for Slack command payloads in the Dispatch application."""
 
 from typing import TypedDict, NewType
-from pydantic import BaseModel, AnyHttpUrl
+from pydantic import BaseModel, AnyHttpUrl, ConfigDict
 import logging
 from dispatch.enums import DispatchEnum
 
@@ -36,6 +36,10 @@ class SubjectMetadata(BaseModel):
     project_id: str | None = None
     channel_id: str | None = None
     thread_id: str | None = None
+
+    model_config = ConfigDict(
+        coerce_numbers_to_str=True
+    )  # allow coercion of id from number to string
 
 
 class AddUserMetadata(SubjectMetadata):
