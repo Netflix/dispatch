@@ -262,11 +262,27 @@ def static_select_block(
     **kwargs,
 ):
     """Builds a static select block."""
+    # Ensure all values in options are strings
+    processed_options = []
+    if options:
+        for x in options:
+            option_dict = {k: str(v) if k == "value" else v for k, v in x.items()}
+            processed_options.append(option_dict)
+
+    # Ensure value in initial_option is a string
+    processed_initial_option = None
+    if initial_option:
+        processed_initial_option = {
+            k: str(v) if k == "value" else v for k, v in initial_option.items()
+        }
+
     return Input(
         element=StaticSelect(
             placeholder=placeholder,
-            options=[PlainOption(**x) for x in options] if options else None,
-            initial_option=PlainOption(**initial_option) if initial_option else None,
+            options=[PlainOption(**x) for x in processed_options] if processed_options else None,
+            initial_option=(
+                PlainOption(**processed_initial_option) if processed_initial_option else None
+            ),
             action_id=action_id,
         ),
         block_id=block_id,
@@ -284,10 +300,17 @@ def multi_select_block(
     **kwargs,
 ):
     """Builds a multi select block."""
+    # Ensure all values in options are strings
+    processed_options = []
+    if options:
+        for x in options:
+            option_dict = {k: str(v) if k == "value" else v for k, v in x.items()}
+            processed_options.append(option_dict)
+
     return Input(
         element=MultiStaticSelect(
             placeholder=placeholder,
-            options=[PlainOption(**x) for x in options] if options else None,
+            options=[PlainOption(**x) for x in processed_options] if processed_options else None,
             action_id=action_id,
         ),
         block_id=block_id,
