@@ -26,7 +26,7 @@ class AlertBase(DispatchBase):
 
 
 class AlertCreate(AlertBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
 
 
 class AlertUpdate(AlertBase):

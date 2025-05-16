@@ -265,8 +265,8 @@ class UserCreate(DispatchBase):
 
     email: EmailStr
     password: str | None = None
-    projects: list[UserProject] | None
-    organizations: list[UserOrganization] | None
+    projects: list[UserProject] | None = None
+    organizations: list[UserOrganization] | None = None
     role: str | None = None
 
     @field_validator("password", mode="before")

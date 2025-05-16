@@ -67,7 +67,7 @@ class NotificationBase(EvergreenBase):
 
 
 class NotificationCreate(NotificationBase):
-    filters: list[SearchFilterRead | None]
+    filters: list[SearchFilterRead | None] = None
     project: ProjectRead
 
 

@@ -27,7 +27,7 @@ class EmailTemplatesBase(DispatchBase):
 
 
 class EmailTemplatesCreate(EmailTemplatesBase):
-    project: ProjectRead | None
+    project: ProjectRead | None = None
 
 
 class EmailTemplatesUpdate(EmailTemplatesBase):
