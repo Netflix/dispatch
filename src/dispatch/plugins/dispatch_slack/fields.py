@@ -253,11 +253,11 @@ def datetime_picker_block(
 
 
 def static_select_block(
-    options: list[str],
+    options: list[dict[str, str]],
     placeholder: str,
     action_id: str = None,
     block_id: str = None,
-    initial_option: dict = None,
+    initial_option: dict[str, str] = None,
     label: str = None,
     **kwargs,
 ):
@@ -292,7 +292,7 @@ def static_select_block(
 
 
 def multi_select_block(
-    options: list[str],
+    options: list[dict[str, str]],
     placeholder: str,
     action_id: str = None,
     block_id: str = None,
