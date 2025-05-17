@@ -316,28 +316,28 @@ class SignalFilterPagination(Pagination):
 
 
 class SignalBase(DispatchBase):
-    case_priority: CasePriorityRead | None
-    case_type: CaseTypeRead | None
-    conversation_target: str | None
+    case_priority: CasePriorityRead | None = None
+    case_type: CaseTypeRead | None = None
+    conversation_target: str | None = None
     create_case: bool | None = True
     created_at: datetime | None = None
     default: bool | None = False
-    description: str | None
+    description: str | None = None
     enabled: bool | None = False
-    external_id: str | None
-    external_url: str | None
+    external_id: str | None = None
+    external_url: str | None = None
     name: str
-    oncall_service: Service | None
+    oncall_service: Service | None = None
     owner: str
     project: ProjectRead
-    source: SourceBase | None
-    variant: str | None
-    lifecycle: str | None
-    runbook: str | None
+    source: SourceBase | None = None
+    variant: str | None = None
+    lifecycle: str | None = None
+    runbook: str | None = None
     genai_enabled: bool | None = True
-    genai_model: str | None
-    genai_system_message: str | None
-    genai_prompt: str | None
+    genai_model: str | None = None
+    genai_system_message: str | None = None
+    genai_prompt: str | None = None
 
 
 class SignalCreate(SignalBase):
@@ -372,21 +372,21 @@ class SignalPagination(Pagination):
 
 
 class AdditionalMetadata(DispatchBase):
-    name: str | None
-    value: Any | None
-    type: str | None
-    important: bool | None
+    name: str | None = None
+    value: Any | None = None
+    type: str | None = None
+    important: bool | None = None
 
 
 class SignalStats(DispatchBase):
-    num_signal_instances_alerted: int | None
-    num_signal_instances_snoozed: int | None
-    num_snoozes_active: int | None
-    num_snoozes_expired: int | None
+    num_signal_instances_alerted: int | None = None
+    num_signal_instances_snoozed: int | None = None
+    num_snoozes_active: int | None = None
+    num_snoozes_expired: int | None = None
 
 
 class SignalInstanceBase(DispatchBase):
-    project: ProjectRead | None
+    project: ProjectRead | None = None
     case: CaseReadMinimal | None = None
     canary: bool | None = False
     entities: list[EntityRead] | None = []

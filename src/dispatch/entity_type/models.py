@@ -48,17 +48,17 @@ class SignalRead(DispatchBase):
     id: PrimaryKey
     name: str
     owner: str
-    conversation_target: str | None
-    description: str | None
-    variant: str | None
+    conversation_target: str | None = None
+    description: str | None = None
+    variant: str | None = None
 
 
 class EntityTypeBase(DispatchBase):
-    name: NameStr | None
+    name: NameStr | None = None
     description: str | None = None
     jpath: str | None = None
     scope: EntityScopeEnum | None = Field(EntityScopeEnum.single, nullable=False)
-    enabled: bool | None
+    enabled: bool | None = None
     signals: list[SignalRead | None] = Field([], nullable=True)
     regular_expression: str | None = None
 
@@ -82,7 +82,7 @@ class EntityTypeReadMinimal(DispatchBase):
     name: NameStr
     description: str | None = None
     scope: EntityScopeEnum
-    enabled: bool | None
+    enabled: bool | None = None
     regular_expression: str | None = None
 
 

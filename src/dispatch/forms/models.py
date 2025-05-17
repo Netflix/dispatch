@@ -36,17 +36,17 @@ class Forms(TimeStampMixin, ProjectMixin, Base):
 
 # Pydantic models
 class FormsBase(DispatchBase):
-    form_type: FormsTypeRead | None
-    creator: IndividualContactReadMinimal | None
+    form_type: FormsTypeRead | None = None
+    creator: IndividualContactReadMinimal | None = None
     form_data: str | None = None
     attorney_form_data: str | None = None
     status: str | None = None
     attorney_status: str | None = None
-    project: ProjectRead | None
-    incident: IncidentReadBasic | None
+    project: ProjectRead | None = None
+    incident: IncidentReadBasic | None = None
     attorney_questions: str | None = None
     attorney_analysis: str | None = None
-    score: int | None
+    score: int | None = None
 
 
 class FormsCreate(FormsBase):
@@ -59,7 +59,7 @@ class FormsUpdate(FormsBase):
 
 class FormsRead(FormsBase):
     id: PrimaryKey
-    project: ProjectRead | None
+    project: ProjectRead | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

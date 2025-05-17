@@ -1,4 +1,5 @@
 """Models and schemas for the Dispatch case management system."""
+
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any
@@ -78,6 +79,7 @@ assoc_cases_incidents = Table(
 
 class Case(Base, TimeStampMixin, ProjectMixin):
     """SQLAlchemy model for a Case, representing an incident or issue in the system."""
+
     __table_args__ = (UniqueConstraint("name", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -231,18 +233,20 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
 class SignalRead(DispatchBase):
     """Pydantic model for reading signal data."""
+
     id: PrimaryKey
     name: str
     owner: str
-    description: str | None
-    variant: str | None
+    description: str | None = None
+    variant: str | None = None
     external_id: str
-    external_url: str | None
+    external_url: str | None = None
     workflow_instances: list[WorkflowInstanceRead] | None = []
 
 
 class SignalInstanceRead(DispatchBase):
     """Pydantic model for reading signal instance data."""
+
     created_at: datetime
     entities: list[EntityRead] | None = []
     raw: Any
@@ -252,21 +256,24 @@ class SignalInstanceRead(DispatchBase):
 
 class ProjectRead(DispatchBase):
     """Pydantic model for reading project data."""
-    id: PrimaryKey | None
+
+    id: PrimaryKey | None = None
     name: NameStr
-    display_name: str | None
-    color: str | None
+    display_name: str | None = None
+    color: str | None = None
     allow_self_join: bool | None = Field(True, nullable=True)
+
 
 # Pydantic models...
 class CaseBase(DispatchBase):
     """Base Pydantic model for case data."""
+
     title: str
-    description: str | None
-    resolution: str | None
-    resolution_reason: CaseResolutionReason | None
-    status: CaseStatus | None
-    visibility: Visibility | None
+    description: str | None = None
+    resolution: str | None = None
+    resolution_reason: CaseResolutionReason | None = None
+    status: CaseStatus | None = None
+    visibility: Visibility | None = None
 
     @field_validator("title")
     @classmethod
@@ -287,42 +294,46 @@ class CaseBase(DispatchBase):
 
 class CaseCreate(CaseBase):
     """Pydantic model for creating a new case."""
-    assignee: ParticipantUpdate | None
-    case_priority: CasePriorityCreate | None
-    case_severity: CaseSeverityCreate | None
-    case_type: CaseTypeCreate | None
-    dedicated_channel: bool | None
-    project: ProjectRead | None
-    reporter: ParticipantUpdate | None
+
+    assignee: ParticipantUpdate | None = None
+    case_priority: CasePriorityCreate | None = None
+    case_severity: CaseSeverityCreate | None = None
+    case_type: CaseTypeCreate | None = None
+    dedicated_channel: bool | None = None
+    project: ProjectRead | None = None
+    reporter: ParticipantUpdate | None = None
     tags: list[TagRead] | None = []
     event: bool | None = False
 
 
 class CaseReadBasic(DispatchBase):
     """Pydantic model for reading basic case data."""
+
     id: PrimaryKey
-    name: NameStr | None
+    name: NameStr | None = None
 
 
 class IncidentReadBasic(DispatchBase):
     """Pydantic model for reading basic incident data."""
+
     id: PrimaryKey
-    name: NameStr | None
+    name: NameStr | None = None
 
 
 class CaseReadMinimal(CaseBase):
     """Pydantic model for reading minimal case data."""
+
     id: PrimaryKey
-    name: NameStr | None
-    status: CaseStatus | None  # Used in table and for action disabling
+    name: NameStr | None = None
+    status: CaseStatus | None = None  # Used in table and for action disabling
     closed_at: datetime | None = None
     reported_at: datetime | None = None
-    dedicated_channel: bool | None  # Used by CaseStatus component
+    dedicated_channel: bool | None = None  # Used by CaseStatus component
     case_type: CaseTypeRead
     case_severity: CaseSeverityRead
     case_priority: CasePriorityRead
     project: ProjectRead
-    assignee: ParticipantReadMinimal | None
+    assignee: ParticipantReadMinimal | None = None
     case_costs: list[CaseCostReadMinimal] = []
 
 
@@ -331,8 +342,9 @@ CaseReadMinimal.update_forward_refs()
 
 class CaseRead(CaseBase):
     """Pydantic model for reading detailed case data."""
+
     id: PrimaryKey
-    assignee: ParticipantRead | None
+    assignee: ParticipantRead | None = None
     case_costs: list[CaseCostRead] = []
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
@@ -352,7 +364,7 @@ class CaseRead(CaseBase):
     project: ProjectRead
     related: list[CaseReadMinimal] | None = []
     reported_at: datetime | None = None
-    reporter: ParticipantRead | None
+    reporter: ParticipantRead | None = None
     signal_instances: list[SignalInstanceRead] | None = []
     storage: StorageRead | None = None
     tags: list[TagRead] | None = []
@@ -367,15 +379,16 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     """Pydantic model for updating case data."""
-    assignee: ParticipantUpdate | None
+
+    assignee: ParticipantUpdate | None = None
     case_costs: list[CaseCostUpdate] = []
-    case_priority: CasePriorityBase | None
-    case_severity: CaseSeverityBase | None
-    case_type: CaseTypeBase | None
+    case_priority: CasePriorityBase | None = None
+    case_severity: CaseSeverityBase | None = None
+    case_type: CaseTypeBase | None = None
     closed_at: datetime | None = None
     duplicates: list[CaseReadBasic] | None = []
     related: list[CaseRead] | None = []
-    reporter: ParticipantUpdate | None
+    reporter: ParticipantUpdate | None = None
     escalated_at: datetime | None = None
     incidents: list[IncidentReadBasic] | None = []
     reported_at: datetime | None = None
@@ -408,9 +421,11 @@ class CaseUpdate(CaseBase):
 
 class CasePagination(Pagination):
     """Pydantic model for paginated minimal case results."""
+
     items: list[CaseReadMinimal] = []
 
 
 class CaseExpandedPagination(Pagination):
     """Pydantic model for paginated expanded case results."""
+
     items: list[CaseRead] = []

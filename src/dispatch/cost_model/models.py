@@ -67,6 +67,7 @@ class CostModel(Base, TimeStampMixin, ProjectMixin):
 # Pydantic Models
 class CostModelActivityBase(DispatchBase):
     """Base class for cost model activity resources"""
+
     plugin_event: PluginEventRead
     response_time_seconds: int | None = 300
     enabled: bool | None = Field(True, nullable=True)
@@ -81,7 +82,7 @@ class CostModelActivityRead(CostModelActivityBase):
 
 
 class CostModelActivityUpdate(CostModelActivityBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
 
 
 class CostModelBase(DispatchBase):

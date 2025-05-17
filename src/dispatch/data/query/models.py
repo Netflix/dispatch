@@ -63,7 +63,7 @@ class QueryCreate(QueryBase):
 
 
 class QueryUpdate(QueryBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
 
 
 class QueryRead(QueryBase):

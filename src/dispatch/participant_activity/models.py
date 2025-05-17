@@ -33,8 +33,8 @@ class ParticipantActivity(Base):
 # Pydantic Models
 class ParticipantActivityBase(DispatchBase):
     plugin_event: PluginEventRead
-    started_at: datetime | None
-    ended_at: datetime | None
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
     participant: ParticipantRead
     incident: IncidentRead | None = None
     case: CaseRead | None = None

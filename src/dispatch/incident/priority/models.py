@@ -1,4 +1,5 @@
 """Models for incident priority resources in the Dispatch application."""
+
 from pydantic import StrictBool
 
 from sqlalchemy import Column, Integer, String, Boolean
@@ -12,6 +13,7 @@ from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pag
 
 class IncidentPriority(Base, ProjectMixin):
     """SQLAlchemy model for incident priority resources."""
+
     __allow_unmapped__ = True
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
@@ -39,14 +41,16 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 
 class ProjectRead(DispatchBase):
     """Pydantic model for reading a project resource."""
-    id: PrimaryKey | None
+
+    id: PrimaryKey | None = None
     name: NameStr
-    display_name: str | None
+    display_name: str | None = None
 
 
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
     """Base Pydantic model for incident priority resources."""
+
     name: NameStr
     description: str | None = None
     page_commander: StrictBool | None = None
@@ -62,21 +66,25 @@ class IncidentPriorityBase(DispatchBase):
 
 class IncidentPriorityCreate(IncidentPriorityBase):
     """Pydantic model for creating an incident priority resource."""
+
     pass
 
 
 class IncidentPriorityUpdate(IncidentPriorityBase):
     """Pydantic model for updating an incident priority resource."""
+
     pass
 
 
 class IncidentPriorityRead(IncidentPriorityBase):
     """Pydantic model for reading an incident priority resource."""
+
     id: PrimaryKey
 
 
 class IncidentPriorityReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal incident priority resource."""
+
     id: PrimaryKey
     name: NameStr
     description: str | None = None
@@ -91,4 +99,5 @@ class IncidentPriorityReadMinimal(DispatchBase):
 
 class IncidentPriorityPagination(Pagination):
     """Pydantic model for paginated incident priority results."""
+
     items: list[IncidentPriorityRead] = []

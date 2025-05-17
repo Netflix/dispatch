@@ -64,19 +64,19 @@ class IncidentRole(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class IncidentRoleBase(DispatchBase):
-    enabled: bool | None
-    tags: list[TagRead] | None
-    order: PositiveInt | None
-    incident_types: list[IncidentTypeRead] | None
-    incident_priorities: list[IncidentPriorityRead] | None
-    service: ServiceRead | None
-    individual: IndividualContactRead | None
-    engage_next_oncall: bool | None
+    enabled: bool | None = None
+    tags: list[TagRead] | None = None
+    order: PositiveInt | None = None
+    incident_types: list[IncidentTypeRead] | None = None
+    incident_priorities: list[IncidentPriorityRead] | None = None
+    service: ServiceRead | None = None
+    individual: IndividualContactRead | None = None
+    engage_next_oncall: bool | None = None
 
 
 class IncidentRoleCreateUpdate(IncidentRoleBase):
     id: PrimaryKey | None = None
-    project: ProjectRead | None
+    project: ProjectRead | None = None
 
 
 class IncidentRolesCreateUpdate(DispatchBase):

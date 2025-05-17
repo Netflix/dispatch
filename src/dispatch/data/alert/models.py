@@ -30,7 +30,7 @@ class AlertCreate(AlertBase):
 
 
 class AlertUpdate(AlertBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
 
 
 class AlertRead(AlertBase):

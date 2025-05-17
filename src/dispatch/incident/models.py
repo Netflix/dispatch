@@ -240,9 +240,9 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 class ProjectRead(DispatchBase):
     """Pydantic model for reading a project resource."""
 
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     name: NameStr
-    color: str | None
+    color: str | None = None
     stable_priority: IncidentPriorityRead | None = None
     allow_self_join: bool | None = True
     display_name: str | None = None
@@ -252,7 +252,7 @@ class CaseRead(DispatchBase):
     """Pydantic model for reading a case resource."""
 
     id: PrimaryKey
-    name: NameStr | None
+    name: NameStr | None = None
 
 
 class TaskRead(DispatchBase):
@@ -260,13 +260,13 @@ class TaskRead(DispatchBase):
 
     id: PrimaryKey
     assignees: list[ParticipantRead | None] = []
-    created_at: datetime | None
+    created_at: datetime | None = None
     description: str | None = None
     status: TaskStatus = TaskStatus.open
-    owner: ParticipantRead | None
+    owner: ParticipantRead | None = None
     weblink: AnyHttpUrl | None = None
-    resolve_by: datetime | None
-    resolved_at: datetime | None
+    resolve_by: datetime | None = None
+    resolved_at: datetime | None = None
     ticket: TicketRead | None = None
 
 
@@ -284,9 +284,9 @@ class IncidentBase(DispatchBase):
 
     title: str
     description: str
-    resolution: str | None
-    status: IncidentStatus | None
-    visibility: Visibility | None
+    resolution: str | None = None
+    status: IncidentStatus | None = None
+    visibility: Visibility | None = None
 
     @field_validator("title")
     @classmethod
@@ -310,11 +310,11 @@ class IncidentCreate(IncidentBase):
 
     commander: ParticipantUpdate | None = None
     commander_email: str | None = None
-    incident_priority: IncidentPriorityCreate | None
-    incident_severity: IncidentSeverityCreate | None
-    incident_type: IncidentTypeCreate | None
-    project: ProjectRead | None
-    reporter: ParticipantUpdate | None
+    incident_priority: IncidentPriorityCreate | None = None
+    incident_severity: IncidentSeverityCreate | None = None
+    incident_type: IncidentTypeCreate | None = None
+    project: ProjectRead | None = None
+    reporter: ParticipantUpdate | None = None
     tags: list[TagRead] | None = []
 
 
@@ -322,7 +322,7 @@ class IncidentReadBasic(DispatchBase):
     """Pydantic model for reading a basic incident resource."""
 
     id: PrimaryKey
-    name: NameStr | None
+    name: NameStr | None = None
 
 
 class IncidentReadMinimal(IncidentBase):
@@ -330,8 +330,8 @@ class IncidentReadMinimal(IncidentBase):
 
     id: PrimaryKey
     closed_at: datetime | None = None
-    commander: ParticipantReadMinimal | None
-    commanders_location: str | None
+    commander: ParticipantReadMinimal | None = None
+    commanders_location: str | None = None
     created_at: datetime | None = None
     duplicates: list[IncidentReadBasic] | None = []
     incident_costs: list[IncidentCostRead] | None = []
@@ -340,26 +340,26 @@ class IncidentReadMinimal(IncidentBase):
     incident_review_document: DocumentRead | None = None
     incident_severity: IncidentSeverityReadMinimal
     incident_type: IncidentTypeReadMinimal
-    name: NameStr | None
-    participants_location: str | None
-    participants_team: str | None
+    name: NameStr | None = None
+    participants_location: str | None = None
+    participants_team: str | None = None
     project: ProjectRead
     reported_at: datetime | None = None
-    reporter: ParticipantReadMinimal | None
-    reporters_location: str | None
+    reporter: ParticipantReadMinimal | None = None
+    reporters_location: str | None = None
     stable_at: datetime | None = None
     storage: StorageRead | None = None
     summary: str | None = None
     tags: list[TagRead] | None = []
     tasks: list[TaskReadMinimal] | None = []
-    total_cost: float | None
+    total_cost: float | None = None
 
 
 class IncidentUpdate(IncidentBase):
     """Pydantic model for updating an incident resource."""
 
     cases: list[CaseRead] | None = []
-    commander: ParticipantUpdate | None
+    commander: ParticipantUpdate | None = None
     delay_executive_report_reminder: datetime | None = None
     delay_tactical_report_reminder: datetime | None = None
     duplicates: list[IncidentReadBasic] | None = []
@@ -368,7 +368,7 @@ class IncidentUpdate(IncidentBase):
     incident_severity: IncidentSeverityBase
     incident_type: IncidentTypeBase
     reported_at: datetime | None = None
-    reporter: ParticipantUpdate | None
+    reporter: ParticipantUpdate | None = None
     stable_at: datetime | None = None
     summary: str | None = None
     tags: list[TagRead] | None = []
@@ -398,8 +398,8 @@ class IncidentRead(IncidentBase):
     id: PrimaryKey
     cases: list[CaseRead] | None = []
     closed_at: datetime | None = None
-    commander: ParticipantRead | None
-    commanders_location: str | None
+    commander: ParticipantRead | None = None
+    commanders_location: str | None = None
     conference: ConferenceRead | None = None
     conversation: ConversationRead | None = None
     created_at: datetime | None = None
@@ -412,16 +412,16 @@ class IncidentRead(IncidentBase):
     incident_priority: IncidentPriorityRead
     incident_severity: IncidentSeverityRead
     incident_type: IncidentTypeRead
-    last_executive_report: ReportRead | None
-    last_tactical_report: ReportRead | None
-    name: NameStr | None
+    last_executive_report: ReportRead | None = None
+    last_tactical_report: ReportRead | None = None
+    name: NameStr | None = None
     participants: list[ParticipantRead] | None = []
-    participants_location: str | None
-    participants_team: str | None
+    participants_location: str | None = None
+    participants_team: str | None = None
     project: ProjectRead
     reported_at: datetime | None = None
-    reporter: ParticipantRead | None
-    reporters_location: str | None
+    reporter: ParticipantRead | None = None
+    reporters_location: str | None = None
     stable_at: datetime | None = None
     storage: StorageRead | None = None
     summary: str | None = None
@@ -429,7 +429,7 @@ class IncidentRead(IncidentBase):
     tasks: list[TaskRead] | None = []
     terms: list[TermRead] | None = []
     ticket: TicketRead | None = None
-    total_cost: float | None
+    total_cost: float | None = None
     workflow_instances: list[WorkflowInstanceRead] | None = []
 
 

@@ -28,8 +28,8 @@ class Monitor(Base, ResourceMixin, TimeStampMixin):
 
 
 class MonitorBase(ResourceBase):
-    enabled: bool | None
-    status: dict | None
+    enabled: bool | None = None
+    status: dict | None = None
 
 
 class MonitorCreate(MonitorBase):

@@ -44,29 +44,29 @@ class SearchFilter(Base, ProjectMixin, TimeStampMixin):
 
 # Pydantic models...
 class IndividualContactRead(DispatchBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     name: str
     email: str
 
 
 class TeamRead(DispatchBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     name: str
 
 
 class ServiceRead(DispatchBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     name: str
 
 
 class NotificationRead(DispatchBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
     name: str
 
 
 class SearchFilterBase(DispatchBase):
     description: str | None = None
-    enabled: bool | None
+    enabled: bool | None = None
     expression: list[dict]
     name: NameStr
     subject: SearchFilterSubject = SearchFilterSubject.incident
@@ -84,8 +84,8 @@ class SearchFilterRead(SearchFilterBase):
     id: PrimaryKey
     created_at: datetime | None = None
     updated_at: datetime | None = None
-    project: ProjectRead | None
-    creator: UserRead | None
+    project: ProjectRead | None = None
+    creator: UserRead | None = None
     individuals: list[IndividualContactRead | None] = []
     notifications: list[NotificationRead | None] = []
     services: list[ServiceRead | None] = []

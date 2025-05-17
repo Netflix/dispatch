@@ -818,7 +818,7 @@ def handle_snooze_preview_event(
         title = form_data[DefaultBlockIds.title_input]
 
     name_taken = signal_service.get_signal_filter_by_name(
-        db_session=db_session, project_id=context["subject"].project_id, name=title
+        db_session=db_session, project_id=int(context["subject"].project_id), name=title
     )
     if name_taken:
         modal = Modal(
@@ -837,7 +837,7 @@ def handle_snooze_preview_event(
         return ack(response_action="update", view=modal)
 
     if form_data.get(DefaultBlockIds.entity_select):
-        entity_ids = [entity["value"] for entity in form_data[DefaultBlockIds.entity_select]]
+        entity_ids = [int(entity["value"]) for entity in form_data[DefaultBlockIds.entity_select]]
 
         preview_signal_instances = entity_service.get_signal_instances_with_entities(
             db_session=db_session,
@@ -929,7 +929,7 @@ def handle_snooze_submission_event(
         user (DispatchUser): The Dispatch user who submitted the form.
     """
     mfa_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=context["subject"].project_id, plugin_type="auth-mfa"
+        db_session=db_session, project_id=int(context["subject"].project_id), plugin_type="auth-mfa"
     )
     mfa_enabled = True if mfa_plugin else False
 
@@ -2558,7 +2558,7 @@ def engagement_button_approve_click(
 
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
-        signal_engagement_id=context["subject"].engagement_id,
+        signal_engagement_id=int(context["subject"].engagement_id),
     )
 
     mfa_plugin = plugin_service.get_active_instance(
@@ -2962,7 +2962,7 @@ def handle_engagement_deny_submission_event(
 
     engagement = signal_service.get_signal_engagement(
         db_session=db_session,
-        signal_engagement_id=metadata["engagement_id"],
+        signal_engagement_id=int(metadata["engagement_id"]),
     )
     send_success_modal(
         client=client,

@@ -54,7 +54,7 @@ class TagUpdate(TagBase):
 
 class TagRead(TagBase):
     id: PrimaryKey
-    tag_type: TagTypeRead | None
+    tag_type: TagTypeRead | None = None
     project: ProjectRead
 
 

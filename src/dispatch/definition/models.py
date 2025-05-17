@@ -42,8 +42,8 @@ class Definition(Base, ProjectMixin):
 
 
 class DefinitionTerm(DispatchBase):
-    id: PrimaryKey | None
-    text: str | None
+    id: PrimaryKey | None = None
+    text: str | None = None
 
 
 # Pydantic models...

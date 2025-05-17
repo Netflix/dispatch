@@ -63,23 +63,23 @@ class NotificationBase(EvergreenBase):
     description: str | None = None
     type: NotificationTypeEnum
     target: str
-    enabled: bool | None
+    enabled: bool | None = None
 
 
 class NotificationCreate(NotificationBase):
-    filters: list[SearchFilterRead | None] = None
+    filters: list[SearchFilterRead | None] = []
     project: ProjectRead
 
 
 class NotificationUpdate(NotificationBase):
-    filters: list[SearchFilterUpdate | None]
+    filters: list[SearchFilterUpdate | None] = []
 
 
 class NotificationRead(NotificationBase):
     id: PrimaryKey
     created_at: datetime | None = None
     updated_at: datetime | None = None
-    filters: list[SearchFilterRead | None]
+    filters: list[SearchFilterRead | None] = []
 
 
 class NotificationPagination(Pagination):

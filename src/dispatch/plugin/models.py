@@ -191,21 +191,21 @@ class PluginEventPagination(Pagination):
 
 class PluginInstanceRead(PluginBase):
     id: PrimaryKey
-    enabled: bool | None
-    configuration: dict | None
+    enabled: bool | None = None
+    configuration: dict | None = None
     configuration_schema: Any
     plugin: PluginRead
-    project: ProjectRead | None
-    broken: bool | None
+    project: ProjectRead | None = None
+    broken: bool | None = None
 
 
 class PluginInstanceReadMinimal(PluginBase):
     id: PrimaryKey
-    enabled: bool | None
+    enabled: bool | None = None
     configuration_schema: Any
     plugin: PluginRead
-    project: ProjectRead | None
-    broken: bool | None
+    project: ProjectRead | None = None
+    broken: bool | None = None
 
 
 class PluginInstanceCreate(PluginBase):
@@ -217,8 +217,8 @@ class PluginInstanceCreate(PluginBase):
 
 class PluginInstanceUpdate(PluginBase):
     id: PrimaryKey = None
-    enabled: bool | None
-    configuration: dict | None
+    enabled: bool | None = None
+    configuration: dict | None = None
 
 
 class KeyValue(DispatchBase):

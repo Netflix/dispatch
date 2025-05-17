@@ -63,13 +63,13 @@ class EntityCreate(EntityBase):
 
 
 class EntityUpdate(EntityBase):
-    id: PrimaryKey | None
-    entity_type: EntityTypeUpdate | None
+    id: PrimaryKey | None = None
+    entity_type: EntityTypeUpdate | None = None
 
 
 class EntityRead(EntityBase):
     id: PrimaryKey
-    entity_type: EntityTypeRead | None
+    entity_type: EntityTypeRead | None = None
     project: ProjectRead
 
 
