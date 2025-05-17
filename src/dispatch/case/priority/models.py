@@ -65,7 +65,7 @@ class CasePriorityUpdate(CasePriorityBase):
 class CasePriorityRead(CasePriorityBase):
     """Pydantic model for reading case priority data."""
 
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
 
 
 class CasePriorityPagination(Pagination):

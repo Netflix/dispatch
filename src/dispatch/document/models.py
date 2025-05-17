@@ -83,7 +83,7 @@ class DocumentCreate(DocumentBase):
 class DocumentUpdate(DocumentBase):
     """Pydantic model for updating a document resource."""
 
-    filters: list[SearchFilterRead] | None
+    filters: list[SearchFilterRead] | None = None
     tags: list[TagRead] | None = []
 
     @field_validator("tags")

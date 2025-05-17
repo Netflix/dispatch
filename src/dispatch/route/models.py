@@ -34,7 +34,7 @@ class RecommendationMatchBase(DispatchBase):
 
 
 class RecommendationBase(DispatchBase):
-    matches: list[RecommendationMatchBase | None]
+    matches: list[RecommendationMatchBase | None] = []
 
 
 class RouteBase(DispatchBase):

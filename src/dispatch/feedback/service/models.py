@@ -40,14 +40,14 @@ class ServiceFeedback(TimeStampMixin, FeedbackMixin, Base):
 # Pydantic models
 class ServiceFeedbackBase(DispatchBase):
     feedback: str | None = None
-    hours: float | None
-    individual: IndividualContactReadMinimal | None
+    hours: float | None = None
+    individual: IndividualContactReadMinimal | None = None
     rating: ServiceFeedbackRating = ServiceFeedbackRating.little_effort
-    schedule: str | None
-    shift_end_at: datetime | None
-    shift_start_at: datetime | None
-    project: ProjectRead | None
-    created_at: datetime | None
+    schedule: str | None = None
+    shift_end_at: datetime | None = None
+    shift_start_at: datetime | None = None
+    project: ProjectRead | None = None
+    created_at: datetime | None = None
     details: list[dict | None] = Field([], nullable=True)
 
 
@@ -61,7 +61,7 @@ class ServiceFeedbackUpdate(ServiceFeedbackBase):
 
 class ServiceFeedbackRead(ServiceFeedbackBase):
     id: PrimaryKey
-    project: ProjectRead | None
+    project: ProjectRead | None = None
 
 
 class ServiceFeedbackPagination(Pagination):

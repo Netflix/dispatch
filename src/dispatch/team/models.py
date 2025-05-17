@@ -66,8 +66,8 @@ class TeamContactUpdate(TeamContactBase):
 class TeamContactRead(TeamContactBase):
     id: PrimaryKey
     filters: list[SearchFilterRead | None] = []
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class TeamPagination(Pagination):

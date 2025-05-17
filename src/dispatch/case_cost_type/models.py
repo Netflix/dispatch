@@ -40,8 +40,8 @@ class CaseCostTypeBase(DispatchBase):
     description: str | None = None
     category: str | None = None
     details: dict | None = {}
-    created_at: datetime | None
-    editable: bool | None
+    created_at: datetime | None = None
+    editable: bool | None = None
     model_type: str | None = Field(None, nullable=False)
 
 

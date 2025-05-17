@@ -23,7 +23,7 @@ class EmailTemplatesBase(DispatchBase):
     welcome_text: str | None = None
     welcome_body: str | None = None
     components: str | None = None
-    enabled: bool | None
+    enabled: bool | None = None
 
 
 class EmailTemplatesCreate(EmailTemplatesBase):
@@ -36,7 +36,7 @@ class EmailTemplatesUpdate(EmailTemplatesBase):
 
 class EmailTemplatesRead(EmailTemplatesBase):
     id: PrimaryKey
-    project: ProjectRead | None
+    project: ProjectRead | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

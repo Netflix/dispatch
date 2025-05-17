@@ -89,37 +89,37 @@ class Task(Base, ResourceMixin):
 # Pydantic models
 class TaskBase(ResourceBase):
     assignees: list[ParticipantRead | None] = []
-    created_at: datetime | None
-    creator: ParticipantRead | None
+    created_at: datetime | None = None
+    creator: ParticipantRead | None = None
     description: str | None = None
     incident: IncidentReadBasic
-    owner: ParticipantRead | None
+    owner: ParticipantRead | None = None
     priority: str | None = None
-    resolve_by: datetime | None
-    resolved_at: datetime | None
+    resolve_by: datetime | None = None
+    resolved_at: datetime | None = None
     resource_id: str | None = None
     source: str | None = None
     status: TaskStatus = TaskStatus.open
-    updated_at: datetime | None
+    updated_at: datetime | None = None
 
 
 class TaskCreate(TaskBase):
     assignees: list[ParticipantUpdate | None] = []
-    creator: ParticipantUpdate | None
-    owner: ParticipantUpdate | None
-    resource_type: str | None
+    creator: ParticipantUpdate | None = None
+    owner: ParticipantUpdate | None = None
+    resource_type: str | None = None
     status: TaskStatus = TaskStatus.open
 
 
 class TaskUpdate(TaskBase):
     assignees: list[ParticipantUpdate | None] = []
-    owner: ParticipantUpdate | None
-    creator: ParticipantUpdate | None
+    owner: ParticipantUpdate | None = None
+    creator: ParticipantUpdate | None = None
 
 
 class TaskRead(TaskBase):
     id: PrimaryKey
-    project: ProjectRead | None
+    project: ProjectRead | None = None
     ticket: TicketRead | None = None
 
 
