@@ -1,4 +1,5 @@
 """Models and schemas for the Dispatch case management system."""
+
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any
@@ -78,6 +79,7 @@ assoc_cases_incidents = Table(
 
 class Case(Base, TimeStampMixin, ProjectMixin):
     """SQLAlchemy model for a Case, representing an incident or issue in the system."""
+
     __table_args__ = (UniqueConstraint("name", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -231,6 +233,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
 class SignalRead(DispatchBase):
     """Pydantic model for reading signal data."""
+
     id: PrimaryKey
     name: str
     owner: str
@@ -243,6 +246,7 @@ class SignalRead(DispatchBase):
 
 class SignalInstanceRead(DispatchBase):
     """Pydantic model for reading signal instance data."""
+
     created_at: datetime
     entities: list[EntityRead] | None = []
     raw: Any
@@ -252,15 +256,18 @@ class SignalInstanceRead(DispatchBase):
 
 class ProjectRead(DispatchBase):
     """Pydantic model for reading project data."""
+
     id: PrimaryKey | None
     name: NameStr
     display_name: str | None
     color: str | None
     allow_self_join: bool | None = Field(True, nullable=True)
 
+
 # Pydantic models...
 class CaseBase(DispatchBase):
     """Base Pydantic model for case data."""
+
     title: str
     description: str | None
     resolution: str | None
@@ -287,6 +294,7 @@ class CaseBase(DispatchBase):
 
 class CaseCreate(CaseBase):
     """Pydantic model for creating a new case."""
+
     assignee: ParticipantUpdate | None
     case_priority: CasePriorityCreate | None
     case_severity: CaseSeverityCreate | None
@@ -300,18 +308,21 @@ class CaseCreate(CaseBase):
 
 class CaseReadBasic(DispatchBase):
     """Pydantic model for reading basic case data."""
+
     id: PrimaryKey
     name: NameStr | None
 
 
 class IncidentReadBasic(DispatchBase):
     """Pydantic model for reading basic incident data."""
+
     id: PrimaryKey
     name: NameStr | None
 
 
 class CaseReadMinimal(CaseBase):
     """Pydantic model for reading minimal case data."""
+
     id: PrimaryKey
     name: NameStr | None
     status: CaseStatus | None  # Used in table and for action disabling
@@ -331,6 +342,7 @@ CaseReadMinimal.update_forward_refs()
 
 class CaseRead(CaseBase):
     """Pydantic model for reading detailed case data."""
+
     id: PrimaryKey
     assignee: ParticipantRead | None
     case_costs: list[CaseCostRead] = []
@@ -367,11 +379,12 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     """Pydantic model for updating case data."""
-    assignee: ParticipantUpdate | None
+
+    assignee: ParticipantUpdate | None = None
     case_costs: list[CaseCostUpdate] = []
-    case_priority: CasePriorityBase | None
-    case_severity: CaseSeverityBase | None
-    case_type: CaseTypeBase | None
+    case_priority: CasePriorityBase | None = None
+    case_severity: CaseSeverityBase | None = None
+    case_type: CaseTypeBase | None = None
     closed_at: datetime | None = None
     duplicates: list[CaseReadBasic] | None = []
     related: list[CaseRead] | None = []
@@ -408,9 +421,11 @@ class CaseUpdate(CaseBase):
 
 class CasePagination(Pagination):
     """Pydantic model for paginated minimal case results."""
+
     items: list[CaseReadMinimal] = []
 
 
 class CaseExpandedPagination(Pagination):
     """Pydantic model for paginated expanded case results."""
+
     items: list[CaseRead] = []
