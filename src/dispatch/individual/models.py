@@ -4,7 +4,15 @@ from datetime import datetime
 from pydantic import field_validator, Field, ConfigDict
 from urllib.parse import urlparse
 
-from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Table,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -25,7 +33,9 @@ from dispatch.models import (
 assoc_individual_contact_filters = Table(
     "assoc_individual_contact_filters",
     Base.metadata,
-    Column("individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")),
+    Column(
+        "individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")
+    ),
     Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("individual_contact_id", "search_filter_id"),
 )
@@ -33,6 +43,7 @@ assoc_individual_contact_filters = Table(
 
 class IndividualContact(Base, ContactMixin, ProjectMixin, TimeStampMixin):
     """SQLAlchemy model for individual contact resources."""
+
     __table_args__ = (UniqueConstraint("email", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -66,6 +77,7 @@ class IndividualContact(Base, ContactMixin, ProjectMixin, TimeStampMixin):
 
 class IndividualContactBase(ContactBase):
     """Base Pydantic model for individual contact resources."""
+
     mobile_phone: str | None = Field(default=None)
     office_phone: str | None = Field(default=None)
     title: str | None = Field(default=None)
@@ -86,19 +98,22 @@ class IndividualContactBase(ContactBase):
 
 class IndividualContactCreate(IndividualContactBase):
     """Pydantic model for creating an individual contact resource."""
+
     filters: list[SearchFilterRead] | None = None
     project: ProjectRead
 
 
 class IndividualContactUpdate(IndividualContactBase):
     """Pydantic model for updating an individual contact resource."""
+
     filters: list[SearchFilterRead] | None = None
     project: ProjectRead | None = None
 
 
 class IndividualContactRead(IndividualContactBase):
     """Pydantic model for reading an individual contact resource."""
-    id: PrimaryKey
+
+    id: PrimaryKey | None = None
     filters: list[SearchFilterRead] = []
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -107,6 +122,7 @@ class IndividualContactRead(IndividualContactBase):
 # Creating a more minimal version that doesn't inherit from ContactBase to avoid email validation issues in tests
 class IndividualContactReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal individual contact resource."""
+
     id: PrimaryKey
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -130,11 +146,12 @@ class IndividualContactReadMinimal(DispatchBase):
         extra="ignore",
         validate_default=False,
         validate_assignment=False,
-        arbitrary_types_allowed=True
+        arbitrary_types_allowed=True,
     )
 
 
 class IndividualContactPagination(Pagination):
     """Pydantic model for paginated individual contact results."""
+
     total: int
     items: list[IndividualContactRead] = []
