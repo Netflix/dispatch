@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Body, HTTPException, status, Query
+from fastapi import APIRouter, Body, HTTPException, Query, status
 from pydantic import ValidationError
-
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import DbSession
@@ -9,14 +8,13 @@ from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
 from .service import (
-    get,
     create,
-    update,
     delete,
-    get_by_external_id_and_project_name,
+    get,
     get_all_by_external_ids,
+    get_by_external_id_and_project_name,
+    update,
 )
-
 
 router = APIRouter()
 
@@ -59,7 +57,7 @@ def create_service(
         raise ValidationError(
             [
                 {
-                    "msg": "A service with this external id already exists.",
+                    "msg": "An oncall service with this external id already exists.",
                     "loc": "external_id",
                 }
             ],
@@ -75,7 +73,7 @@ def update_service(db_session: DbSession, service_id: PrimaryKey, service_in: Se
     if not service:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A service with this id does not exist."}],
+            detail=[{"msg": "An oncall service with this id does not exist."}],
         )
 
     try:
@@ -84,7 +82,7 @@ def update_service(db_session: DbSession, service_id: PrimaryKey, service_in: Se
         raise ValidationError(
             [
                 {
-                    "msg": "A service with this name already exists.",
+                    "msg": "An oncall service with this name already exists.",
                     "loc": "name",
                 }
             ],
@@ -100,7 +98,7 @@ def get_service(db_session: DbSession, service_id: PrimaryKey):
     if not service:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A service with this id does not exist."}],
+            detail=[{"msg": "An oncall service with this id does not exist."}],
         )
     return service
 
@@ -112,8 +110,9 @@ def delete_service(db_session: DbSession, service_id: PrimaryKey):
     if not service:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A service with this id does not exist."}],
+            detail=[{"msg": "An oncall service with this id does not exist."}],
         )
+
     try:
         delete(db_session=db_session, service_id=service_id)
     except IntegrityError:
@@ -121,7 +120,8 @@ def delete_service(db_session: DbSession, service_id: PrimaryKey):
             status_code=status.HTTP_409_CONFLICT,
             detail=[
                 {
-                    "msg": "Unable to delete service because it is referenced by an incident `Role`. Remove this reference before deletion."
+                    "msg": f"Unable to delete oncall service {service.name} with id {service.id}. Contact your administrator",
+                    "loc": "service_id",
                 }
             ],
         ) from None
