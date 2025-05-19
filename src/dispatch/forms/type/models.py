@@ -39,13 +39,13 @@ class FormsType(ProjectMixin, TimeStampMixin, Base):
 class FormsTypeBase(DispatchBase):
     name: NameStr
     description: str | None = None
-    enabled: bool | None
+    enabled: bool | None = None
     form_schema: str | None = None
     attorney_form_schema: str | None = None
     scoring_schema: str | None = None
-    creator: IndividualContactReadMinimal | None
-    project: ProjectRead | None
-    service: ServiceRead | None
+    creator: IndividualContactReadMinimal | None = None
+    project: ProjectRead | None = None
+    service: ServiceRead | None = None
 
 
 class FormsTypeCreate(FormsTypeBase):

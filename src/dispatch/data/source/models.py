@@ -133,13 +133,13 @@ class SourceBase(DispatchBase):
     incidents: list[IncidentRead | None] = []
     queries: list[QueryReadMinimal | None] = []
     alerts: list[AlertRead | None] = []
-    cost: float | None
+    cost: float | None = None
     owner: ServiceRead | None = None
-    source_type: SourceTypeRead | None
-    source_environment: SourceEnvironmentRead | None
-    source_data_format: SourceDataFormatRead | None
-    source_status: SourceStatusRead | None
-    source_transport: SourceTransportRead | None
+    source_type: SourceTypeRead | None = None
+    source_environment: SourceEnvironmentRead | None = None
+    source_data_format: SourceDataFormatRead | None = None
+    source_status: SourceStatusRead | None = None
+    source_transport: SourceTransportRead | None = None
     project: ProjectRead
 
 
@@ -148,7 +148,7 @@ class SourceCreate(SourceBase):
 
 
 class SourceUpdate(SourceBase):
-    id: PrimaryKey | None
+    id: PrimaryKey | None = None
 
 
 class SourceRead(SourceBase):

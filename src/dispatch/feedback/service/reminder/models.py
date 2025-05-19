@@ -25,12 +25,12 @@ class ServiceFeedbackReminder(TimeStampMixin, Base):
 
 # Pydantic models
 class ServiceFeedbackReminderBase(DispatchBase):
-    reminder_at: datetime | None
-    individual: IndividualContactRead | None
-    project: ProjectRead | None
-    schedule_id: str | None
-    schedule_name: str | None
-    shift_end_at: datetime | None
+    reminder_at: datetime | None = None
+    individual: IndividualContactRead | None = None
+    project: ProjectRead | None = None
+    schedule_id: str | None = None
+    schedule_name: str | None = None
+    shift_end_at: datetime | None = None
     details: list[dict | None] = Field([], nullable=True)
 
 
@@ -40,7 +40,7 @@ class ServiceFeedbackReminderCreate(ServiceFeedbackReminderBase):
 
 class ServiceFeedbackReminderUpdate(ServiceFeedbackReminderBase):
     id: PrimaryKey = None
-    reminder_at: datetime | None
+    reminder_at: datetime | None = None
 
 
 class ServiceFeedbackReminderRead(ServiceFeedbackReminderBase):

@@ -35,7 +35,7 @@ class ParticipantRoleRead(ParticipantRoleBase):
     id: PrimaryKey
     assumed_at: datetime | None = None
     renounced_at: datetime | None = None
-    activity: int | None
+    activity: int | None = None
 
 
 class ParticipantRoleReadMinimal(ParticipantRoleRead):

@@ -57,7 +57,7 @@ class FeedbackUpdate(FeedbackBase):
 
 class FeedbackRead(FeedbackBase):
     id: PrimaryKey
-    project: ProjectRead | None
+    project: ProjectRead | None = None
 
 
 class FeedbackPagination(Pagination):
