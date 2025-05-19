@@ -1448,7 +1448,6 @@ def handle_update_notifications_group_command(
         raise CommandError("No notification group available for this incident.")
 
     members = group_plugin.instance.list(incident.notifications_group.email)
-
     blocks = [
         Context(
             elements=[
@@ -1460,7 +1459,7 @@ def handle_update_notifications_group_command(
         Input(
             label="Members",
             element=PlainTextInput(
-                initial_value=", ".join(members),
+                initial_value=", ".join(members) if members else None,
                 multiline=True,
                 action_id=UpdateNotificationGroupActionIds.members,
             ),
@@ -1506,9 +1505,11 @@ def handle_update_notifications_group_submission_event(
     """Handles the update notifications group submission event."""
     ack_update_notifications_group_submission_event(ack=ack)
 
-    current_members = (
-        body["view"]["blocks"][1]["element"]["initial_value"].replace(" ", "").split(",")
-    )
+    if initial_value := body["view"]["blocks"][1]["element"].get("initial_value"):
+        current_members = initial_value.replace(" ", "").split(",")
+    else:
+        current_members = []
+
     updated_members = (
         form_data.get(UpdateNotificationGroupBlockIds.members).replace(" ", "").split(",")
     )
