@@ -165,6 +165,15 @@ function convertToFormkit(json_schema) {
   formkit_schema.push(title)
   for (const [key, value] of Object.entries(json_schema.properties)) {
     var obj = {}
+
+    // Check for anyOf and look for the object with the format parameter
+    if (value.anyOf) {
+      const formatObj = value.anyOf.find((v) => v.format)
+      if (formatObj) {
+        value.type = formatObj.type
+        value.format = formatObj.format
+      }
+    }
     if (value.type == "string" || value.type == "password") {
       obj = {
         $formkit: "text",

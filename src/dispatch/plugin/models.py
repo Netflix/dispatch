@@ -1,4 +1,5 @@
 import logging
+import json
 
 from pydantic import SecretStr
 from pydantic.json import pydantic_encoder
@@ -150,7 +151,9 @@ class PluginInstance(Base, ProjectMixin):
         if configuration:
             plugin = plugins.get(self.plugin.slug)
             config_object = plugin.configuration_schema.parse_obj(configuration)
-            self._configuration = config_object.json(encoder=show_secrets_encoder)
+            self._configuration = json.dumps(
+                config_object.model_dump(), default=show_secrets_encoder
+            )
 
 
 # Pydantic models...
@@ -166,7 +169,7 @@ class PluginRead(PluginBase):
     author_url: str
     type: str
     multiple: bool
-    configuration_schema: Any
+    configuration_schema: Any | None = None
     description: str | None = None
 
 
@@ -192,8 +195,8 @@ class PluginEventPagination(Pagination):
 class PluginInstanceRead(PluginBase):
     id: PrimaryKey
     enabled: bool | None = None
-    configuration: dict | None = None
-    configuration_schema: Any
+    configuration: Any | None = None
+    configuration_schema: Any | None = None
     plugin: PluginRead
     project: ProjectRead | None = None
     broken: bool | None = None
@@ -202,7 +205,7 @@ class PluginInstanceRead(PluginBase):
 class PluginInstanceReadMinimal(PluginBase):
     id: PrimaryKey
     enabled: bool | None = None
-    configuration_schema: Any
+    configuration_schema: Any | None = None
     plugin: PluginRead
     project: ProjectRead | None = None
     broken: bool | None = None
@@ -210,7 +213,7 @@ class PluginInstanceReadMinimal(PluginBase):
 
 class PluginInstanceCreate(PluginBase):
     enabled: bool | None = None
-    configuration: dict | None = None
+    configuration: Any | None = None
     plugin: PluginRead
     project: ProjectRead
 
@@ -218,7 +221,7 @@ class PluginInstanceCreate(PluginBase):
 class PluginInstanceUpdate(PluginBase):
     id: PrimaryKey = None
     enabled: bool | None = None
-    configuration: dict | None = None
+    configuration: Any | None = None
 
 
 class KeyValue(DispatchBase):
