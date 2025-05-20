@@ -43,7 +43,7 @@ class ConfluencePageDocPlugin(DocumentPlugin):
         """Replaces text in document."""
         kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
         confluence_client = Confluence(
-            url=self.configuration.api_url,
+            url=str(self.configuration.api_url),
             username=self.configuration.username,
             password=self.configuration.password.get_secret_value(),
             cloud=self.configuration.hosting_type,
