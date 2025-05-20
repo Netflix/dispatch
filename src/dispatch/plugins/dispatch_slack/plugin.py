@@ -434,6 +434,8 @@ class SlackConversationPlugin(ConversationPlugin):
                 db_session=db_session, plugin_event_id=plugin_event_id
             )
             event = self.get_event(plugin_event)
+            if event is None:
+                raise ValueError(f"No event found for Slack plugin event: {plugin_event}")
             activity = event.fetch_activity(client, subject, oldest)
             return activity
         except Exception as e:
