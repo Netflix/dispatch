@@ -416,28 +416,17 @@ class SlackConversationPlugin(ConversationPlugin):
         return command_mappings.get(command, [])
 
     def fetch_events(
-        self,
-        db_session: Session,
-        subject: Any,
-        plugin_event_id: int,
-        oldest: str = "0",
-        **kwargs,
+        self, db_session: Session, subject: Any, plugin_event_id: int, oldest: str = "0", **kwargs
     ):
-        """
-        Fetches incident events from the Slack plugin.
+        """Fetches incident events from the Slack plugin.
 
         Args:
-            db_session (Session): The database session.
-            subject (Any): The subject of the event, e.g., an Incident or Case object.
-            plugin_event_id (int): The plugin event ID.
-            oldest (str, optional): The oldest timestamp to fetch events from. Defaults to "0".
-            **kwargs: Additional keyword arguments.
+            subject: An Incident or Case object.
+            plugin_event_id: The plugin event id.
+            oldest: The oldest timestamp to fetch events from.
 
         Returns:
-            list[tuple]: A sorted list of tuples (utc_dt, user_id).
-
-        Raises:
-            Exception: If there is an error fetching events from Slack.
+            A sorted list of tuples (utc_dt, user_id).
         """
         try:
             client = create_slack_client(self.configuration)
@@ -447,16 +436,12 @@ class SlackConversationPlugin(ConversationPlugin):
             event = self.get_event(plugin_event)
             if event is None:
                 raise ValueError(f"No event found for Slack plugin event: {plugin_event}")
-            if isinstance(event, type):
-                # It's a class, instantiate it
-                event = event(plugin_event)
-            return event.fetch_activity(
-                client=client,
-                subject=subject,
-                oldest=oldest,
-            )
-        except Exception:
-            logger.exception("Error fetching events from Slack")
+
+            event_instance = event()
+            activity = event_instance.fetch_activity(client, subject, oldest)
+            return activity
+        except Exception as e:
+            logger.exception("An error occurred while fetching incident or case events from the Slack plugin.", exc_info=e)
             raise
 
     def get_conversation_replies(self, conversation_id: str, thread_ts: str) -> list[str]:
