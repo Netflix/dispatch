@@ -2196,7 +2196,7 @@ def handle_update_incident_command(
         ),
         tag_multi_select(
             optional=True,
-            initial_options=[{"text": t.name, "value": t.id} for t in incident.tags],
+            initial_options=[{"text": t.name, "value": str(t.id)} for t in incident.tags],
         ),
     ]
 
