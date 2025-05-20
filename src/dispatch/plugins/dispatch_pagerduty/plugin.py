@@ -61,7 +61,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
     def get(self, service_id: str) -> str:
         """Gets the current oncall person's email."""
         client = APISession(self.configuration.api_key.get_secret_value())
-        client.url = self.configuration.pagerduty_api_url
+        client.url = str(self.configuration.pagerduty_api_url)
         return get_oncall_email(client=client, service_id=service_id)
 
     def page(
@@ -74,7 +74,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
     ) -> dict:
         """Pages the oncall person."""
         client = APISession(self.configuration.api_key.get_secret_value())
-        client.url = self.configuration.pagerduty_api_url
+        client.url = str(self.configuration.pagerduty_api_url)
         return page_oncall(
             client=client,
             from_email=self.configuration.from_email,
@@ -87,7 +87,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
 
     def did_oncall_just_go_off_shift(self, schedule_id: str, hour: int) -> dict | None:
         client = APISession(self.configuration.api_key.get_secret_value())
-        client.url = self.configuration.pagerduty_api_url
+        client.url = str(self.configuration.pagerduty_api_url)
         return oncall_shift_check(
             client=client,
             schedule_id=schedule_id,
@@ -100,7 +100,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
 
         try:
             client = APISession(self.configuration.api_key.get_secret_value())
-            client.url = self.configuration.pagerduty_api_url
+            client.url = str(self.configuration.pagerduty_api_url)
             service = get_service(
                 client=client,
                 service_id=service_id,
@@ -122,7 +122,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
             return None
 
         client = APISession(self.configuration.api_key.get_secret_value())
-        client.url = self.configuration.pagerduty_api_url
+        client.url = str(self.configuration.pagerduty_api_url)
         try:
             service = get_service(client, service_id)
             return service.get("html_url")
@@ -135,7 +135,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
         schedule_id = self.get_schedule_id_from_service_id(service_id)
 
         client = APISession(self.configuration.api_key.get_secret_value())
-        client.url = self.configuration.pagerduty_api_url
+        client.url = str(self.configuration.pagerduty_api_url)
         return get_next_oncall(
             client=client,
             schedule_id=schedule_id,

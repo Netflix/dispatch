@@ -83,7 +83,7 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         tags: list[str],
         **kwargs,
     ):
-        api_url = self.configuration.api_url
+        api_url = str(self.configuration.api_url)
         headers = {
             "Content-Type": "application/json",
             "Authorization": self.configuration.auth_header.get_secret_value(),
