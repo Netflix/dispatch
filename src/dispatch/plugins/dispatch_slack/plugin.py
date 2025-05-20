@@ -441,7 +441,7 @@ class SlackConversationPlugin(ConversationPlugin):
             activity = event_instance.fetch_activity(client, subject, oldest)
             return activity
         except Exception as e:
-            logger.exception("An error occurred while fetching incident events from the Slack plugin.", exc_info=e)
+            logger.exception("An error occurred while fetching incident or case events from the Slack plugin.", exc_info=e)
             raise
 
     def get_conversation_replies(self, conversation_id: str, thread_ts: str) -> list[str]:
