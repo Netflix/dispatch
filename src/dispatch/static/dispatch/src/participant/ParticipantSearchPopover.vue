@@ -295,10 +295,10 @@ const toggleMenu = () => {
         <v-divider />
         <v-list lines="one">
           <v-list-item
-            v-for="(participant, index) in filteredParticipants"
+            v-for="(part, index) in filteredParticipants"
             :key="index"
-            @click="selectParticipant(participant)"
-            @mouseover="hoveredParticipant = participant.name"
+            @click="selectParticipant(part)"
+            @mouseover="hoveredParticipant = part.name"
             @mouseleave="hoveredParticipant = ''"
             density="compact"
             rounded="lg"
@@ -306,19 +306,14 @@ const toggleMenu = () => {
             active-class="ma-4"
           >
             <template #prepend>
-              <UserAvatar
-                class="mr-2"
-                :name="participant.name"
-                :email="participant.email"
-                :size="12"
-              />
+              <UserAvatar class="mr-2" :name="part.name" :email="part.email" :size="12" />
             </template>
             <v-list-item-title class="dispatch-text-title">
-              {{ participant.name }}
+              {{ part.name }}
             </v-list-item-title>
             <template #append>
               <v-icon
-                v-if="participant.name === selectedParticipant"
+                v-if="part.name === selectedParticipant"
                 class="ml-2"
                 size="x-small"
                 :color="hoveredParticipant === selectedParticipant ? 'black' : ''"
