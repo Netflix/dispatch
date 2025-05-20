@@ -4,7 +4,6 @@ import string
 import secrets
 from datetime import datetime, timedelta
 from uuid import uuid4
-from typing import Optional
 
 import bcrypt
 from jose import jwt
@@ -166,7 +165,7 @@ class UserBase(DispatchBase):
 class UserLogin(UserBase):
     """Pydantic model for user login data."""
 
-    password: str
+    password: str | None = None
 
     @field_validator("password")
     @classmethod
@@ -180,7 +179,7 @@ class UserLogin(UserBase):
 class UserRegister(UserLogin):
     """Pydantic model for user registration data."""
 
-    password: str = None
+    password: str | None = None
 
     @field_validator("password", mode="before")
     @classmethod
@@ -209,10 +208,10 @@ class UserUpdate(DispatchBase):
     """Pydantic model for updating user data."""
 
     id: PrimaryKey
-    projects: Optional[list[UserProject]] = None
-    organizations: Optional[list[UserOrganization]]
-    experimental_features: Optional[bool] = None
-    role: Optional[str] = None
+    projects: list[UserProject] | None = None
+    organizations: list[UserOrganization] | None
+    experimental_features: bool | None = None
+    role: str | None = None
 
 
 class UserPasswordUpdate(DispatchBase):
