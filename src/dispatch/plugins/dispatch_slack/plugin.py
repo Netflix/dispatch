@@ -416,29 +416,48 @@ class SlackConversationPlugin(ConversationPlugin):
         return command_mappings.get(command, [])
 
     def fetch_events(
-        self, db_session: Session, subject: Any, plugin_event_id: int, oldest: str = "0", **kwargs
+        self,
+        db_session: Session,
+        subject: Any,
+        plugin_event_id: int,
+        oldest: str = "0",
+        **kwargs,
     ):
-        """Fetches incident events from the Slack plugin.
+        """
+        Fetches incident events from the Slack plugin.
 
         Args:
-            subject: An Incident or Case object.
-            plugin_event_id: The plugin event id.
-            oldest: The oldest timestamp to fetch events from.
+            db_session (Session): The database session.
+            subject (Any): The subject of the event, e.g., an Incident or Case object.
+            plugin_event_id (int): The plugin event ID.
+            oldest (str, optional): The oldest timestamp to fetch events from. Defaults to "0".
+            **kwargs: Additional keyword arguments.
 
         Returns:
-            A sorted list of tuples (utc_dt, user_id).
+            list[tuple]: A sorted list of tuples (utc_dt, user_id).
+
+        Raises:
+            Exception: If there is an error fetching events from Slack.
         """
         try:
             client = create_slack_client(self.configuration)
             plugin_event = plugin_service.get_plugin_event_by_id(
                 db_session=db_session, plugin_event_id=plugin_event_id
             )
-            return self.get_event(plugin_event).fetch_activity(
-                client=client, subject=subject, oldest=oldest
+            event = self.get_event(plugin_event)
+            if event is None:
+                raise ValueError(f"No event found for Slack plugin event: {plugin_event}")
+            if isinstance(event, type):
+                # It's a class, instantiate it
+                event = event(plugin_event)
+            return event.fetch_activity(
+                client=client,
+                subject=subject,
+                oldest=oldest,
             )
-        except Exception as e:
-            logger.exception(e)
-            raise e
+        except Exception:
+            logger.exception("Error fetching events from Slack")
+            raise
 
     def get_conversation_replies(self, conversation_id: str, thread_ts: str) -> list[str]:
         """
