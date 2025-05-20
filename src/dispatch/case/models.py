@@ -336,6 +336,33 @@ class CaseReadMinimal(CaseBase):
     assignee: ParticipantReadMinimal | None = None
     case_costs: list[CaseCostReadMinimal] = []
 
+class CaseReadMinimalWithExtras(CaseBase):
+    """Pydantic model for reading minimal case data."""
+
+    id: PrimaryKey
+    title: str
+    name: NameStr | None = None
+    description: str | None = None
+    resolution: str | None = None
+    resolution_reason: CaseResolutionReason | None = None
+    visibility: Visibility | None = None
+    status: CaseStatus | None = None  # Used in table and for action disabling
+    reported_at: datetime | None = None
+    triage_at: datetime | None = None
+    escalated_at: datetime | None = None
+    closed_at: datetime | None = None
+    dedicated_channel: bool | None = None  # Used by CaseStatus component
+    case_type: CaseTypeRead
+    case_severity: CaseSeverityRead
+    case_priority: CasePriorityRead
+    project: ProjectRead
+    reporter: ParticipantReadMinimal | None = None
+    assignee: ParticipantReadMinimal | None = None
+    case_costs: list[CaseCostReadMinimal] = []
+    participants: list[ParticipantReadMinimal] = []
+    tags: list[TagRead] = []
+    ticket: TicketRead | None = None
+
 
 CaseReadMinimal.update_forward_refs()
 
@@ -424,6 +451,10 @@ class CasePagination(Pagination):
 
     items: list[CaseReadMinimal] = []
 
+class CasePaginationMinimalWithExtras(Pagination):
+    """Pydantic model for paginated minimal case results."""
+
+    items: list[CaseReadMinimalWithExtras] = []
 
 class CaseExpandedPagination(Pagination):
     """Pydantic model for paginated expanded case results."""
