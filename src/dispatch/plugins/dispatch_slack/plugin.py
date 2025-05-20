@@ -514,8 +514,8 @@ class SlackContactPlugin(ContactPlugin):
             department = profile_fields.get(self.configuration.profile_department_field_id, {}).get(
                 "value", "Unknown"
             )
-            weblink = profile_fields.get(self.configuration.profile_weblink_field_id, {}).get(
-                "value", ""
+            weblink = str(
+                profile_fields.get(self.configuration.profile_weblink_field_id, {}).get("value", "")
             )
 
         return {
