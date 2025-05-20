@@ -58,7 +58,7 @@ class ConfluencePagePlugin(StoragePlugin):
             if file_type not in ["document", "folder"]:
                 return None
             confluence_client = Confluence(
-                url=self.configuration.api_url,
+                url=str(self.configuration.api_url),
                 username=self.configuration.username,
                 password=self.configuration.password.get_secret_value(),
                 cloud=self.configuration.hosting_type,
@@ -90,7 +90,7 @@ class ConfluencePagePlugin(StoragePlugin):
         # TODO : This is the function that is responsible for making the incident documents.
         try:
             confluence_client = Confluence(
-                url=self.configuration.api_url,
+                url=str(self.configuration.api_url),
                 username=self.configuration.username,
                 password=self.configuration.password.get_secret_value(),
                 cloud=self.configuration.hosting_type,

@@ -433,7 +433,9 @@ class SlackConversationPlugin(ConversationPlugin):
             plugin_event = plugin_service.get_plugin_event_by_id(
                 db_session=db_session, plugin_event_id=plugin_event_id
             )
-            return self.get_event(plugin_event).fetch_activity(client, subject, oldest=oldest)
+            return self.get_event(plugin_event).fetch_activity(
+                client=client, subject=subject, oldest=oldest
+            )
         except Exception as e:
             logger.exception(e)
             raise e
@@ -514,8 +516,8 @@ class SlackContactPlugin(ContactPlugin):
             department = profile_fields.get(self.configuration.profile_department_field_id, {}).get(
                 "value", "Unknown"
             )
-            weblink = profile_fields.get(self.configuration.profile_weblink_field_id, {}).get(
-                "value", ""
+            weblink = str(
+                profile_fields.get(self.configuration.profile_weblink_field_id, {}).get("value", "")
             )
 
         return {

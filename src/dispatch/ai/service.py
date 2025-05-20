@@ -2,7 +2,7 @@ import json
 import logging
 
 import tiktoken
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import aliased, Session
 
 from dispatch.case.enums import CaseResolutionReason
 from dispatch.case.models import Case
@@ -140,15 +140,19 @@ def generate_case_signal_historical_context(case: Case, db_session: Session) -> 
     # we fetch related cases
     related_cases = []
     for resolution_reason in CaseResolutionReason:
-        related_cases.extend(
-            signal_service.get_cases_for_signal_by_resolution_reason(
-                db_session=db_session,
-                signal_id=first_instance_signal.id,
-                resolution_reason=resolution_reason,
-            )
-            .from_self()  # NOTE: function deprecated in SQLAlchemy 1.4 and removed in 2.0
-            .filter(Case.id != case.id)
+        # Get the query for cases for a specific resolution reason
+        query = signal_service.get_cases_for_signal_by_resolution_reason(
+            db_session=db_session,
+            signal_id=first_instance_signal.id,
+            resolution_reason=resolution_reason,
         )
+
+        # Create an alias for the subquery
+        subquery = query.subquery()
+        case_alias = aliased(Case, subquery)
+
+        # Filter the cases and extend the related_cases list
+        related_cases.extend(db_session.query(case_alias).filter(case_alias.id != case.id).all())
 
     # we prepare historical context
     historical_context = []

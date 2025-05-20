@@ -83,7 +83,7 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         tags: list[str],
         **kwargs,
     ):
-        api_url = self.configuration.api_url
+        api_url = str(self.configuration.api_url)
         headers = {
             "Content-Type": "application/json",
             "Authorization": self.configuration.auth_header.get_secret_value(),
@@ -102,7 +102,7 @@ class GenericWorkflowPlugin(WorkflowPlugin):
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     def run(self, workflow_id: str, params: dict, **kwargs):
         logging.info("Run on generic workflow %s, %s", params, kwargs)
-        api_url = self.configuration.api_url
+        api_url = str(self.configuration.api_url)
         obj = {"workflow_id": workflow_id, "params": params}
         headers = {
             "Content-Type": "application/json",

@@ -202,7 +202,7 @@ class UserRead(UserBase):
 
     id: PrimaryKey
     role: str | None = None
-    experimental_features: bool | None
+    experimental_features: bool | None = None
 
 
 class UserUpdate(DispatchBase):

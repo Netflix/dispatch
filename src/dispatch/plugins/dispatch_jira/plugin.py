@@ -145,7 +145,7 @@ def create_dict_from_plugin_metadata(plugin_metadata: dict):
 def create_client(configuration: JiraConfiguration) -> JIRA:
     """Creates a Jira client."""
     return JIRA(
-        configuration.api_url,
+        str(configuration.api_url),
         basic_auth=(configuration.username, configuration.password.get_secret_value()),
     )
 
