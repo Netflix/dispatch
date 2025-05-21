@@ -189,7 +189,7 @@ class WorkflowInstanceUpdate(WorkflowInstanceBase):
 class WorkflowInstanceRead(WorkflowInstanceBase):
     """Pydantic model for reading a workflow instance resource."""
     id: PrimaryKey
-    workflow: WorkflowRead
+    workflow: WorkflowRead | None = None
     creator: ParticipantRead | None = None
 
 
