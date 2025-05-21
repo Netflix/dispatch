@@ -192,6 +192,7 @@ def create_signal_instance(*, db_session: Session, signal_instance_in: SignalIns
     signal_instance_in.signal = signal_definition
 
     signal_instance = create_instance(db_session=db_session, signal_instance_in=signal_instance_in)
+    db_session.commit()
     return signal_instance
 
 
