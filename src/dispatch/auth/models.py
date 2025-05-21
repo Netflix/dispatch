@@ -165,7 +165,7 @@ class UserBase(DispatchBase):
 class UserLogin(UserBase):
     """Pydantic model for user login data."""
 
-    password: str | None = None
+    password: str
 
     @field_validator("password")
     @classmethod
@@ -179,7 +179,7 @@ class UserLogin(UserBase):
 class UserRegister(UserLogin):
     """Pydantic model for user registration data."""
 
-    password: str | None = None
+    password: str = ""
 
     @field_validator("password", mode="before")
     @classmethod
