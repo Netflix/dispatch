@@ -289,7 +289,7 @@ function validateTags(value) {
   const project_id = currentProject.value?.id || 0
   var all_tags_in_project = false
   if (project_id) {
-    all_tags_in_project = value.every((tag) => tag.currentProject?.id == project_id)
+    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
   } else {
     const project_name = currentProject.value?.name
     if (!project_name) {
@@ -297,7 +297,7 @@ function validateTags(value) {
       dummyText.value += " "
       return
     }
-    all_tags_in_project = value.every((tag) => tag.currentProject?.name == project_name)
+    all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
   }
   if (all_tags_in_project) {
     if (are_required_tags_selected(value)) {
