@@ -148,11 +148,8 @@ def create_or_update_organization_role(
 def create(*, db_session, organization: str, user_in: (UserRegister | UserCreate)) -> DispatchUser:
     """Creates a new dispatch user."""
     # pydantic forces a string password, but we really want bytes
-    # Handle the case where password may be None (e.g., SSO users)
-    if user_in.password is not None:
-        password = bytes(user_in.password, "utf-8")
-    else:
-        password = None
+    password = bytes(user_in.password, "utf-8")
+
     # create the user
     user = DispatchUser(
         **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}), password=password
