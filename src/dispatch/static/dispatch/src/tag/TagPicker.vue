@@ -182,10 +182,15 @@ const props = defineProps({
     default: false,
   },
 })
+const currentProject = ref(props.project)
 
 watch(
   () => props.project,
-  () => {
+  (newVal) => {
+    if (newVal === currentProject.value) {
+      return
+    }
+    currentProject.value = newVal
     fetchData()
     validateTags(selectedItems.value)
   }
@@ -208,6 +213,9 @@ function are_required_tags_selected(sel) {
 }
 
 const fetchData = () => {
+  if (!currentProject.value) {
+    return
+  }
   loading.value = true
 
   let filterOptions = {
@@ -219,16 +227,9 @@ const fetchData = () => {
 
   let filters = {}
 
-  if (props.project) {
-    if (Array.isArray(props.project)) {
-      if (props.project.length > 0) {
-        filters["project"] = props.project
-      }
-    } else {
-      filters["project"] = [props.project]
-    }
-    validateTags(selectedItems.value)
-  }
+  filters["project"] = [
+    { model: "Project", field: "name", op: "==", value: currentProject.value.name },
+  ]
 
   // add a filter to only return discoverable tags
   filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
@@ -285,18 +286,18 @@ onMounted(fetchData)
 const emit = defineEmits(["update:modelValue"])
 
 function validateTags(value) {
-  const project_id = props.project?.id || 0
+  const project_id = currentProject.value?.id || 0
   var all_tags_in_project = false
   if (project_id) {
-    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+    all_tags_in_project = value.every((tag) => tag.currentProject?.id == project_id)
   } else {
-    const project_name = props.project?.name
+    const project_name = currentProject.value?.name
     if (!project_name) {
       error.value = true
       dummyText.value += " "
       return
     }
-    all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
+    all_tags_in_project = value.every((tag) => tag.currentProject?.name == project_name)
   }
   if (all_tags_in_project) {
     if (are_required_tags_selected(value)) {
