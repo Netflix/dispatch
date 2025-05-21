@@ -268,23 +268,43 @@ def get_query_models(query):
     """
     models = [col_desc["entity"] for col_desc in query.column_descriptions]
 
-    # account joined entities
+    # In SQLAlchemy 2.x, we need to use a different approach to get joined entities
     try:
-        models.extend(mapper.class_ for mapper in query._compile_state()._join_entities)
-    except InvalidRequestError:
-        # query might not contain columns yet, hence cannot be compiled
-        # try to infer the models from various internals
-        for table_tuple in query._setup_joins + query._legacy_setup_joins:
-            model_class = get_model_from_table(table_tuple[0])
-            if model_class:
-                models.append(model_class)
+        # Try to get the statement from the query
+        stmt = query.statement
 
-    # account also query.select_from entities
-    model_class = None
-    if query._from_obj:
-        model_class = get_model_from_table(query._from_obj[0])
-    if model_class and (model_class not in models):
-        models.append(model_class)
+        # Extract entities from the statement's froms
+        for from_obj in stmt.froms:
+            if hasattr(from_obj, "entity"):
+                # For select statements with an entity
+                if from_obj.entity not in models:
+                    models.append(from_obj.entity)
+            elif hasattr(from_obj, "left") and hasattr(from_obj, "right"):
+                # For join objects
+                for side in [from_obj.left, from_obj.right]:
+                    if hasattr(side, "entity"):
+                        if side.entity not in models:
+                            models.append(side.entity)
+                    elif hasattr(side, "table"):
+                        model_class = get_model_from_table(side.table)
+                        if model_class and model_class not in models:
+                            models.append(model_class)
+
+        # Try to extract joined entities from the query's _join_entities
+        # This is for SQLAlchemy 2.x's internal structure
+        if hasattr(query, "_compile_state"):
+            try:
+                compile_state = query._compile_state()
+                if hasattr(compile_state, "_join_entities"):
+                    for mapper in compile_state._join_entities:
+                        if hasattr(mapper, "class_"):
+                            if mapper.class_ not in models:
+                                models.append(mapper.class_)
+            except Exception:
+                pass
+    except (AttributeError, InvalidRequestError):
+        # If we can't get the statement or process it, fall back to simpler approach
+        pass
 
     return {model.__name__: model for model in models}
 
