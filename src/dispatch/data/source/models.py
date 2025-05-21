@@ -104,7 +104,7 @@ class QueryReadMinimal(DispatchBase):
 class Link(DispatchBase):
     id: int | None
     name: str | None
-    description: str | None
+    description: str | None = None
     href: AnyHttpUrl | None
 
 
