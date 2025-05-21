@@ -117,6 +117,7 @@ def create_signal_instance(
         signal_instance = signal_service.create_instance(
             db_session=db_session, signal_instance_in=signal_instance_in
         )
+        db_session.commit()
     except IntegrityError:
         msg = f"A signal instance with this id already exists. Id: {signal_instance_in.raw.get('id')}. Variant: {signal_instance_in.raw.get('variant')}"
         log.warn(msg)
