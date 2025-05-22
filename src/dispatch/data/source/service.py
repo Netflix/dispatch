@@ -1,4 +1,8 @@
-from pydantic import ValidationError
+import logging
+
+from pydantic import AnyHttpUrl, BaseModel, ValidationError
+
+from fastapi import HTTPException, status
 
 from dispatch.project import service as project_service
 from dispatch.incident import service as incident_service
@@ -7,12 +11,15 @@ from dispatch.tag import service as tag_service
 from dispatch.data.query import service as query_service
 from dispatch.data.source.environment import service as environment_service
 from dispatch.data.source.data_format import service as data_format_service
+from dispatch.data.source.models import Link
 from dispatch.data.source.status import service as status_service
 from dispatch.data.source.type import service as type_service
 from dispatch.data.source.transport import service as transport_service
 
 
 from .models import Source, SourceCreate, SourceUpdate, SourceRead
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, source_id: int) -> Source | None:
@@ -35,14 +42,16 @@ def get_by_name_or_raise(*, db_session, project_id, source_in: SourceRead) -> So
     source = get_by_name(db_session=db_session, project_id=project_id, name=source_in.name)
 
     if not source:
-        raise ValidationError([
-            {
-                "loc": ("source",),
-                "msg": f"Source not found: {source_in.name}",
-                "type": "value_error",
-                "input": source_in.name,
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("source",),
+                    "msg": f"Source not found: {source_in.name}",
+                    "type": "value_error",
+                    "input": source_in.name,
+                }
+            ]
+        )
 
     return source
 
@@ -52,8 +61,29 @@ def get_all(*, db_session, project_id: int) -> list[Source | None]:
     return db_session.query(Source).filter(Source.project_id == project_id)
 
 
+class LinkValidator(BaseModel):
+    href: AnyHttpUrl | None = None
+
+
+def all_links_are_valid(links: list[Link]) -> bool:
+    """Checks if all links are valid using AnyHttpUrl."""
+    for link in links:
+        try:
+            LinkValidator(href=link.href)
+        except ValidationError as e:
+            log.warning(f"Invalid URL found in source link: {link.href}, Error: {e}")
+            return False
+    return True
+
+
 def create(*, db_session, source_in: SourceCreate) -> Source:
     """Creates a new source."""
+    if not all_links_are_valid(source_in.links):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[{"msg": "One or more links are not valid URLs"}],
+        )
+
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=source_in.project
     )
@@ -163,6 +193,12 @@ def get_or_create(*, db_session, source_in: SourceCreate) -> Source:
 
 def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     """Updates an existing source."""
+    if not all_links_are_valid(source_in.links):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[{"msg": "One or more links are not valid URLs"}],
+        )
+
     source_data = source.dict()
 
     update_data = source_in.dict(

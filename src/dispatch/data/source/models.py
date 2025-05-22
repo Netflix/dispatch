@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import Field, AnyHttpUrl
+from pydantic import Field
 
 from sqlalchemy import (
     JSON,
@@ -101,11 +101,13 @@ class QueryReadMinimal(DispatchBase):
     description: str
 
 
+# Note: href is str since it must be serialized to JSON
+# We validate the URL in the API layer
 class Link(DispatchBase):
     id: int | None
     name: str | None
     description: str | None = None
-    href: AnyHttpUrl | None
+    href: str | None
 
 
 # Pydantic models
