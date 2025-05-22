@@ -483,9 +483,11 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
-                if joined_model not in joined_models:
+                # Use the model or table itself for tracking joins
+                model_or_table = getattr(joined_model, "parent", joined_model)
+                if model_or_table not in joined_models:
                     query = query.join(joined_model, isouter=is_outer)
-                    joined_models.append(joined_model)
+                    joined_models.append(model_or_table)
             except Exception as e:
                 log.exception(e)
 
