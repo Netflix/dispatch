@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import Field, AnyHttpUrl
+from pydantic import Field, AnyHttpUrl, field_serializer
 
 from sqlalchemy import (
     JSON,
@@ -106,6 +106,10 @@ class Link(DispatchBase):
     name: str | None
     description: str | None = None
     href: AnyHttpUrl | None
+
+    @field_serializer("href")
+    def serialize_href(self, href: AnyHttpUrl, _info):
+        return str(href)
 
 
 # Pydantic models
