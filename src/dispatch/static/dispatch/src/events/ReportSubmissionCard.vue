@@ -216,7 +216,7 @@ export default {
       })
 
       // Set other defaults
-      this.visibility = "Open"
+      this.visibility = "Restricted"
     },
 
     fetchData() {
