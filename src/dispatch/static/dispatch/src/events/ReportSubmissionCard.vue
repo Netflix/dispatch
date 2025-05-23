@@ -65,9 +65,13 @@
 import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import { resolveProject } from "@/util/project"
 
 import router from "@/router"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
+import CaseTypeApi from "@/case/type/api"
+import CasePriorityApi from "@/case/priority/api"
+import CaseSeverityApi from "@/case/severity/api"
 
 export default {
   setup() {
@@ -83,6 +87,7 @@ export default {
       formIsValid: false,
       titleValid: false,
       descriptionValid: false,
+      projectValid: false,
       page_oncall: false,
       items: [],
     }
@@ -102,6 +107,8 @@ export default {
       "selected.project",
       "selected.id",
       "selected.case_priority",
+      "selected.case_type",
+      "selected.case_severity",
       "selected.event",
       "default_project",
     ]),
@@ -115,6 +122,10 @@ export default {
     },
     description() {
       this.descriptionValid = !!this.description
+      this.checkFormValidity()
+    },
+    project() {
+      this.projectValid = !!this.project
       this.checkFormValidity()
     },
   },
@@ -131,13 +142,128 @@ export default {
       }
     },
     checkFormValidity() {
-      this.formIsValid = this.titleValid && this.descriptionValid
+      this.formIsValid = this.titleValid && this.descriptionValid && this.projectValid
     },
+
+    loadDefaults(project) {
+      // Load default case type for the project
+      CaseTypeApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              model: "Project",
+              field: "id",
+              op: "==",
+              value: project.id,
+            },
+            {
+              field: "default",
+              op: "==",
+              value: true,
+            },
+          ],
+        }),
+      }).then((response) => {
+        if (response.data.items.length) {
+          this.case_type = response.data.items[0]
+        }
+      })
+
+      // Load default case severity for the project
+      CaseSeverityApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              model: "Project",
+              field: "id",
+              op: "==",
+              value: project.id,
+            },
+            {
+              field: "default",
+              op: "==",
+              value: true,
+            },
+          ],
+        }),
+      }).then((response) => {
+        if (response.data.items.length) {
+          this.case_severity = response.data.items[0]
+        }
+      })
+
+      // Load default case priority for the project
+      CasePriorityApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              model: "Project",
+              field: "id",
+              op: "==",
+              value: project.id,
+            },
+            {
+              field: "default",
+              op: "==",
+              value: true,
+            },
+          ],
+        }),
+      }).then((response) => {
+        if (response.data.items.length) {
+          this.case_priority = response.data.items[0]
+        }
+      })
+
+      // Set other defaults
+      this.visibility = "Open"
+    },
+
+    fetchData() {
+      // If project is not available yet, we'll load priorities later in onProjectResolved
+      if (!this.project) {
+        return
+      }
+
+      // Load case priority items for the urgent checkbox
+      CasePriorityApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              model: "Project",
+              field: "id",
+              op: "==",
+              value: this.project.id,
+            },
+          ],
+        }),
+      }).then((response) => {
+        this.items = response.data.items
+      })
+    },
+
     ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
 
   created() {
     this.event = true
+    this.dedicated_channel = true
+
+    // Use the utility function to resolve the project
+    resolveProject({
+      component: this,
+      onProjectResolved: (project) => {
+        // Project has been resolved and set
+        this.projectValid = !!this.project
+        this.checkFormValidity()
+
+        // Auto-populate defaults based on the project
+        this.loadDefaults(project)
+
+        // Fetch case priority items now that we have a project
+        this.fetchData()
+      },
+    })
 
     if (this.$route.query.title) {
       this.title = this.$route.query.title
@@ -148,12 +274,14 @@ export default {
     if (this.$route.query.description) {
       this.description = this.$route.query.description
     }
-    this.fetchData()
+
+    // We'll call fetchData after project is resolved
 
     this.$watch(
       (vm) => [vm.project, vm.title, vm.description],
       () => {
         var queryParams = {
+          project: this.project ? this.project.name : null,
           title: this.title,
           description: this.description,
         }
