@@ -99,7 +99,6 @@ export default {
       "selected.title",
       "selected.tags",
       "selected.description",
-      "selected.visibility",
       "selected.storage",
       "selected.documents",
       "selected.loading",
@@ -214,9 +213,6 @@ export default {
           this.case_priority = response.data.items[0]
         }
       })
-
-      // Set other defaults
-      this.visibility = "Restricted"
     },
 
     fetchData() {
