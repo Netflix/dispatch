@@ -13,7 +13,7 @@ test.describe("Authenticated Dispatch App", () => {
       const title = "Security Event Triage"
 
       await reportEventPage.reportEvent(description)
-      // Soft validate that we get redirected to the case submission form
+      // Soft validate that we get redirected to the event submission form
       const expectedURL = encodeURI(
         `/default/events/report?project=default&title=${title}&description=${description}`
       )

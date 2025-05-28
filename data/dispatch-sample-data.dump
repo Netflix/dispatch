@@ -7891,6 +7891,7 @@ COPY dispatch_organization_default.case_priority (id, name, description, color, 
 1	Low	Low priority	#558b2f	t	t	-1	\N	1	f
 2	Medium	Medium priority	\N	t	f	2	\N	1	f
 3	High	High priority	#b71c1c	t	f	3	\N	1	f
+4	Critical	Critical priority	\N	t	f	4	\N	1	t
 \.
 
 
@@ -9263,7 +9264,7 @@ SELECT pg_catalog.setval('dispatch_organization_default.case_id_seq', 1, true);
 -- Name: case_priority_id_seq; Type: SEQUENCE SET; Schema: dispatch_organization_default; Owner: postgres
 --
 
-SELECT pg_catalog.setval('dispatch_organization_default.case_priority_id_seq', 3, true);
+SELECT pg_catalog.setval('dispatch_organization_default.case_priority_id_seq', 4, true);
 
 
 --
