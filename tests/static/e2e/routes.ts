@@ -7,4 +7,5 @@ export enum Routes {
   Incidents = "/incidents",
   ReportIncident = "/incidents/report",
   ReportCase = "/cases/report",
+  ReportEvent = "/events/report",
 }
