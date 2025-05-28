@@ -2,4 +2,5 @@ from dispatch.enums import DispatchEnum
 
 
 class EmailTemplateTypes(DispatchEnum):
-    welcome = "Incident Welcome Email"
+    case_welcome = "Case Welcome Email"
+    incident_welcome = "Incident Welcome Email"

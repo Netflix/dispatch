@@ -138,7 +138,7 @@ def case_add_or_reactivate_participant_flow(
             welcome_template = email_template_service.get_by_type(
                 db_session=db_session,
                 project_id=case.project_id,
-                email_template_type=EmailTemplateTypes.welcome,
+                email_template_type=EmailTemplateTypes.case_welcome,
             )
 
             send_case_welcome_participant_message(
@@ -303,7 +303,9 @@ def case_new_create_flow(
                 )
                 oncall_name = oncall_service.name
         except Exception as e:
-            log.error(f"Failed to get oncall service: {e}. Falling back to default oncall_name string.")
+            log.error(
+                f"Failed to get oncall service: {e}. Falling back to default oncall_name string."
+            )
 
         send_event_paging_message(case, db_session, oncall_name)
 
@@ -1073,7 +1075,7 @@ def case_create_resources_flow(
         welcome_template = email_template_service.get_by_type(
             db_session=db_session,
             project_id=case.project_id,
-            email_template_type=EmailTemplateTypes.welcome,
+            email_template_type=EmailTemplateTypes.case_welcome,
         )
 
         for user_email in set(individual_participants):

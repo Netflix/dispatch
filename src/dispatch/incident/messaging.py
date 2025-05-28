@@ -296,7 +296,7 @@ def send_incident_welcome_participant_messages(
     welcome_template = email_template_service.get_by_type(
         db_session=db_session,
         project_id=incident.project_id,
-        email_template_type=EmailTemplateTypes.welcome,
+        email_template_type=EmailTemplateTypes.incident_welcome,
     )
 
     # we send the welcome ephemeral message
