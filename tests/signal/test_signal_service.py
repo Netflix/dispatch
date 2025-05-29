@@ -779,7 +779,7 @@ def test_filter_actions_deduplicate_canary_signals(session, signal, project):
 def test_canary_signals_not_deduplicated(session, signal, project):
     """Test that canary signals themselves are not deduplicated."""
     from dispatch.signal.models import SignalFilterAction
-    from dispatch.signal.service import filter_signal, filter_dedup
+    from dispatch.signal.service import filter_dedup
     from tests.factories import EntityTypeFactory, EntityFactory, CaseFactory, SignalInstanceFactory
 
     entity_type = EntityTypeFactory(project=project)
