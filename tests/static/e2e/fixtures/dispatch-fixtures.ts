@@ -3,12 +3,14 @@ import { AuthPage } from "../pages/auth-page"
 import { ReportIncidentPage } from "../pages/report-incident-page"
 import { ReportCasePage } from "../pages/report-case-page"
 import { IncidentsPage } from "../pages/incidents-page"
+import { ReportEventPage } from "../pages/report-event-page"
 
 type DispatchFixtures = {
   authPage: AuthPage
   reportIncidentPage: ReportIncidentPage
   reportCasePage: ReportCasePage
   incidentsPage: IncidentsPage
+  reportEventPage: ReportEventPage
 }
 
 export const test = base.extend<DispatchFixtures>({
@@ -22,6 +24,10 @@ export const test = base.extend<DispatchFixtures>({
 
   reportCasePage: async ({ page }, use) => {
     await use(new ReportCasePage(page))
+  },
+
+  reportEventPage: async ({ page }, use) => {
+    await use(new ReportEventPage(page))
   },
 
   incidentsPage: async ({ page }, use) => {
