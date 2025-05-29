@@ -815,7 +815,7 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
                 SignalInstance.created_at >= default_dedup_window,
                 SignalInstance.id != signal_instance.id,
                 SignalInstance.case_id.isnot(None),  # noqa
-                SignalInstance.canary == False,  # Ignore canary signals in deduplication
+                ~SignalInstance.canary,  # Ignore canary signals in deduplication
             )
             .with_entities(SignalInstance.case_id)
             .order_by(desc(SignalInstance.created_at))
@@ -836,7 +836,7 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
 
         query = db_session.query(SignalInstance).filter(
             SignalInstance.signal_id == signal_instance.signal_id,
-            SignalInstance.canary == False,  # Ignore canary signals in deduplication
+            ~SignalInstance.canary,  # Ignore canary signals in deduplication
         )
         # First join entities
         query = query.join(SignalInstance.entities)
