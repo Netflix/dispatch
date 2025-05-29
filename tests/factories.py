@@ -1256,7 +1256,7 @@ class EmailTemplateFactory(BaseFactory):
     """Email Template Factory."""
 
     # Columns
-    email_template_type = EmailTemplateTypes.welcome
+    email_template_type = EmailTemplateTypes.incident_welcome
     welcome_text = "Welcome to Incident {{title}} "
     welcome_body = "{{title}} Incident\n{{description}}"
     components = ["title", "description"]
