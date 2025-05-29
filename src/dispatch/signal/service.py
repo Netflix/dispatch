@@ -805,7 +805,7 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
     # Skip deduplication on canary signals
     if signal_instance.canary:
         return signal_instance
-        
+
     if not signal_instance.signal.filters:
         default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
         instance = (
