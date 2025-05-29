@@ -155,8 +155,13 @@ export default {
   methods: {
     ...mapActions("signal", ["getAllInstances"]),
 
+    /**
+     * Count the snooze filters for a given signal definition. Counts all
+     * active snoozes by default, with the option to count expired snoozes instead.
+     * @param signal_filters: The definition's filters.
+     * @param count_expired: If true, count expired snoozes instead of active ones.
+     */
     getSnoozes(signal_filters, count_expired = false) {
-      // todo docstring
       let snoozes = 0
       for (let filter of signal_filters) {
         if (filter.action === "snooze") {
