@@ -23,7 +23,12 @@
       <instance-entity-popover :value="value" />
     </template>
     <template #item.signal.filters="{ value }">
-      <span>
+      <span
+        v-if="this.getSnoozes(value) === 0 && this.getSnoozes(value, (count_expired = true)) === 0"
+      >
+        No Snoozes Created
+      </span>
+      <span v-else>
         <v-chip>{{ this.getSnoozes(value) }} Active</v-chip>
         <v-chip>{{ this.getSnoozes(value, (count_expired = true)) }} Expired</v-chip>
       </span>
@@ -74,6 +79,7 @@ import CasePopover from "@/case/CasePopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 import RouterUtils from "@/router/utils"
 import SignalPopover from "@/signal/SignalPopover.vue"
+import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
 
 export default {
   name: "SignalInstanceTable",
@@ -82,6 +88,7 @@ export default {
     CasePopover,
     RawSignalViewer,
     SignalPopover,
+    InstanceEntityPopover,
   },
 
   data() {
