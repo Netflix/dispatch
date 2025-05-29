@@ -1,4 +1,13 @@
 <template>
+  <v-container fluid>
+    <v-row no-gutters>
+      <v-col>
+        <div class="text-h5">Signals</div>
+      </v-col>
+      <v-col class="text-right">
+        <table-filter-dialog />
+      </v-col>
+    </v-row>
   <v-data-table-server
     :headers="headers"
     :items="items"
@@ -68,6 +77,7 @@
       <raw-signal-viewer :value="item.raw" />
     </template>
   </v-data-table-server>
+  </v-container>
 </template>
 
 <script>
