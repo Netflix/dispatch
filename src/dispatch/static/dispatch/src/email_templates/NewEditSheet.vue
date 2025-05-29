@@ -34,7 +34,7 @@
               <v-col cols="12">
                 <v-select
                   v-model="email_template_type"
-                  :items="['Incident Welcome Email']"
+                  :items="['Incident Welcome Email', 'Case Welcome Email']"
                   :menu-props="{ maxHeight: '400' }"
                   label="Email template type"
                   clearable
@@ -46,7 +46,7 @@
                 <v-textarea
                   v-model="welcome_text"
                   label="Welcome text"
-                  hint="To insert the name of the incident, use {{name}}"
+                  hint="To insert the name of the case/incident, use {{name}}"
                   clearable
                   name="Welcome text"
                 />
@@ -55,7 +55,7 @@
                 <v-textarea
                   v-model="welcome_body"
                   label="Welcome body"
-                  hint="To insert the name of the incident, use {{name}}"
+                  hint="To insert the name of the case/incident, use {{name}}"
                   clearable
                   name="Welcome body"
                 />
