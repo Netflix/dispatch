@@ -612,3 +612,127 @@ def test_filter_actions_snooze_expired(session, entity, signal, project):
     signal.filters = [signal_filter]
     session.commit()
     assert not filter_signal(db_session=session, signal_instance=signal_instance_1)
+    
+    
+def test_filter_actions_deduplicate_canary_signals(session, signal, project):
+    """Test that canary signals are not considered in deduplication logic."""
+    from dispatch.signal.models import SignalFilterAction
+    from dispatch.signal.service import filter_signal
+    from tests.factories import EntityTypeFactory, EntityFactory, CaseFactory, SignalInstanceFactory
+
+    entity_type = EntityTypeFactory(project=project)
+    session.add(entity_type)
+
+    entity = EntityFactory(entity_type=entity_type, project=project)
+    session.add(entity)
+
+    # Create a case for the canary signal instance
+    case = CaseFactory(project=project)
+    session.add(case)
+    session.commit()
+
+    # Create a canary signal instance with a case
+    canary_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case=case,
+        canary=True,  # This is a canary signal
+        raw=json.dumps({"id": "canary"}),
+    )
+    session.add(canary_signal_instance)
+    session.commit()
+
+    # Create a regular signal instance
+    regular_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        raw=json.dumps({"id": "regular"}),
+    )
+    session.add(regular_signal_instance)
+    session.commit()
+
+    # Check that the regular signal instance is not deduplicated against the canary
+    assert not filter_signal(db_session=session, signal_instance=regular_signal_instance)
+    assert regular_signal_instance.filter_action != SignalFilterAction.deduplicate
+    
+    # Create a second regular signal instance with a case
+    case2 = CaseFactory(project=project)
+    session.add(case2)
+    session.commit()
+    
+    regular_signal_instance2 = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case=case2,
+        raw=json.dumps({"id": "regular2"}),
+    )
+    session.add(regular_signal_instance2)
+    session.commit()
+    
+    # Create a third regular signal instance that should deduplicate against the second
+    regular_signal_instance3 = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        raw=json.dumps({"id": "regular3"}),
+    )
+    session.add(regular_signal_instance3)
+    session.commit()
+    
+    # Check that the third signal instance is deduplicated against the second (non-canary)
+    assert filter_signal(db_session=session, signal_instance=regular_signal_instance3)
+    assert regular_signal_instance3.filter_action == SignalFilterAction.deduplicate
+    assert regular_signal_instance3.case_id == regular_signal_instance2.case_id
+    
+    
+def test_canary_signals_not_deduplicated(session, signal, project):
+    """Test that canary signals themselves are not deduplicated."""
+    from dispatch.signal.models import SignalFilterAction
+    from dispatch.signal.service import filter_signal, filter_dedup
+    from tests.factories import EntityTypeFactory, EntityFactory, CaseFactory, SignalInstanceFactory
+
+    entity_type = EntityTypeFactory(project=project)
+    session.add(entity_type)
+
+    entity = EntityFactory(entity_type=entity_type, project=project)
+    session.add(entity)
+
+    # Create a case for a regular signal instance
+    case = CaseFactory(project=project)
+    session.add(case)
+    session.commit()
+
+    # Create a regular signal instance with a case
+    regular_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case=case,
+        raw=json.dumps({"id": "regular"}),
+    )
+    session.add(regular_signal_instance)
+    session.commit()
+
+    # Create a canary signal instance
+    canary_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        canary=True,  # This is a canary signal
+        raw=json.dumps({"id": "canary"}),
+    )
+    session.add(canary_signal_instance)
+    session.commit()
+    
+    # Save the initial state - no case ID
+    initial_case_id = canary_signal_instance.case_id
+    
+    # Apply deduplication logic directly to test behavior
+    filter_dedup(db_session=session, signal_instance=canary_signal_instance)
+    
+    # Check that the canary signal instance is not deduplicated (should have same case_id as before)
+    assert canary_signal_instance.case_id == initial_case_id
+    assert canary_signal_instance.filter_action != SignalFilterAction.deduplicate

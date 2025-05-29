@@ -802,6 +802,10 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
     Returns:
         SignalInstance: The filtered signal instance.
     """
+    # Skip deduplication on canary signals
+    if signal_instance.canary:
+        return signal_instance
+        
     if not signal_instance.signal.filters:
         default_dedup_window = datetime.now(timezone.utc) - timedelta(hours=1)
         instance = (
@@ -811,6 +815,7 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
                 SignalInstance.created_at >= default_dedup_window,
                 SignalInstance.id != signal_instance.id,
                 SignalInstance.case_id.isnot(None),  # noqa
+                SignalInstance.canary == False,  # Ignore canary signals in deduplication
             )
             .with_entities(SignalInstance.case_id)
             .order_by(desc(SignalInstance.created_at))
@@ -830,7 +835,8 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
             continue
 
         query = db_session.query(SignalInstance).filter(
-            SignalInstance.signal_id == signal_instance.signal_id
+            SignalInstance.signal_id == signal_instance.signal_id,
+            SignalInstance.canary == False,  # Ignore canary signals in deduplication
         )
         # First join entities
         query = query.join(SignalInstance.entities)
