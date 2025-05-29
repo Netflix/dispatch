@@ -12,7 +12,15 @@ def test_get(session, signal):
 def test_create(session, project, case_priority, case_type, service, tag, entity_type):
     import pytest
     from pydantic import ValidationError
-    from dispatch.signal.models import SignalCreate, Service, TagRead, EntityTypeRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import (
+        SignalCreate,
+        Service,
+        TagRead,
+        EntityTypeRead,
+        ProjectRead,
+        CasePriorityRead,
+        CaseTypeRead,
+    )
     from dispatch.signal.service import create
 
     name = "name"
@@ -32,30 +40,36 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
         name=name,
         owner=owner,
         project=ProjectRead(
-            id=getattr(project, 'id', 1),
-            name=getattr(project, 'name', 'Test Project'),
-            display_name=getattr(project, 'display_name', ''),
-            owner_email=getattr(project, 'owner_email', None),
-            owner_conversation=getattr(project, 'owner_conversation', None),
-            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-            business_year_hours=getattr(project, 'business_year_hours', 2080),
-            description=getattr(project, 'description', None),
-            default=getattr(project, 'default', False),
-            color=getattr(project, 'color', None),
-            send_daily_reports=getattr(project, 'send_daily_reports', True),
-            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-            enabled=getattr(project, 'enabled', True),
-            storage_folder_one=getattr(project, 'storage_folder_one', None),
-            storage_folder_two=getattr(project, 'storage_folder_two', None),
-            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-            storage_use_title=getattr(project, 'storage_use_title', False),
-            allow_self_join=getattr(project, 'allow_self_join', True),
-            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+            id=getattr(project, "id", 1),
+            name=getattr(project, "name", "Test Project"),
+            display_name=getattr(project, "display_name", ""),
+            owner_email=getattr(project, "owner_email", None),
+            owner_conversation=getattr(project, "owner_conversation", None),
+            annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+            business_year_hours=getattr(project, "business_year_hours", 2080),
+            description=getattr(project, "description", None),
+            default=getattr(project, "default", False),
+            color=getattr(project, "color", None),
+            send_daily_reports=getattr(project, "send_daily_reports", True),
+            send_weekly_reports=getattr(project, "send_weekly_reports", False),
+            weekly_report_notification_id=getattr(project, "weekly_report_notification_id", None),
+            enabled=getattr(project, "enabled", True),
+            storage_folder_one=getattr(project, "storage_folder_one", None),
+            storage_folder_two=getattr(project, "storage_folder_two", None),
+            storage_use_folder_one_as_primary=getattr(
+                project, "storage_use_folder_one_as_primary", True
+            ),
+            storage_use_title=getattr(project, "storage_use_title", False),
+            allow_self_join=getattr(project, "allow_self_join", True),
+            select_commander_visibility=getattr(project, "select_commander_visibility", True),
+            report_incident_instructions=getattr(project, "report_incident_instructions", None),
+            report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+            report_incident_description_hint=getattr(
+                project, "report_incident_description_hint", None
+            ),
+            snooze_extension_oncall_service=getattr(
+                project, "snooze_extension_oncall_service", None
+            ),
         ),
         case_priority=CasePriorityRead.from_orm(case_priority),
         case_type=CaseTypeRead.from_orm(case_type),
@@ -72,7 +86,7 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
         genai_system_message=genai_system_message,
         genai_prompt=genai_prompt,
         tags=[TagRead.from_orm(tag)],
-        entity_types=[EntityTypeRead.from_orm(entity_type)]
+        entity_types=[EntityTypeRead.from_orm(entity_type)],
     )
     with pytest.raises(ValidationError) as exc_info:
         create(db_session=session, signal_in=signal_in)
@@ -80,7 +94,14 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
 
 
 def test_update(session, project, signal, case_priority, case_type, service, tag, entity_type):
-    from dispatch.signal.models import SignalUpdate, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import (
+        SignalUpdate,
+        Service,
+        TagRead,
+        ProjectRead,
+        CasePriorityRead,
+        CaseTypeRead,
+    )
     from dispatch.signal.service import update
     import pytest
     from pydantic import ValidationError
@@ -104,30 +125,38 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
             name=name,
             owner=owner,
             project=ProjectRead(
-                id=getattr(project, 'id', 1),
-                name=getattr(project, 'name', 'Test Project'),
-                display_name=getattr(project, 'display_name', ''),
-                owner_email=getattr(project, 'owner_email', None),
-                owner_conversation=getattr(project, 'owner_conversation', None),
-                annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-                business_year_hours=getattr(project, 'business_year_hours', 2080),
-                description=getattr(project, 'description', None),
-                default=getattr(project, 'default', False),
-                color=getattr(project, 'color', None),
-                send_daily_reports=getattr(project, 'send_daily_reports', True),
-                send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-                weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-                enabled=getattr(project, 'enabled', True),
-                storage_folder_one=getattr(project, 'storage_folder_one', None),
-                storage_folder_two=getattr(project, 'storage_folder_two', None),
-                storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-                storage_use_title=getattr(project, 'storage_use_title', False),
-                allow_self_join=getattr(project, 'allow_self_join', True),
-                select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-                report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-                report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-                report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-                snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+                id=getattr(project, "id", 1),
+                name=getattr(project, "name", "Test Project"),
+                display_name=getattr(project, "display_name", ""),
+                owner_email=getattr(project, "owner_email", None),
+                owner_conversation=getattr(project, "owner_conversation", None),
+                annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+                business_year_hours=getattr(project, "business_year_hours", 2080),
+                description=getattr(project, "description", None),
+                default=getattr(project, "default", False),
+                color=getattr(project, "color", None),
+                send_daily_reports=getattr(project, "send_daily_reports", True),
+                send_weekly_reports=getattr(project, "send_weekly_reports", False),
+                weekly_report_notification_id=getattr(
+                    project, "weekly_report_notification_id", None
+                ),
+                enabled=getattr(project, "enabled", True),
+                storage_folder_one=getattr(project, "storage_folder_one", None),
+                storage_folder_two=getattr(project, "storage_folder_two", None),
+                storage_use_folder_one_as_primary=getattr(
+                    project, "storage_use_folder_one_as_primary", True
+                ),
+                storage_use_title=getattr(project, "storage_use_title", False),
+                allow_self_join=getattr(project, "allow_self_join", True),
+                select_commander_visibility=getattr(project, "select_commander_visibility", True),
+                report_incident_instructions=getattr(project, "report_incident_instructions", None),
+                report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+                report_incident_description_hint=getattr(
+                    project, "report_incident_description_hint", None
+                ),
+                snooze_extension_oncall_service=getattr(
+                    project, "snooze_extension_oncall_service", None
+                ),
             ),
             case_priority=CasePriorityRead.from_orm(case_priority),
             case_type=CaseTypeRead.from_orm(case_type),
@@ -156,10 +185,20 @@ def test_update(session, project, signal, case_priority, case_type, service, tag
         pytest.skip("Validation error occurred, skipping test")
 
 
-def test_update__add_filter(session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type):
+def test_update__add_filter(
+    session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type
+):
     import pytest
     from pydantic import ValidationError
-    from dispatch.signal.models import SignalUpdate, SignalFilterRead, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import (
+        SignalUpdate,
+        SignalFilterRead,
+        Service,
+        TagRead,
+        ProjectRead,
+        CasePriorityRead,
+        CaseTypeRead,
+    )
     from dispatch.signal.service import update
 
     signal_filter.project = signal.project
@@ -168,30 +207,36 @@ def test_update__add_filter(session, signal, signal_filter, project, case_priori
         id=signal.id,
         name=signal.name,
         project=ProjectRead(
-            id=getattr(project, 'id', 1),
-            name=getattr(project, 'name', 'Test Project'),
-            display_name=getattr(project, 'display_name', ''),
-            owner_email=getattr(project, 'owner_email', None),
-            owner_conversation=getattr(project, 'owner_conversation', None),
-            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-            business_year_hours=getattr(project, 'business_year_hours', 2080),
-            description=getattr(project, 'description', None),
-            default=getattr(project, 'default', False),
-            color=getattr(project, 'color', None),
-            send_daily_reports=getattr(project, 'send_daily_reports', True),
-            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-            enabled=getattr(project, 'enabled', True),
-            storage_folder_one=getattr(project, 'storage_folder_one', None),
-            storage_folder_two=getattr(project, 'storage_folder_two', None),
-            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-            storage_use_title=getattr(project, 'storage_use_title', False),
-            allow_self_join=getattr(project, 'allow_self_join', True),
-            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+            id=getattr(project, "id", 1),
+            name=getattr(project, "name", "Test Project"),
+            display_name=getattr(project, "display_name", ""),
+            owner_email=getattr(project, "owner_email", None),
+            owner_conversation=getattr(project, "owner_conversation", None),
+            annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+            business_year_hours=getattr(project, "business_year_hours", 2080),
+            description=getattr(project, "description", None),
+            default=getattr(project, "default", False),
+            color=getattr(project, "color", None),
+            send_daily_reports=getattr(project, "send_daily_reports", True),
+            send_weekly_reports=getattr(project, "send_weekly_reports", False),
+            weekly_report_notification_id=getattr(project, "weekly_report_notification_id", None),
+            enabled=getattr(project, "enabled", True),
+            storage_folder_one=getattr(project, "storage_folder_one", None),
+            storage_folder_two=getattr(project, "storage_folder_two", None),
+            storage_use_folder_one_as_primary=getattr(
+                project, "storage_use_folder_one_as_primary", True
+            ),
+            storage_use_title=getattr(project, "storage_use_title", False),
+            allow_self_join=getattr(project, "allow_self_join", True),
+            select_commander_visibility=getattr(project, "select_commander_visibility", True),
+            report_incident_instructions=getattr(project, "report_incident_instructions", None),
+            report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+            report_incident_description_hint=getattr(
+                project, "report_incident_description_hint", None
+            ),
+            snooze_extension_oncall_service=getattr(
+                project, "snooze_extension_oncall_service", None
+            ),
         ),
         owner="example.com",
         external_id="foo",
@@ -220,10 +265,19 @@ def test_update__add_filter(session, signal, signal_filter, project, case_priori
     assert "Value error, Case priority not found:" in str(exc_info.value)
 
 
-def test_update__delete_filter(session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type):
+def test_update__delete_filter(
+    session, signal, signal_filter, project, case_priority, case_type, service, tag, entity_type
+):
     import pytest
     from pydantic import ValidationError
-    from dispatch.signal.models import SignalUpdate, Service, TagRead, ProjectRead, CasePriorityRead, CaseTypeRead
+    from dispatch.signal.models import (
+        SignalUpdate,
+        Service,
+        TagRead,
+        ProjectRead,
+        CasePriorityRead,
+        CaseTypeRead,
+    )
     from dispatch.signal.service import update
 
     # Set up conditions to delete a signal filter.
@@ -236,30 +290,36 @@ def test_update__delete_filter(session, signal, signal_filter, project, case_pri
         id=signal.id,
         name=signal.name,
         project=ProjectRead(
-            id=getattr(project, 'id', 1),
-            name=getattr(project, 'name', 'Test Project'),
-            display_name=getattr(project, 'display_name', ''),
-            owner_email=getattr(project, 'owner_email', None),
-            owner_conversation=getattr(project, 'owner_conversation', None),
-            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-            business_year_hours=getattr(project, 'business_year_hours', 2080),
-            description=getattr(project, 'description', None),
-            default=getattr(project, 'default', False),
-            color=getattr(project, 'color', None),
-            send_daily_reports=getattr(project, 'send_daily_reports', True),
-            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-            enabled=getattr(project, 'enabled', True),
-            storage_folder_one=getattr(project, 'storage_folder_one', None),
-            storage_folder_two=getattr(project, 'storage_folder_two', None),
-            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-            storage_use_title=getattr(project, 'storage_use_title', False),
-            allow_self_join=getattr(project, 'allow_self_join', True),
-            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+            id=getattr(project, "id", 1),
+            name=getattr(project, "name", "Test Project"),
+            display_name=getattr(project, "display_name", ""),
+            owner_email=getattr(project, "owner_email", None),
+            owner_conversation=getattr(project, "owner_conversation", None),
+            annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+            business_year_hours=getattr(project, "business_year_hours", 2080),
+            description=getattr(project, "description", None),
+            default=getattr(project, "default", False),
+            color=getattr(project, "color", None),
+            send_daily_reports=getattr(project, "send_daily_reports", True),
+            send_weekly_reports=getattr(project, "send_weekly_reports", False),
+            weekly_report_notification_id=getattr(project, "weekly_report_notification_id", None),
+            enabled=getattr(project, "enabled", True),
+            storage_folder_one=getattr(project, "storage_folder_one", None),
+            storage_folder_two=getattr(project, "storage_folder_two", None),
+            storage_use_folder_one_as_primary=getattr(
+                project, "storage_use_folder_one_as_primary", True
+            ),
+            storage_use_title=getattr(project, "storage_use_title", False),
+            allow_self_join=getattr(project, "allow_self_join", True),
+            select_commander_visibility=getattr(project, "select_commander_visibility", True),
+            report_incident_instructions=getattr(project, "report_incident_instructions", None),
+            report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+            report_incident_description_hint=getattr(
+                project, "report_incident_description_hint", None
+            ),
+            snooze_extension_oncall_service=getattr(
+                project, "snooze_extension_oncall_service", None
+            ),
         ),
         owner="example.com",
         external_id="foo",
@@ -351,7 +411,12 @@ def test_filter_actions_default_deduplicate(session, signal, project):
 def test_filter_actions_deduplicate_different_entities(session, signal, project):
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
-    from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
+    from tests.factories import (
+        EntityTypeFactory,
+        EntityFactory,
+        SignalInstanceFactory,
+        SignalFilterFactory,
+    )
 
     entity_type_0 = EntityTypeFactory(project=project)
     session.add(entity_type_0)
@@ -383,7 +448,9 @@ def test_filter_actions_deduplicate_different_entities(session, signal, project)
     signal_filter = SignalFilterFactory(
         name="test",
         description="dedupe0",
-        expression=[{"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type_1.id}]}],
+        expression=[
+            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type_1.id}]}
+        ],
         action="deduplicate",
         window=5,
         project=project,
@@ -398,7 +465,12 @@ def test_filter_actions_deduplicate_different_entities(session, signal, project)
 def test_filter_actions_deduplicate_different_entities_types(session, signal, project):
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
-    from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
+    from tests.factories import (
+        EntityTypeFactory,
+        EntityFactory,
+        SignalInstanceFactory,
+        SignalFilterFactory,
+    )
 
     entity_type_0 = EntityTypeFactory(project=project)
     session.add(entity_type_0)
@@ -430,7 +502,9 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
     signal_filter = SignalFilterFactory(
         name="test",
         description="dedupe0",
-        expression=[{"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type_1.id}]}],
+        expression=[
+            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type_1.id}]}
+        ],
         action="deduplicate",
         window=5,
         project=project,
@@ -445,7 +519,12 @@ def test_filter_actions_deduplicate_different_entities_types(session, signal, pr
 def test_filter_actions_deduplicate(session, signal, project):
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
-    from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
+    from tests.factories import (
+        EntityTypeFactory,
+        EntityFactory,
+        SignalInstanceFactory,
+        SignalFilterFactory,
+    )
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
@@ -476,7 +555,9 @@ def test_filter_actions_deduplicate(session, signal, project):
     signal_filter = SignalFilterFactory(
         name="dedupe1",
         description="test",
-        expression=[{"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}],
+        expression=[
+            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}
+        ],
         action="deduplicate",
         window=5,
         project=project,
@@ -492,7 +573,12 @@ def test_filter_action_with_dedupe_and_snooze(session, signal, project):
     from datetime import datetime, timedelta, timezone
     from dispatch.signal.models import SignalFilterAction
     from dispatch.signal.service import filter_signal
-    from tests.factories import EntityTypeFactory, EntityFactory, SignalInstanceFactory, SignalFilterFactory
+    from tests.factories import (
+        EntityTypeFactory,
+        EntityFactory,
+        SignalInstanceFactory,
+        SignalFilterFactory,
+    )
 
     entity_type = EntityTypeFactory(project=project)
     session.add(entity_type)
@@ -521,7 +607,9 @@ def test_filter_action_with_dedupe_and_snooze(session, signal, project):
     signal_filter = SignalFilterFactory(
         name="dedupe1",
         description="test",
-        expression=[{"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}],
+        expression=[
+            {"or": [{"model": "EntityType", "field": "id", "op": "==", "value": entity_type.id}]}
+        ],
         action="deduplicate",
         window=5,
         project=project,
@@ -612,3 +700,127 @@ def test_filter_actions_snooze_expired(session, entity, signal, project):
     signal.filters = [signal_filter]
     session.commit()
     assert not filter_signal(db_session=session, signal_instance=signal_instance_1)
+
+
+def test_filter_actions_deduplicate_canary_signals(session, signal, project):
+    """Test that canary signals are not considered in deduplication logic."""
+    from dispatch.signal.models import SignalFilterAction
+    from dispatch.signal.service import filter_signal
+    from tests.factories import EntityTypeFactory, EntityFactory, CaseFactory, SignalInstanceFactory
+
+    entity_type = EntityTypeFactory(project=project)
+    session.add(entity_type)
+
+    entity = EntityFactory(entity_type=entity_type, project=project)
+    session.add(entity)
+
+    # Create a case for the canary signal instance
+    case = CaseFactory(project=project)
+    session.add(case)
+    session.commit()
+
+    # Create a canary signal instance with a case
+    canary_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case=case,
+        canary=True,  # This is a canary signal
+        raw=json.dumps({"id": "canary"}),
+    )
+    session.add(canary_signal_instance)
+    session.commit()
+
+    # Create a regular signal instance
+    regular_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        raw=json.dumps({"id": "regular"}),
+    )
+    session.add(regular_signal_instance)
+    session.commit()
+
+    # Check that the regular signal instance is not deduplicated against the canary
+    assert not filter_signal(db_session=session, signal_instance=regular_signal_instance)
+    assert regular_signal_instance.filter_action != SignalFilterAction.deduplicate
+
+    # Create a second regular signal instance with a case
+    case2 = CaseFactory(project=project)
+    session.add(case2)
+    session.commit()
+
+    regular_signal_instance2 = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case=case2,
+        raw=json.dumps({"id": "regular2"}),
+    )
+    session.add(regular_signal_instance2)
+    session.commit()
+
+    # Create a third regular signal instance that should deduplicate against the second
+    regular_signal_instance3 = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        raw=json.dumps({"id": "regular3"}),
+    )
+    session.add(regular_signal_instance3)
+    session.commit()
+
+    # Check that the third signal instance is deduplicated against the second (non-canary)
+    assert filter_signal(db_session=session, signal_instance=regular_signal_instance3)
+    assert regular_signal_instance3.filter_action == SignalFilterAction.deduplicate
+    assert regular_signal_instance3.case_id == regular_signal_instance2.case_id
+
+
+def test_canary_signals_not_deduplicated(session, signal, project):
+    """Test that canary signals themselves are not deduplicated."""
+    from dispatch.signal.models import SignalFilterAction
+    from dispatch.signal.service import filter_dedup
+    from tests.factories import EntityTypeFactory, EntityFactory, CaseFactory, SignalInstanceFactory
+
+    entity_type = EntityTypeFactory(project=project)
+    session.add(entity_type)
+
+    entity = EntityFactory(entity_type=entity_type, project=project)
+    session.add(entity)
+
+    # Create a case for a regular signal instance
+    case = CaseFactory(project=project)
+    session.add(case)
+    session.commit()
+
+    # Create a regular signal instance with a case
+    regular_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        case=case,
+        raw=json.dumps({"id": "regular"}),
+    )
+    session.add(regular_signal_instance)
+    session.commit()
+
+    # Create a canary signal instance
+    canary_signal_instance = SignalInstanceFactory(
+        project=project,
+        signal=signal,
+        entities=[entity],
+        canary=True,  # This is a canary signal
+        raw=json.dumps({"id": "canary"}),
+    )
+    session.add(canary_signal_instance)
+    session.commit()
+
+    # Save the initial state - no case ID
+    initial_case_id = canary_signal_instance.case_id
+
+    # Apply deduplication logic directly to test behavior
+    filter_dedup(db_session=session, signal_instance=canary_signal_instance)
+
+    # Check that the canary signal instance is not deduplicated (should have same case_id as before)
+    assert canary_signal_instance.case_id == initial_case_id
+    assert canary_signal_instance.filter_action != SignalFilterAction.deduplicate
