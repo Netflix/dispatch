@@ -44,9 +44,9 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentSeverity:
                     "loc": ("incident_severity",),
                     "input": None,
                     "msg": "No default incident severity defined.",
-                    "ctx": {"error": ValueError("No default incident severity defined.")}
+                    "ctx": {"error": ValueError("No default incident severity defined.")},
                 }
-            ]
+            ],
         )
 
     return incident_severity
@@ -71,14 +71,16 @@ def get_by_name_or_raise(
     )
 
     if not incident_severity:
-        raise ValidationError([
-            {
-                "msg": "Incident severity not found.",
-                "loc": ("incident_severity",),
-                "type": "value_error.not_found",
-                "incident_severity": incident_severity_in.name,
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "msg": "Incident severity not found.",
+                    "loc": ("incident_severity",),
+                    "type": "value_error.not_found",
+                    "incident_severity": incident_severity_in.name,
+                }
+            ]
+        )
 
     return incident_severity
 
@@ -87,14 +89,12 @@ def get_by_name_or_default(
     *, db_session, project_id: int, incident_severity_in=IncidentSeverityRead
 ) -> IncidentSeverity:
     """Returns an incident severity based on a name or the default if not specified."""
-    if incident_severity_in:
-        if incident_severity_in.name:
-            return get_by_name_or_raise(
-                db_session=db_session,
-                project_id=project_id,
-                incident_severity_in=incident_severity_in,
-            )
-
+    if incident_severity_in and incident_severity_in.name:
+        incident_severity = get_by_name(
+            db_session=db_session, project_id=project_id, name=incident_severity_in.name
+        )
+        if incident_severity:
+            return incident_severity
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 

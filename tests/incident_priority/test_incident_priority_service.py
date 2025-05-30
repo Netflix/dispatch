@@ -59,3 +59,37 @@ def test_delete(session, incident_priority):
 
     delete(db_session=session, incident_priority_id=incident_priority.id)
     assert not get(db_session=session, incident_priority_id=incident_priority.id)
+
+
+def test_get_by_name_or_default__name(session, incident_priority):
+    from dispatch.incident.priority.models import IncidentPriorityRead
+    from dispatch.incident.priority.service import get_by_name_or_default
+
+    incident_priority_in = IncidentPriorityRead.from_orm(incident_priority)
+    result = get_by_name_or_default(
+        db_session=session,
+        project_id=incident_priority.project.id,
+        incident_priority_in=incident_priority_in,
+    )
+    assert result.id == incident_priority.id
+
+
+def test_get_by_name_or_default__default(session, incident_priority):
+    from dispatch.incident.priority.models import IncidentPriorityRead
+    from dispatch.incident.priority.service import get_by_name_or_default
+
+    # Ensure only one default incident priority
+    for ip in session.query(type(incident_priority)).all():
+        ip.default = False
+    incident_priority.default = True
+    session.commit()
+    # Pass an IncidentPriorityRead with a non-existent name and dummy id > 0
+    incident_priority_in = IncidentPriorityRead(
+        id=99999, name="nonexistent", project=incident_priority.project
+    )
+    result = get_by_name_or_default(
+        db_session=session,
+        project_id=incident_priority.project.id,
+        incident_priority_in=incident_priority_in,
+    )
+    assert result.id == incident_priority.id

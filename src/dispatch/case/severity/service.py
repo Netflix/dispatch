@@ -32,13 +32,15 @@ def get_default_or_raise(*, db_session, project_id: int) -> CaseSeverity:
     case_severity = get_default(db_session=db_session, project_id=project_id)
 
     if not case_severity:
-        raise ValidationError([
-            {
-                "loc": ("case_severity",),
-                "msg": "No default case severity defined.",
-                "type": "value_error",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("case_severity",),
+                    "msg": "No default case severity defined.",
+                    "type": "value_error",
+                }
+            ]
+        )
     return case_severity
 
 
@@ -61,14 +63,16 @@ def get_by_name_or_raise(
     )
 
     if not case_severity:
-        raise ValidationError([
-            {
-                "loc": ("case_severity",),
-                "msg": "Case severity not found.",
-                "type": "value_error",
-                "case_severity": case_severity_in.name,
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("case_severity",),
+                    "msg": "Case severity not found.",
+                    "type": "value_error",
+                    "case_severity": case_severity_in.name,
+                }
+            ]
+        )
 
     return case_severity
 
@@ -77,13 +81,12 @@ def get_by_name_or_default(
     *, db_session, project_id: int, case_severity_in=CaseSeverityRead
 ) -> CaseSeverity:
     """Returns a case severity based on a name or the default if not specified."""
-    if case_severity_in:
-        if case_severity_in.name:
-            return get_by_name_or_raise(
-                db_session=db_session,
-                project_id=project_id,
-                case_severity_in=case_severity_in,
-            )
+    if case_severity_in and case_severity_in.name:
+        case_severity = get_by_name(
+            db_session=db_session, project_id=project_id, name=case_severity_in.name
+        )
+        if case_severity:
+            return case_severity
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 

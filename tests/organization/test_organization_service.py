@@ -59,3 +59,27 @@ def test_delete(session, organization):
 
     delete(db_session=session, organization_id=organization.id)
     assert not get(db_session=session, organization_id=organization.id)
+
+
+def test_get_by_name_or_default__name(session, organization):
+    from dispatch.organization.models import OrganizationRead
+    from dispatch.organization.service import get_by_name_or_default
+
+    organization_in = OrganizationRead.from_orm(organization)
+    result = get_by_name_or_default(db_session=session, organization_in=organization_in)
+    assert result.id == organization.id
+
+
+def test_get_by_name_or_default__default(session, organization):
+    from dispatch.organization.models import OrganizationRead
+    from dispatch.organization.service import get_by_name_or_default
+
+    # Ensure only one default organization
+    for org in session.query(type(organization)).all():
+        org.default = False
+    organization.default = True
+    session.commit()
+    # Pass an OrganizationRead with a non-existent name
+    organization_in = OrganizationRead(name="nonexistent")
+    result = get_by_name_or_default(db_session=session, organization_in=organization_in)
+    assert result.id == organization.id
