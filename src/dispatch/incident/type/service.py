@@ -41,7 +41,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
                     "input": None,
                     "ctx": {"error": ValueError("No default incident type defined.")},
                 }
-            ]
+            ],
         )
     return incident_type
 
@@ -74,7 +74,7 @@ def get_by_name_or_raise(
                     "input": incident_type_in.name,
                     "ctx": {"error": ValueError("Incident type not found.")},
                 }
-            ]
+            ],
         )
 
     return incident_type
@@ -84,11 +84,12 @@ def get_by_name_or_default(
     *, db_session, project_id: int, incident_type_in=IncidentTypeRead
 ) -> IncidentType:
     """Returns a incident_type based on a name or the default if not specified."""
-    if incident_type_in:
-        if incident_type_in.name:
-            return get_by_name_or_raise(
-                db_session=db_session, project_id=project_id, incident_type_in=incident_type_in
-            )
+    if incident_type_in and incident_type_in.name:
+        incident_type = get_by_name(
+            db_session=db_session, project_id=project_id, name=incident_type_in.name
+        )
+        if incident_type:
+            return incident_type
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 

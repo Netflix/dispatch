@@ -1,4 +1,3 @@
-
 from pydantic import ValidationError
 from sqlalchemy.sql.expression import true
 
@@ -25,13 +24,15 @@ def get_default_or_raise(*, db_session) -> Organization:
     organization = get_default(db_session=db_session)
 
     if not organization:
-        raise ValidationError([
-            {
-                "loc": ("organization",),
-                "msg": "No default organization defined.",
-                "type": "value_error",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("organization",),
+                    "msg": "No default organization defined.",
+                    "type": "value_error",
+                }
+            ]
+        )
     return organization
 
 
@@ -85,10 +86,11 @@ def get_by_slug_or_raise(*, db_session, organization_in: OrganizationRead) -> Or
 
 def get_by_name_or_default(*, db_session, organization_in: OrganizationRead) -> Organization:
     """Returns a organization based on a name or the default if not specified."""
-    if organization_in.name:
-        return get_by_name_or_raise(db_session=db_session, organization_in=organization_in)
-    else:
-        return get_default_or_raise(db_session=db_session)
+    if organization_in and organization_in.name:
+        organization = get_by_name(db_session=db_session, name=organization_in.name)
+        if organization:
+            return organization
+    return get_default_or_raise(db_session=db_session)
 
 
 def get_all(*, db_session) -> list[Organization | None]:

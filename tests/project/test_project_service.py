@@ -21,7 +21,7 @@ def test_create(session, organization):
         id=organization.id,
         name=organization.name,
         slug=organization.slug,
-        description=organization.description
+        description=organization.description,
     )
 
     # Generate a random integer ID for the project to avoid collisions
@@ -87,3 +87,27 @@ def test_delete(session, project):
 
     delete(db_session=session, project_id=project.id)
     assert not get(db_session=session, project_id=project.id)
+
+
+def test_get_by_name_or_default__name(session, project):
+    from dispatch.project.models import ProjectRead
+    from dispatch.project.service import get_by_name_or_default
+
+    project_in = ProjectRead.from_orm(project)
+    result = get_by_name_or_default(db_session=session, project_in=project_in)
+    assert result.id == project.id
+
+
+def test_get_by_name_or_default__default(session, project, organization):
+    from dispatch.project.models import ProjectRead
+    from dispatch.project.service import get_by_name_or_default
+
+    # Ensure only one default project
+    for p in session.query(type(project)).all():
+        p.default = False
+    project.default = True
+    session.commit()
+    # Pass a ProjectRead with a non-existent name
+    project_in = ProjectRead(name="nonexistent", organization=organization)
+    result = get_by_name_or_default(db_session=session, project_in=project_in)
+    assert result.id == project.id

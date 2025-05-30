@@ -1,4 +1,3 @@
-
 from sqlalchemy.sql.expression import true
 
 from dispatch.case import service as case_service
@@ -58,11 +57,12 @@ def get_by_name_or_raise(*, db_session, project_id: int, case_type_in=CaseTypeRe
 
 def get_by_name_or_default(*, db_session, project_id: int, case_type_in=CaseTypeRead) -> CaseType:
     """Returns a case type based on a name or the default if not specified."""
-    if case_type_in:
-        if case_type_in.name:
-            return get_by_name_or_raise(
-                db_session=db_session, project_id=project_id, case_type_in=case_type_in
-            )
+    if case_type_in and case_type_in.name:
+        case_type = get_by_name(
+            db_session=db_session, project_id=project_id, name=case_type_in.name
+        )
+        if case_type:
+            return case_type
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 

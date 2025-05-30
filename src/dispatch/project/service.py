@@ -1,4 +1,3 @@
-
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
@@ -22,13 +21,15 @@ def get_default_or_raise(*, db_session: Session) -> Project:
     project = get_default(db_session=db_session)
 
     if not project:
-        raise ValidationError([
-            {
-                "loc": ("project",),
-                "msg": "No default project defined.",
-                "type": "value_error",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("project",),
+                    "msg": "No default project defined.",
+                    "type": "value_error",
+                }
+            ]
+        )
     return project
 
 
@@ -57,9 +58,10 @@ def get_by_name_or_raise(*, db_session: Session, project_in: ProjectRead) -> Pro
 
 def get_by_name_or_default(*, db_session, project_in: ProjectRead) -> Project:
     """Returns a project based on a name or the default if not specified."""
-    if project_in:
-        if project_in.name:
-            return get_by_name_or_raise(db_session=db_session, project_in=project_in)
+    if project_in and project_in.name:
+        project = get_by_name(db_session=db_session, name=project_in.name)
+        if project:
+            return project
     return get_default_or_raise(db_session=db_session)
 
 
