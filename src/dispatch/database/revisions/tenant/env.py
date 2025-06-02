@@ -59,6 +59,7 @@ def run_migrations_online():
             connection.execute(set_search_path)
             connection.commit()
 
+            print(target_metadata)
             context.configure(
                 connection=connection,
                 target_metadata=target_metadata,

@@ -1,5 +1,5 @@
 from alembic import context
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, text
 
 from dispatch.logging import logging
 from dispatch.config import SQLALCHEMY_DATABASE_URI
