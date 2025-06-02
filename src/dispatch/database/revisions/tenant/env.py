@@ -1,5 +1,5 @@
 from alembic import context
-from sqlalchemy import engine_from_config, pool, inspect, text
+from sqlalchemy import create_engine, inspect, text
 
 
 from dispatch.logging import logging
@@ -43,16 +43,13 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-
     def process_revision_directives(context, revision, directives):
         script = directives[0]
         if script.upgrade_ops.is_empty():
             directives[:] = []
             log.info("No changes found skipping revision creation.")
 
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
-    )
+    connectable = create_engine(SQLALCHEMY_DATABASE_URI)
 
     with connectable.connect() as connection:
         # get the schema names
@@ -60,12 +57,11 @@ def run_migrations_online():
             log.info(f"Migrating {schema}...")
             set_search_path = text(f'set search_path to "{schema}"')
             connection.execute(set_search_path)
-            connection.dialect.default_schema_name = schema
+            connection.commit()
 
             context.configure(
                 connection=connection,
                 target_metadata=target_metadata,
-                include_schemas=True,
                 include_object=include_object,
                 process_revision_directives=process_revision_directives,
             )
