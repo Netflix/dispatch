@@ -1,6 +1,7 @@
 import datetime
 from datetime import timezone
 
+
 def test_get(session, incident_type):
     from dispatch.incident.type.service import get
 
@@ -112,3 +113,31 @@ def test_delete(session, incident_type):
 
     delete(db_session=session, incident_type_id=incident_type.id)
     assert not get(db_session=session, incident_type_id=incident_type.id)
+
+
+def test_get_by_name_or_default__name(session, incident_type):
+    from dispatch.incident.type.models import IncidentTypeRead
+    from dispatch.incident.type.service import get_by_name_or_default
+
+    incident_type_in = IncidentTypeRead.from_orm(incident_type)
+    result = get_by_name_or_default(
+        db_session=session, project_id=incident_type.project.id, incident_type_in=incident_type_in
+    )
+    assert result.id == incident_type.id
+
+
+def test_get_by_name_or_default__default(session, incident_type):
+    from dispatch.incident.type.models import IncidentTypeRead
+    from dispatch.incident.type.service import get_by_name_or_default
+
+    # Ensure only one default incident type
+    for it in session.query(type(incident_type)).all():
+        it.default = False
+    incident_type.default = True
+    session.commit()
+    # Pass an IncidentTypeRead with a non-existent name and dummy id > 0
+    incident_type_in = IncidentTypeRead(id=99999, name="nonexistent", project=incident_type.project)
+    result = get_by_name_or_default(
+        db_session=session, project_id=incident_type.project.id, incident_type_in=incident_type_in
+    )
+    assert result.id == incident_type.id

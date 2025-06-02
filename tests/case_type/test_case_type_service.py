@@ -1,6 +1,7 @@
 import datetime
 from datetime import timezone
 
+
 def test_get(session, case_type):
     from dispatch.case.type.service import get
 
@@ -113,3 +114,31 @@ def test_delete(session, case_type):
 
     delete(db_session=session, case_type_id=case_type.id)
     assert not get(db_session=session, case_type_id=case_type.id)
+
+
+def test_get_by_name_or_default__name(session, case_type):
+    from dispatch.case.type.models import CaseTypeRead
+    from dispatch.case.type.service import get_by_name_or_default
+
+    case_type_in = CaseTypeRead.from_orm(case_type)
+    result = get_by_name_or_default(
+        db_session=session, project_id=case_type.project.id, case_type_in=case_type_in
+    )
+    assert result.id == case_type.id
+
+
+def test_get_by_name_or_default__default(session, case_type):
+    from dispatch.case.type.models import CaseTypeRead
+    from dispatch.case.type.service import get_by_name_or_default
+
+    # Ensure only one default case type
+    for ct in session.query(type(case_type)).all():
+        ct.default = False
+    case_type.default = True
+    session.commit()
+    # Pass a CaseTypeRead with a non-existent name and dummy id > 0
+    case_type_in = CaseTypeRead(id=99999, name="nonexistent", project=case_type.project)
+    result = get_by_name_or_default(
+        db_session=session, project_id=case_type.project.id, case_type_in=case_type_in
+    )
+    assert result.id == case_type.id

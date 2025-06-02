@@ -41,7 +41,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> CasePriority:
                     "input": None,
                     "ctx": {"error": ValueError("No default case priority defined.")},
                 }
-            ]
+            ],
         )
     return case_priority
 
@@ -73,9 +73,11 @@ def get_by_name_or_raise(
                     "loc": ("case_priority",),
                     "input": case_priority_in.name,
                     "msg": "Value error, Case priority not found.",
-                    "ctx": {"error": ValueError(f"Case priority not found: {case_priority_in.name}")}
+                    "ctx": {
+                        "error": ValueError(f"Case priority not found: {case_priority_in.name}")
+                    },
                 }
-            ]
+            ],
         )
 
     return case_priority
@@ -85,13 +87,12 @@ def get_by_name_or_default(
     *, db_session, project_id: int, case_priority_in=CasePriorityRead
 ) -> CasePriority:
     """Returns a case priority based on a name or the default if not specified."""
-    if case_priority_in:
-        if case_priority_in.name:
-            return get_by_name_or_raise(
-                db_session=db_session,
-                project_id=project_id,
-                case_priority_in=case_priority_in,
-            )
+    if case_priority_in and case_priority_in.name:
+        case_priority = get_by_name(
+            db_session=db_session, project_id=project_id, name=case_priority_in.name
+        )
+        if case_priority:
+            return case_priority
     return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 

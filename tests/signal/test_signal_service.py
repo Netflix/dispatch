@@ -90,7 +90,7 @@ def test_create(session, project, case_priority, case_type, service, tag, entity
     )
     with pytest.raises(ValidationError) as exc_info:
         create(db_session=session, signal_in=signal_in)
-    assert "Value error, Case priority not found:" in str(exc_info.value)
+    assert "No default case priority defined." in str(exc_info.value)
 
 
 def test_update(session, project, signal, case_priority, case_type, service, tag, entity_type):
@@ -262,7 +262,7 @@ def test_update__add_filter(
             signal=signal,
             signal_in=signal_in,
         )
-    assert "Value error, Case priority not found:" in str(exc_info.value)
+    assert "No default case priority defined." in str(exc_info.value)
 
 
 def test_update__delete_filter(
@@ -345,7 +345,7 @@ def test_update__delete_filter(
             signal=signal,
             signal_in=signal_in,
         )
-    assert "Value error, Case priority not found:" in str(exc_info.value)
+    assert "No default case priority defined." in str(exc_info.value)
 
 
 def test_delete(session, signal):
