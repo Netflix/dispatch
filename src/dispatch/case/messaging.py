@@ -419,6 +419,7 @@ def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
                         "type": "button",
                         "text": {"type": "plain_text", "text": "Update Case"},
                         "action_id": "case-update",
+                        "style": "primary",
                         "value": button_metadata
                     }
                 ],
