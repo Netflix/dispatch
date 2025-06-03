@@ -15,6 +15,7 @@ class CaseNotificationActions(DispatchEnum):
     resolve = "case-notification-resolve"
     triage = "case-notification-triage"
     user_mfa = "case-notification-user-mfa"
+    update = "case-update"
 
 
 class CasePaginateActions(DispatchEnum):

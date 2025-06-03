@@ -35,6 +35,7 @@ from dispatch.messaging.strings import (
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.email_templates.models import EmailTemplates
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.models import SubjectMetadata
 from dispatch.event import service as event_service
 from dispatch.notification import service as notification_service
 
@@ -376,6 +377,56 @@ def send_case_welcome_participant_message(
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
 
+
+def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
+    """
+    Sends an empemeral message to the assignee reminding them to update the visibility, title, priority
+    """
+    message_text = "Event Triage Reminder"
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+    if plugin is None:
+        log.warning("Event update prompt message not sent. No conversation plugin enabled.")
+        return
+    if case.assignee is None:
+        log.warning(f"Event update prompt message not sent. No assignee for {case.name}.")
+        return
+
+    button_metadata = SubjectMetadata(
+        type="case",
+        organization_slug=case.project.organization.slug,
+        id=case.id,
+    ).json()
+
+    plugin.instance.send_ephemeral(
+        conversation_id=case.conversation.channel_id,
+        user=case.assignee.individual.email,
+        text=message_text,
+        blocks=[
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Update the title, priority and visibility during triage of this security event.",  # noqa
+                },
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Update Case"},
+                        "action_id": "case-update",
+                        "value": button_metadata
+                    }
+                ],
+            },
+        ],
+    )
+
+    log.debug(f"Security Event update reminder sent to {case.assignee.individual.email}.")
 
 def send_event_paging_message(case: Case, db_session: Session, oncall_name: str) -> None:
     """

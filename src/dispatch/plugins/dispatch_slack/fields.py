@@ -55,6 +55,7 @@ class DefaultBlockIds(DispatchEnum):
     case_status_select = "case-status-select"
     case_severity_select = "case-severity-select"
     case_type_select = "case-type-select"
+    case_visibility_select = "case-visibility-select"
     case_assignee_select = "case-assignee-select"
 
     # entities
@@ -94,6 +95,7 @@ class DefaultActionIds(DispatchEnum):
     case_status_select = "case-status-select"
     case_severity_select = "case-severity-select"
     case_type_select = "case-type-select"
+    case_visibility_select = "case-visibility-select"
 
     # entities
     entity_select = "entity-select"
@@ -676,6 +678,32 @@ def case_type_select(
     return static_select_block(
         placeholder="Select Type",
         options=types,
+        initial_option=initial_option,
+        action_id=action_id,
+        block_id=block_id,
+        label=label,
+        **kwargs,
+    )
+
+
+def case_visibility_select(
+    db_session: Session,
+    action_id: str = DefaultActionIds.case_visibility_select,
+    block_id: str = DefaultBlockIds.case_visibility_select,
+    label: str = "Case Visibility",
+    initial_option: dict | None = None,
+    project_id: int = None,
+    **kwargs,
+):
+    """Creates a case visibility select."""
+    visibility = [
+        {"text": "Restricted", "value": "Restricted"},
+        {"text": "Open", "value": "Open"}
+    ]
+
+    return static_select_block(
+        placeholder="Select Visibility",
+        options=visibility,
         initial_option=initial_option,
         action_id=action_id,
         block_id=block_id,

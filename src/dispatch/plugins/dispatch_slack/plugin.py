@@ -412,6 +412,7 @@ class SlackConversationPlugin(ConversationPlugin):
             ConversationCommands.list_participants: self.configuration.slack_command_list_participants,
             ConversationCommands.list_tasks: self.configuration.slack_command_list_tasks,
             ConversationCommands.tactical_report: self.configuration.slack_command_report_tactical,
+            ConversationCommands.escalate_case: self.configuration.slack_command_escalate_case,
         }
         return command_mappings.get(command, [])
 
