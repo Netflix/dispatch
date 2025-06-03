@@ -286,9 +286,7 @@ def handle_update_case_command(
             optional=True,
         ),
         case_visibility_select(
-            db_session=db_session,
             initial_option={"text": case.visibility, "value": case.visibility},
-            project_id=case.project.id,
         )
     ]
 

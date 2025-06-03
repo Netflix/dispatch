@@ -36,6 +36,7 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.email_templates.models import EmailTemplates
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.models import SubjectMetadata
+from dispatch.plugins.dispatch_slack.case.enums import CaseNotificationActions
 from dispatch.event import service as event_service
 from dispatch.notification import service as notification_service
 
@@ -409,7 +410,7 @@ def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
                 "type": "section",
                 "text": {
                     "type": "plain_text",
-                    "text": f"Update the title, priority and visibility during triage of this security event.",  # noqa
+                    "text": f"Update the title, priority, case type and visibility during triage of this security event.",  # noqa
                 },
             },
             {
@@ -418,7 +419,7 @@ def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
                     {
                         "type": "button",
                         "text": {"type": "plain_text", "text": "Update Case"},
-                        "action_id": "case-update",
+                        "action_id": CaseNotificationActions.update,
                         "style": "primary",
                         "value": button_metadata
                     }

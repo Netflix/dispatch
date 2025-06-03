@@ -687,12 +687,10 @@ def case_type_select(
 
 
 def case_visibility_select(
-    db_session: Session,
     action_id: str = DefaultActionIds.case_visibility_select,
     block_id: str = DefaultBlockIds.case_visibility_select,
     label: str = "Case Visibility",
     initial_option: dict | None = None,
-    project_id: int = None,
     **kwargs,
 ):
     """Creates a case visibility select."""
