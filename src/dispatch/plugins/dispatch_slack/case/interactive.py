@@ -2037,7 +2037,7 @@ def handle_edit_submission_event(
 
     case_visibility = case.visibility
     if form_data.get(DefaultBlockIds.case_visibility_select):
-        case_visibility = form_data[DefaultBlockIds.case_visibility_select]["name"]
+        case_visibility = form_data[DefaultBlockIds.case_visibility_select]["value"]
 
     assignee_email = None
     if form_data.get(DefaultBlockIds.case_assignee_select):
