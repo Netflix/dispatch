@@ -381,7 +381,7 @@ def send_case_welcome_participant_message(
 
 def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
     """
-    Sends an empemeral message to the assignee reminding them to update the visibility, title, priority
+    Sends an ephemeral message to the assignee reminding them to update the visibility, title, priority
     """
     message_text = "Event Triage Reminder"
 
