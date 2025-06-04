@@ -18,7 +18,7 @@ from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
 from dispatch.entity import service as entity_service
-from dispatch.enums import DispatchEnum
+from dispatch.enums import DispatchEnum, Visibility
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.severity import service as incident_severity_service
@@ -695,8 +695,8 @@ def case_visibility_select(
 ):
     """Creates a case visibility select."""
     visibility = [
-        {"text": "Restricted", "value": "Restricted"},
-        {"text": "Open", "value": "Open"}
+        {"text": Visibility.restricted, "value": Visibility.restricted},
+        {"text": Visibility.open, "value": Visibility.open}
     ]
 
     return static_select_block(
