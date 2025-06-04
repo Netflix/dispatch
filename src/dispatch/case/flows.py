@@ -42,6 +42,7 @@ from .messaging import (
     send_case_rating_feedback_message,
     send_case_update_notifications,
     send_event_paging_message,
+    send_event_update_prompt_reminder
 )
 from .models import Case
 from .service import get
@@ -308,6 +309,9 @@ def case_new_create_flow(
             )
 
         send_event_paging_message(case, db_session, oncall_name)
+
+    # send reminder to assignee to update the security event
+    send_event_update_prompt_reminder(case, db_session)
 
     if case and case.case_type.auto_close:
         # we transition the case to the closed state if its case type has auto close enabled

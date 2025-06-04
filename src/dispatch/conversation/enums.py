@@ -10,6 +10,7 @@ class ConversationCommands(DispatchEnum):
     report_incident = "report-incident"
     tactical_report = "tactical-report"
     update_incident = "update-incident"
+    escalate_case = "escalate-case"
 
 
 class ConversationButtonActions(DispatchEnum):
