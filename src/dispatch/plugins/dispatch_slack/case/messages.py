@@ -1,5 +1,7 @@
 import logging
 from typing import NamedTuple
+import html
+import re
 
 
 from blockkit import (
@@ -28,6 +30,7 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 )
 from dispatch.plugins.dispatch_slack.config import (
     MAX_SECTION_TEXT_LENGTH,
+    SlackConversationConfiguration,
 )
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
@@ -46,21 +49,61 @@ log = logging.getLogger(__name__)
 
 
 def map_priority_color(color: str) -> str:
-    """Maps a priority color to its corresponding emoji symbol."""
-    if not color:
-        return ""
+    """
+    Returns the first slack-compatible priority color for the given color.
 
-    # TODO we should probably restrict the possible colors to make this work
-    priority_color_mapping = {
-        "#9e9e9e": "⚪",
-        "#8bc34a": "🟢",
-        "#ffeb3b": "🟡",
-        "#ff9800": "🟠",
-        "#f44336": "🔴",
-        "#9c27b0": "🟣",
+    Args:
+        color (str): RGB Hex color string.
+
+    Returns:
+        str: Slack Color string.
+    """
+    color_mappings = {
+        "red": ":red_circle:",
+        "orange": ":orange_circle:",
+        "amber": ":yellow_circle:",
+        "green": ":green_circle:",
+        "blue": ":blue_circle:",
+        "purple": ":purple_circle:",
+        "grey": ":grey_circle:",
+        "gray": ":grey_circle:",
     }
 
-    return priority_color_mapping.get(color.lower(), "")
+    for mapping_color in color_mappings:
+        if mapping_color in color.lower():
+            return color_mappings[mapping_color]
+
+    return ":blue_circle:"
+
+
+def html_to_plain_text(html_content: str) -> str:
+    """
+    Convert HTML content to plain text for Slack messages.
+
+    Args:
+        html_content (str): HTML content to convert
+
+    Returns:
+        str: Plain text content
+    """
+    if not html_content:
+        return ""
+
+    # First decode any HTML entities
+    text = html.unescape(html_content)
+
+    # Remove HTML tags but preserve line breaks
+    text = re.sub(r'<br\s*/?>', '\n', text)
+    text = re.sub(r'</p>', '\n\n', text)
+    text = re.sub(r'<p[^>]*>', '', text)
+    text = re.sub(r'</?[^>]+>', '', text)
+
+    # Clean up extra whitespace
+    text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)  # Multiple newlines to double
+    text = re.sub(r'[ \t]+', ' ', text)  # Multiple spaces/tabs to single space
+    text = text.strip()
+
+    return text
 
 
 def create_case_message(case: Case, channel_id: str) -> list[Block]:
@@ -142,11 +185,13 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             ]
         )
     elif case.status == CaseStatus.closed:
+        # Convert HTML resolution to plain text for Slack display
+        resolution_text = html_to_plain_text(case.resolution) if case.resolution else ""
         blocks.extend(
             [
                 Section(text=f"*Resolution reason* \n {case.resolution_reason}"),
                 Section(
-                    text=f"*Resolution description* \n {case.resolution}"[:MAX_SECTION_TEXT_LENGTH]
+                    text=f"*Resolution description* \n {resolution_text}"[:MAX_SECTION_TEXT_LENGTH]
                 ),
                 Actions(
                     elements=[
