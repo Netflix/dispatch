@@ -60,3 +60,25 @@ class TagRead(TagBase):
 
 class TagPagination(Pagination):
     items: list[TagRead]
+
+
+# Tag recommendation models
+class TagRecommendation(DispatchBase):
+    """Model for a single tag recommendation."""
+
+    id: PrimaryKey
+    name: str
+    reason: str
+
+
+class TagTypeRecommendation(DispatchBase):
+    """Model for tag recommendations grouped by tag type."""
+
+    tag_type_id: PrimaryKey
+    tags: list[TagRecommendation]
+
+
+class TagRecommendationResponse(DispatchBase):
+    """Response model for tag recommendations."""
+
+    recommendations: list[TagTypeRecommendation]

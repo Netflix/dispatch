@@ -44,7 +44,7 @@
       </span>
       <v-card v-if="menu" class="tag-picker-dropdown-block">
         <!-- Initial state: Show generate button -->
-        <div v-if="!suggestionsGenerated && sampleSuggestions.length > 0" class="mb-4">
+        <div v-if="!suggestionsGenerated" class="mb-4">
           <div class="gradient-border-wrapper">
             <div class="white-bg-wrapper">
               <v-btn
@@ -68,7 +68,7 @@
 
         <!-- Suggestions panel: Show when generated (expanded or collapsed) -->
         <div
-          v-if="suggestionsGenerated && sampleSuggestions.length > 0"
+          v-if="suggestionsGenerated && tagSuggestions.length > 0"
           :class="[
             'mitre-suggestions-panel',
             suggestionsExpanded ? 'mb-4' : 'mb-3',
@@ -76,7 +76,13 @@
           ]"
         >
           <div :class="suggestionsExpanded ? 'suggestion-header mb-1' : 'suggestion-header mb-0'">
-            <div class="suggestion-title">GenAI suggests the following tags:</div>
+            <div
+              class="suggestion-title clickable"
+              @click="suggestionsExpanded = !suggestionsExpanded"
+              :title="suggestionsExpanded ? 'Collapse suggestions' : 'Expand suggestions'"
+            >
+              GenAI suggests the following tags:
+            </div>
             <v-btn
               icon
               size="small"
@@ -95,7 +101,7 @@
           <transition name="suggestion-collapse">
             <div v-if="suggestionsExpanded" class="suggestion-content">
               <div
-                v-for="(group, groupIdx) in sampleSuggestions"
+                v-for="(group, groupIdx) in tagSuggestions"
                 :key="'suggested-group-' + groupIdx"
                 class="suggestion-group mb-1"
               >
@@ -540,55 +546,8 @@ const vClickOutside = {
   },
 }
 
-// Sample data for demo purposes - make reactive so it can be updated from API
-const sampleSuggestions = ref([
-  {
-    tag_type_id: 135,
-    tags: [
-      {
-        id: 58019,
-        name: "Reconnaissance",
-        reason:
-          "The attacker could use the unauthenticated API to gather information about users by mapping phone numbers to email addresses.",
-      },
-      {
-        id: 58020,
-        name: "Collection",
-        reason:
-          "The ability to automate the extraction of email addresses by inputting phone numbers suggests a tactic focused on collecting sensitive data.",
-      },
-      {
-        id: 58021,
-        name: "Impact",
-        reason:
-          "The exposure of email addresses linked to phone numbers can lead to privacy violations or facilitate further attacks like phishing.",
-      },
-    ],
-  },
-  {
-    tag_type_id: 136,
-    tags: [
-      {
-        id: 58022,
-        name: "Active Scanning",
-        reason:
-          "This technique involves actively probing a target to gather information and identify vulnerabilities, which aligns with how an attacker might exploit the unauthenticated API.",
-      },
-      {
-        id: 58023,
-        name: "Gather Victim Identity Information",
-        reason:
-          "This technique encompasses collecting information about victims, such as email addresses and phone numbers, which is relevant given the incident's focus on extracting email addresses using phone numbers.",
-      },
-      {
-        id: 58024,
-        name: "Data from Cloud Storage",
-        reason:
-          "While not a perfect fit, this technique involves accessing data from cloud storage, relating to accessing user data stored or exposed through online services, such as the unauthenticated API.",
-      },
-    ],
-  },
-])
+// Tag suggestions from API - make reactive so it can be updated from API
+const tagSuggestions = ref([])
 
 function addSuggestedTag(tag) {
   if (!tag || !tag.id) return
@@ -608,28 +567,31 @@ async function generateSuggestions() {
   suggestionsLoading.value = true
 
   try {
-    // TODO: Replace with your actual AI suggestions API call
-    // Example API call structure following the pattern used in this file:
+    if (!currentProject.value?.id) {
+      console.error("No project ID available")
+      suggestionsLoading.value = false
+      return
+    }
 
-    // const aiSuggestionsPayload = {
-    //   project: currentProject.value?.name,
-    //   model: props.model,
-    //   modelId: props.modelId,
-    //   context: "incident", // or whatever context you need
-    //   // Add any other relevant data like incident description, etc.
-    // }
+    const response = await TagApi.getRecommendations(currentProject.value.id)
 
-    // const response = await AiSuggestionsApi.generateTags(aiSuggestionsPayload)
-    // sampleSuggestions.value = response.data.suggestions
+    // Handle the new response structure with recommendations field
+    const suggestions = response.data?.recommendations || response.recommendations || []
 
-    // For now, keeping the mock delay - remove this when implementing real API
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    // Ensure suggestions is an array
+    if (Array.isArray(suggestions)) {
+      tagSuggestions.value = suggestions
+    } else {
+      console.error("API response recommendations is not an array:", suggestions)
+      tagSuggestions.value = []
+    }
 
     suggestionsLoading.value = false
     suggestionsGenerated.value = true
     suggestionsExpanded.value = true
   } catch (error) {
     console.error("Error generating AI suggestions:", error)
+    tagSuggestions.value = []
     suggestionsLoading.value = false
     // You might want to show an error message to the user here
   }
@@ -657,6 +619,13 @@ async function generateSuggestions() {
   font-weight: 400;
   font-size: 15px;
   color: #888;
+}
+.suggestion-title.clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.suggestion-title.clickable:hover {
+  color: #555;
 }
 .collapse-btn {
   color: #666 !important;

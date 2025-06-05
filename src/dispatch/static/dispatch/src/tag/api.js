@@ -13,8 +13,8 @@ export default {
     return API.get(`${resource}/${tagId}`)
   },
 
-  getRecommendations(model, modelId) {
-    return API.get(`/${resource}/recommendations/${model}/${modelId}`)
+  getRecommendations(projectId) {
+    return API.get(`/${resource}/recommendations/${projectId}`)
   },
 
   create(payload) {
