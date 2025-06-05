@@ -19,8 +19,10 @@ from dispatch.plugin.models import PluginMetadata
 from dispatch.project.models import ProjectRead
 from dispatch.service.models import ServiceRead
 
+
 class IncidentType(ProjectMixin, Base):
     """SQLAlchemy model for incident type resources."""
+
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -99,6 +101,7 @@ listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 class Document(DispatchBase):
     """Pydantic model for a document related to an incident type."""
+
     id: PrimaryKey
     name: NameStr
     resource_type: str | None = None
@@ -110,6 +113,7 @@ class Document(DispatchBase):
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
     """Base Pydantic model for incident type resources."""
+
     name: NameStr
     visibility: str | None = None
     description: str | None = None
@@ -138,21 +142,25 @@ class IncidentTypeBase(DispatchBase):
 
 class IncidentTypeCreate(IncidentTypeBase):
     """Pydantic model for creating an incident type resource."""
+
     pass
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
     """Pydantic model for updating an incident type resource."""
+
     id: PrimaryKey | None = None
 
 
 class IncidentTypeRead(IncidentTypeBase):
     """Pydantic model for reading an incident type resource."""
+
     id: PrimaryKey
 
 
 class IncidentTypeReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal incident type resource."""
+
     id: PrimaryKey
     name: NameStr
     visibility: str | None = None
@@ -164,4 +172,5 @@ class IncidentTypeReadMinimal(DispatchBase):
 
 class IncidentTypePagination(Pagination):
     """Pydantic model for paginated incident type results."""
+
     items: list[IncidentTypeRead] = []

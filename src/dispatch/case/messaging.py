@@ -421,7 +421,7 @@ def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
                         "text": {"type": "plain_text", "text": "Update Case"},
                         "action_id": CaseNotificationActions.update,
                         "style": "primary",
-                        "value": button_metadata
+                        "value": button_metadata,
                     }
                 ],
             },
@@ -429,6 +429,7 @@ def send_event_update_prompt_reminder(case: Case, db_session: Session) -> None:
     )
 
     log.debug(f"Security Event update reminder sent to {case.assignee.individual.email}.")
+
 
 def send_event_paging_message(case: Case, db_session: Session, oncall_name: str) -> None:
     """

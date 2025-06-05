@@ -336,6 +336,7 @@ class CaseReadMinimal(CaseBase):
     assignee: ParticipantReadMinimal | None = None
     case_costs: list[CaseCostReadMinimal] = []
 
+
 class CaseReadMinimalWithExtras(CaseBase):
     """Pydantic model for reading minimal case data."""
 
@@ -451,10 +452,12 @@ class CasePagination(Pagination):
 
     items: list[CaseReadMinimal] = []
 
+
 class CasePaginationMinimalWithExtras(Pagination):
     """Pydantic model for paginated minimal case results."""
 
     items: list[CaseReadMinimalWithExtras] = []
+
 
 class CaseExpandedPagination(Pagination):
     """Pydantic model for paginated expanded case results."""

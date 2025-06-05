@@ -211,7 +211,7 @@ def test_calculate_incident_response_cost_without_cost_model(
     from datetime import timedelta, datetime, UTC
     from dispatch.incident_cost.service import (
         calculate_incident_response_cost_with_classic_model,
-        get_or_create_default_incident_response_cost
+        get_or_create_default_incident_response_cost,
     )
     from dispatch.incident_cost_type import service as incident_cost_type_service
 
@@ -255,9 +255,7 @@ def test_calculate_incident_response_cost_without_cost_model__update_cost(
     from datetime import timedelta, datetime, UTC
 
     from dispatch.incident import service as incident_service
-    from dispatch.incident_cost.service import (
-        calculate_incident_response_cost_with_classic_model
-    )
+    from dispatch.incident_cost.service import calculate_incident_response_cost_with_classic_model
     from dispatch.incident_cost_type import service as incident_cost_type_service
 
     incident = incident_service.get(db_session=session, incident_id=incident.id)

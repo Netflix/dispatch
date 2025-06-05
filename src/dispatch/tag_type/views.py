@@ -37,7 +37,7 @@ def get_tag_type(db_session: DbSession, tag_type_id: PrimaryKey):
                     "msg": "Tag type not found.",
                     "input": tag_type_id,
                 }
-            ]
+            ],
         )
     return tag_type
 
@@ -73,7 +73,7 @@ def update_tag_type(db_session: DbSession, tag_type_id: PrimaryKey, tag_type_in:
                     "msg": "Tag type not found.",
                     "input": tag_type_id,
                 }
-            ]
+            ],
         )
 
     try:
@@ -104,6 +104,6 @@ def delete_tag_type(db_session: DbSession, tag_type_id: PrimaryKey):
                     "msg": "Tag type not found.",
                     "input": tag_type_id,
                 }
-            ]
+            ],
         )
     delete(db_session=db_session, tag_type_id=tag_type_id)

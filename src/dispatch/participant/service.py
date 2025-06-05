@@ -60,9 +60,7 @@ def get_by_incident_id_and_role(
     )
 
 
-def get_by_case_id_and_role(
-    *, db_session: Session, case_id: int, role: str
-) -> Participant | None:
+def get_by_case_id_and_role(*, db_session: Session, case_id: int, role: str) -> Participant | None:
     """Get a participant by case id and role name."""
     return (
         db_session.query(Participant)

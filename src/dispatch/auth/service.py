@@ -152,7 +152,8 @@ def create(*, db_session, organization: str, user_in: (UserRegister | UserCreate
 
     # create the user
     user = DispatchUser(
-        **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}), password=password
+        **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}),
+        password=password,
     )
 
     org = organization_service.get_by_slug_or_raise(

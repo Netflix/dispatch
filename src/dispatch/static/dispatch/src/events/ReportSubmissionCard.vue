@@ -10,7 +10,7 @@
       <v-card-text>
         <p>
           Security Events are an input requiring triage and if deemed significant, can be escalated
-          to incidents for futher investigation and response. If you suspect a security issue and
+          to incidents for further investigation and response. If you suspect a security issue and
           need help, please fill out this form to the best of your abilities.
         </p>
         <v-container>

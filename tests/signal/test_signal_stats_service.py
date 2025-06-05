@@ -218,8 +218,7 @@ def test_get_signal_stats_with_signal_id_filter(session, entity, entity_type):
 
     # Assert: Without signal_id filter, we should count both instances
     assert (
-        signal_data_all.num_signal_instances_alerted
-        + signal_data_all.num_signal_instances_snoozed
+        signal_data_all.num_signal_instances_alerted + signal_data_all.num_signal_instances_snoozed
         == 3
     )
 

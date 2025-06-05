@@ -85,7 +85,10 @@ class EvergreenMixin(object):
     def overdue(self):
         """Returns True if the evergreen reminder is overdue."""
         now = datetime.now(timezone.utc)
-        if self.evergreen_last_reminder_at is not None and self.evergreen_reminder_interval is not None:
+        if (
+            self.evergreen_last_reminder_at is not None
+            and self.evergreen_reminder_interval is not None
+        ):
             next_reminder = self.evergreen_last_reminder_at + timedelta(
                 days=self.evergreen_reminder_interval
             )
@@ -112,6 +115,7 @@ class FeedbackMixin(object):
 # Pydantic models...
 class DispatchBase(BaseModel):
     """Base Pydantic model with shared config for Dispatch models."""
+
     model_config: ClassVar[ConfigDict] = ConfigDict(
         from_attributes=True,
         validate_assignment=True,
@@ -127,6 +131,7 @@ class DispatchBase(BaseModel):
 
 class Pagination(DispatchBase):
     """Pydantic model for paginated results."""
+
     itemsPerPage: int
     page: int
     total: int
@@ -134,11 +139,13 @@ class Pagination(DispatchBase):
 
 class PrimaryKeyModel(BaseModel):
     """Pydantic model for a primary key field."""
+
     id: PrimaryKey
 
 
 class EvergreenBase(DispatchBase):
     """Base Pydantic model for evergreen resources."""
+
     evergreen: bool | None = False
     evergreen_owner: EmailStr | None = None
     evergreen_reminder_interval: int | None = 90
@@ -147,6 +154,7 @@ class EvergreenBase(DispatchBase):
 
 class ResourceBase(DispatchBase):
     """Base Pydantic model for resource-related fields."""
+
     resource_type: str | None = None
     resource_id: str | None = None
     weblink: str | None = None
@@ -154,6 +162,7 @@ class ResourceBase(DispatchBase):
 
 class ContactBase(DispatchBase):
     """Base Pydantic model for contact-related fields."""
+
     email: EmailStr
     name: str | None = None
     is_active: bool | None = True

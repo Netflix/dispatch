@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError

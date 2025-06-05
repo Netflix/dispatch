@@ -6,10 +6,11 @@ from dispatch.case.type.models import CaseTypeRead
 from dispatch.case.severity.models import CaseSeverityRead
 from dispatch.case.priority.models import CasePriorityRead
 
+
 def test_create(session, case, individual_contact, participant_role):
     from dispatch.feedback.incident.service import create
     from dispatch.feedback.incident.models import FeedbackCreate
-    from dispatch.participant.models import Participant # ORM model
+    from dispatch.participant.models import Participant  # ORM model
 
     # Ensure the case has a reporter with an individual contact
     # This would typically be set up by the CaseFactory
@@ -17,17 +18,16 @@ def test_create(session, case, individual_contact, participant_role):
         # Create a minimal reporter participant if one doesn't exist
         reporter_participant = Participant(
             individual=individual_contact,
-            case_id=case.id, # Link to the current case
-            participant_roles=[participant_role] # Add a default role
+            case_id=case.id,  # Link to the current case
+            participant_roles=[participant_role],  # Add a default role
         )
         session.add(reporter_participant)
         case.reporter = reporter_participant
-        session.commit() # Commit to get IDs if necessary and establish relationship
+        session.commit()  # Commit to get IDs if necessary and establish relationship
 
-    if not case.assignee: # Also ensure assignee for CaseReadMinimal
-        case.assignee = case.reporter # Or another valid participant
+    if not case.assignee:  # Also ensure assignee for CaseReadMinimal
+        case.assignee = case.reporter  # Or another valid participant
         session.commit()
-
 
     rating = FeedbackRating.neither_satisfied_nor_dissatisfied
     feedback = "The incident commander did an excellent job"
@@ -41,7 +41,8 @@ def test_create(session, case, individual_contact, participant_role):
             title=case.title,
             description=case.description,
             resolution=case.resolution,
-            resolution_reason=case.resolution_reason or "Resolved successfully",  # Add default value if None
+            resolution_reason=case.resolution_reason
+            or "Resolved successfully",  # Add default value if None
             status=case.status,
             visibility=case.visibility,
             closed_at=case.closed_at,
@@ -113,7 +114,9 @@ def test_update(session, feedback, individual_contact, case):  # Added case fixt
         feedback.participant.individual = individual_contact
         session.commit()
 
-    if feedback.case is not None and feedback.case.assignee is None:  # Added 'is not None' and 'is None'
+    if (
+        feedback.case is not None and feedback.case.assignee is None
+    ):  # Added 'is not None' and 'is None'
         # Use feedback's participant as assignee if none, or another valid participant
         feedback.case.assignee = feedback.participant
         session.commit()
@@ -128,29 +131,19 @@ def test_update(session, feedback, individual_contact, case):  # Added case fixt
             id=feedback.case.id if feedback.case is not None else None,
             name=feedback.case.name if feedback.case is not None else None,
             title=feedback.case.title if feedback.case is not None else None,
-            description=(
-                feedback.case.description if feedback.case is not None else None
-            ),
-            resolution=(
-                feedback.case.resolution if feedback.case is not None else None
-            ),
+            description=(feedback.case.description if feedback.case is not None else None),
+            resolution=(feedback.case.resolution if feedback.case is not None else None),
             resolution_reason=(
-                feedback.case.resolution_reason if feedback.case is not None else "Resolved successfully"
+                feedback.case.resolution_reason
+                if feedback.case is not None
+                else "Resolved successfully"
             ),  # Add resolution_reason with default value if None
             status=feedback.case.status if feedback.case is not None else None,
-            visibility=(
-                feedback.case.visibility if feedback.case is not None else None
-            ),
-            closed_at=(
-                feedback.case.closed_at if feedback.case is not None else None
-            ),
-            reported_at=(
-                feedback.case.reported_at if feedback.case is not None else None
-            ),
+            visibility=(feedback.case.visibility if feedback.case is not None else None),
+            closed_at=(feedback.case.closed_at if feedback.case is not None else None),
+            reported_at=(feedback.case.reported_at if feedback.case is not None else None),
             dedicated_channel=(
-                feedback.case.dedicated_channel
-                if feedback.case is not None
-                else None
+                feedback.case.dedicated_channel if feedback.case is not None else None
             ),
             case_type=(
                 CaseTypeRead.model_validate(feedback.case.case_type)

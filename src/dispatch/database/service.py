@@ -273,8 +273,8 @@ def get_query_models(query):
         # Try to get the statement from the query
         stmt = query.statement
 
-        # Extract entities from the statement's froms
-        for from_obj in stmt.froms:
+        # Extract entities from the statement's forms
+        for from_obj in stmt.forms:
             if hasattr(from_obj, "entity"):
                 # For select statements with an entity
                 if from_obj.entity not in models:

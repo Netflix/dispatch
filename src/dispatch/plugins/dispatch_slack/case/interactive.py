@@ -287,7 +287,7 @@ def handle_update_case_command(
         ),
         case_visibility_select(
             initial_option={"text": case.visibility, "value": case.visibility},
-        )
+        ),
     ]
 
     modal = Modal(

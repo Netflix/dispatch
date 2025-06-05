@@ -11,6 +11,7 @@ from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey
 
 class Conversation(Base, ResourceMixin):
     """SQLAlchemy model for conversation resources."""
+
     id = Column(Integer, primary_key=True)
     channel_id = Column(String)
     thread_id = Column(String)
@@ -22,22 +23,26 @@ class Conversation(Base, ResourceMixin):
 # Pydantic models...
 class ConversationBase(ResourceBase):
     """Base Pydantic model for conversation resources."""
+
     channel_id: str | None = None
     thread_id: str | None = None
 
 
 class ConversationCreate(ConversationBase):
     """Pydantic model for creating a conversation resource."""
+
     pass
 
 
 class ConversationUpdate(ConversationBase):
     """Pydantic model for updating a conversation resource."""
+
     pass
 
 
 class ConversationRead(ConversationBase):
     """Pydantic model for reading a conversation resource."""
+
     id: PrimaryKey
     description: str | None = None
 
@@ -50,4 +55,5 @@ class ConversationRead(ConversationBase):
 
 class ConversationNested(ConversationBase):
     """Pydantic model for a nested conversation resource."""
+
     pass

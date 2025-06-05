@@ -152,12 +152,14 @@ def update_instance(
                 db_session=db_session, service_type=plugin_instance.plugin.slug, is_active=True
             )
             if oncall_services:
-                raise ValidationError([
-                    {
-                        "msg": "Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. ",
-                        "loc": "plugin_instance",
-                    }
-                ])
+                raise ValidationError(
+                    [
+                        {
+                            "msg": "Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. ",
+                            "loc": "plugin_instance",
+                        }
+                    ]
+                )
 
     for field in plugin_instance_data:
         if field in update_data:
@@ -185,9 +187,7 @@ def get_plugin_event_by_slug(*, db_session: Session, slug: str) -> PluginEvent |
     return db_session.query(PluginEvent).filter(PluginEvent.slug == slug).one_or_none()
 
 
-def get_all_events_for_plugin(
-    *, db_session: Session, plugin_id: int
-) -> list[PluginEvent | None]:
+def get_all_events_for_plugin(*, db_session: Session, plugin_id: int) -> list[PluginEvent | None]:
     """Returns all plugin events for a given plugin."""
     return db_session.query(PluginEvent).filter(PluginEvent.plugin_id == plugin_id).all()
 

@@ -1,4 +1,3 @@
-
 from sqlalchemy_filters import apply_filters
 
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance

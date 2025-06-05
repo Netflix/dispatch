@@ -1,4 +1,3 @@
-
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import true
 
@@ -39,12 +38,14 @@ def get_by_name_or_raise(*, db_session: Session, workflow_in: WorkflowRead) -> W
     workflow = get_by_name(db_session=db_session, name=workflow_in.name)
 
     if not workflow:
-        raise ValidationError([
-            {
-                "msg": "Workflow not found.",
-                "loc": "workflow",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "msg": "Workflow not found.",
+                    "loc": "workflow",
+                }
+            ]
+        )
     return workflow
 
 

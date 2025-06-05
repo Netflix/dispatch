@@ -16,9 +16,7 @@ def get(*, db_session, case_cost_type_id: int) -> CaseCostType | None:
     return db_session.query(CaseCostType).filter(CaseCostType.id == case_cost_type_id).one_or_none()
 
 
-def get_response_cost_type(
-    *, db_session, project_id: int, model_type: str
-) -> CaseCostType | None:
+def get_response_cost_type(*, db_session, project_id: int, model_type: str) -> CaseCostType | None:
     """Gets the default response cost type."""
     return (
         db_session.query(CaseCostType)
@@ -52,9 +50,7 @@ def get_or_create_response_cost_type(
     return case_cost_type
 
 
-def get_all_response_case_cost_types(
-    *, db_session, project_id: int
-) -> list[CaseCostType | None]:
+def get_all_response_case_cost_types(*, db_session, project_id: int) -> list[CaseCostType | None]:
     """Returns all response case cost types.
 
     This function queries the database for all case cost types that are marked as the response cost type.

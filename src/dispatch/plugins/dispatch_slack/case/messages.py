@@ -30,7 +30,6 @@ from dispatch.plugins.dispatch_slack.case.enums import (
 )
 from dispatch.plugins.dispatch_slack.config import (
     MAX_SECTION_TEXT_LENGTH,
-    SlackConversationConfiguration,
 )
 from dispatch.plugins.dispatch_slack.models import (
     CaseSubjects,
@@ -93,14 +92,14 @@ def html_to_plain_text(html_content: str) -> str:
     text = html.unescape(html_content)
 
     # Remove HTML tags but preserve line breaks
-    text = re.sub(r'<br\s*/?>', '\n', text)
-    text = re.sub(r'</p>', '\n\n', text)
-    text = re.sub(r'<p[^>]*>', '', text)
-    text = re.sub(r'</?[^>]+>', '', text)
+    text = re.sub(r"<br\s*/?>", "\n", text)
+    text = re.sub(r"</p>", "\n\n", text)
+    text = re.sub(r"<p[^>]*>", "", text)
+    text = re.sub(r"</?[^>]+>", "", text)
 
     # Clean up extra whitespace
-    text = re.sub(r'\n\s*\n\s*\n', '\n\n', text)  # Multiple newlines to double
-    text = re.sub(r'[ \t]+', ' ', text)  # Multiple spaces/tabs to single space
+    text = re.sub(r"\n\s*\n\s*\n", "\n\n", text)  # Multiple newlines to double
+    text = re.sub(r"[ \t]+", " ", text)  # Multiple spaces/tabs to single space
     text = text.strip()
 
     return text

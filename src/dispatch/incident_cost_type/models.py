@@ -20,6 +20,7 @@ from dispatch.project.models import ProjectRead
 # SQLAlchemy Model
 class IncidentCostType(Base, TimeStampMixin, ProjectMixin):
     """SQLAlchemy model for incident cost type resources."""
+
     # columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -41,6 +42,7 @@ listen(IncidentCostType.default, "set", ensure_unique_default_per_project)
 # Pydantic Models
 class IncidentCostTypeBase(DispatchBase):
     """Base Pydantic model for incident cost type resources."""
+
     name: NameStr
     description: str | None = None
     category: str | None = None
@@ -51,20 +53,24 @@ class IncidentCostTypeBase(DispatchBase):
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):
     """Pydantic model for creating an incident cost type."""
+
     project: ProjectRead
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
     """Pydantic model for updating an incident cost type."""
+
     id: PrimaryKey | None = None
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
     """Pydantic model for reading an incident cost type."""
+
     id: PrimaryKey
     created_at: datetime
 
 
 class IncidentCostTypePagination(Pagination):
     """Pydantic model for paginated incident cost type results."""
+
     items: list[IncidentCostTypeRead] = []

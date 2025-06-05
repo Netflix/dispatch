@@ -16,9 +16,11 @@ from dispatch.task.models import TaskRead
 from dispatch.team.models import TeamContactRead
 from dispatch.term.models import TermRead
 
+
 # Pydantic models...
 class SearchBase(DispatchBase):
     """Base model for search queries."""
+
     query: str | None = None
 
 
@@ -28,6 +30,7 @@ class SearchRequest(SearchBase):
 
 class ContentResponse(DispatchBase):
     """Model for search content response."""
+
     documents: list[DocumentRead] | None = Field(default_factory=list, alias="Document")
     incidents: list[IncidentRead] | None = Field(default_factory=list, alias="Incident")
     tasks: list[TaskRead] | None = Field(default_factory=list, alias="Task")
@@ -37,7 +40,9 @@ class ContentResponse(DispatchBase):
     sources: list[SourceRead] | None = Field(default_factory=list, alias="Source")
     queries: list[QueryRead] | None = Field(default_factory=list, alias="Query")
     teams: list[TeamContactRead] | None = Field(default_factory=list, alias="TeamContact")
-    individuals: list[IndividualContactRead] | None = Field(default_factory=list, alias="IndividualContact")
+    individuals: list[IndividualContactRead] | None = Field(
+        default_factory=list, alias="IndividualContact"
+    )
     services: list[ServiceRead] | None = Field(default_factory=list, alias="Service")
     cases: list[CaseRead] | None = Field(default_factory=list, alias="Case")
     model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True)
@@ -45,5 +50,6 @@ class ContentResponse(DispatchBase):
 
 class SearchResponse(DispatchBase):
     """Model for a search response."""
+
     query: str | None = None
     results: ContentResponse
