@@ -32,6 +32,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     icon = Column(String)
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
     use_for_project_folder = Column(Boolean, default=False, server_default="f")
+    genai_suggestions = Column(Boolean, default=False)
 
 
 # Pydantic models
@@ -49,6 +50,7 @@ class TagTypeBase(DispatchBase):
     color: str | None = None
     icon: str | None = None
     use_for_project_folder: bool | None = False
+    genai_suggestions: bool | None = False
 
 
 class TagTypeCreate(TagTypeBase):

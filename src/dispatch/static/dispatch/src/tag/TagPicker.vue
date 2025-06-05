@@ -1,33 +1,25 @@
 <template>
   <div>
-    <span v-click-outside="closeMenu"
-      ><v-text-field
-        readonly
-        label="Tags"
-        @click="toggleMenu"
-        variant="outlined"
-        v-model="dummyText"
-        class="main-panel"
-        :rules="[check_for_error]"
-      >
-        <template #prepend-inner>
-          <v-icon class="panel-button">
-            {{ menu ? "mdi-minus" : "mdi-plus" }}
-          </v-icon>
-        </template>
-        <template #append v-if="showCopy">
-          <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
-        </template>
-        <div class="form-container mt-2">
+    <div v-click-outside="closeMenu">
+      <span class="tag-picker-row">
+        <div class="tag-picker-outline">
+          <v-icon class="panel-button tag-add-icon" @click="toggleMenu" style="cursor: pointer">{{
+            menu ? "mdi-minus" : "mdi-plus"
+          }}</v-icon>
+          <div class="tag-picker-label">Tags</div>
           <div class="chip-group" v-show="selectedItems.length">
             <span v-for="(item, index) in selectedItems" :key="item">
               <v-chip
                 label
                 :key="index"
-                :color="item.tag_type?.color"
                 closable
                 class="tag-chip"
+                size="small"
                 @click:close="removeItem(item.id)"
+                :style="{
+                  backgroundColor: (item.tag_type?.color || '#e0e0e0') + '22',
+                  color: item.tag_type?.color || '#333',
+                }"
               >
                 <span class="mr-2">
                   <v-icon
@@ -42,8 +34,115 @@
             </span>
           </div>
         </div>
-      </v-text-field>
-      <v-card v-if="menu">
+        <v-icon
+          v-if="showCopy"
+          class="panel-button tag-copy-icon"
+          @click.stop="copyTags"
+          style="cursor: pointer"
+          >mdi-content-copy</v-icon
+        >
+      </span>
+      <v-card v-if="menu" class="tag-picker-dropdown-block">
+        <!-- Initial state: Show generate button -->
+        <div v-if="!suggestionsGenerated && sampleSuggestions.length > 0" class="mb-4">
+          <div class="gradient-border-wrapper">
+            <div class="white-bg-wrapper">
+              <v-btn
+                variant="flat"
+                size="small"
+                @click="generateSuggestions"
+                :loading="suggestionsLoading"
+                class="generate-suggestions-btn"
+                :style="{
+                  backgroundColor: '#ffffff !important',
+                  background: '#ffffff !important',
+                  color: '#1a1a1a !important',
+                }"
+              >
+                <v-icon start size="18" color="#ffc107">mdi-sparkles</v-icon>
+                <span class="generate-btn-text">Generate AI tag suggestions</span>
+              </v-btn>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggestions panel: Show when generated (expanded or collapsed) -->
+        <div
+          v-if="suggestionsGenerated && sampleSuggestions.length > 0"
+          :class="[
+            'mitre-suggestions-panel',
+            suggestionsExpanded ? 'mb-4' : 'mb-3',
+            { collapsed: !suggestionsExpanded },
+          ]"
+        >
+          <div :class="suggestionsExpanded ? 'suggestion-header mb-1' : 'suggestion-header mb-0'">
+            <div class="suggestion-title">GenAI suggests the following tags:</div>
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              @click="suggestionsExpanded = !suggestionsExpanded"
+              class="collapse-btn"
+              :title="suggestionsExpanded ? 'Collapse suggestions' : 'Expand suggestions'"
+            >
+              <v-icon size="18">
+                {{ suggestionsExpanded ? "mdi-chevron-up" : "mdi-chevron-down" }}
+              </v-icon>
+            </v-btn>
+          </div>
+
+          <!-- Suggestion content - only show when expanded -->
+          <transition name="suggestion-collapse">
+            <div v-if="suggestionsExpanded" class="suggestion-content">
+              <div
+                v-for="(group, groupIdx) in sampleSuggestions"
+                :key="'suggested-group-' + groupIdx"
+                class="suggestion-group mb-1"
+              >
+                <span class="suggestion-group-label">
+                  <span>{{ getTagType(group.tag_type_id).name }}</span
+                  >:
+                </span>
+                <span
+                  v-for="tag in group.tags"
+                  :key="'suggested-tag-' + tag.id"
+                  class="suggestion-chip-wrapper"
+                >
+                  <v-chip
+                    class="suggestion-chip tag-chip mr-1"
+                    :style="{
+                      backgroundColor: (getTagType(group.tag_type_id).color || '#e0e0e0') + '22',
+                      color: getTagType(group.tag_type_id).color || '#333',
+                      cursor: 'pointer',
+                    }"
+                    size="small"
+                    label
+                    rounded
+                    :title="tag.reason"
+                    @click="addSuggestedTag(tag)"
+                  >
+                    <v-icon
+                      start
+                      size="16"
+                      :color="getTagType(group.tag_type_id).color"
+                      v-if="getTagType(group.tag_type_id).icon"
+                    >
+                      mdi-{{ getTagType(group.tag_type_id).icon }}
+                    </v-icon>
+                    {{ tag.name }}
+                    <v-icon class="add-chip ml-1" size="16">mdi-plus</v-icon>
+                  </v-chip>
+                </span>
+              </div>
+              <div class="suggestion-help-text mt-2">
+                <v-icon size="16" color="#ffc107" class="mr-1">mdi-lightbulb-on-outline</v-icon>
+                Tip: Hover over a suggested tag to see why it was recommended.
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <!-- Regular tag picker - always visible when menu is open -->
         <div>
           <v-text-field
             hide-details
@@ -121,7 +220,7 @@
           </ul>
         </div>
       </v-card>
-    </span>
+    </div>
     <v-snackbar v-model="snackbar" :timeout="2400" color="success">
       <v-row class="fill-height" align="center">
         <v-col class="text-center">Tags copied to the clipboard</v-col>
@@ -133,30 +232,26 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue"
 import { cloneDeep } from "lodash"
-import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
-
-const ALL_DISCOVERABILITY_TYPES = [
-  { model: "TagType", field: "discoverable_incident", op: "==", value: "true" },
-  { model: "TagType", field: "discoverable_case", op: "==", value: "true" },
-  { model: "TagType", field: "discoverable_signal", op: "==", value: "true" },
-  { model: "TagType", field: "discoverable_query", op: "==", value: "true" },
-  { model: "TagType", field: "discoverable_source", op: "==", value: "true" },
-  { model: "TagType", field: "discoverable_document", op: "==", value: "true" },
-]
+import SearchUtils from "@/search/utils"
+import TagTypeApi from "@/tag_type/api"
 
 const menu = ref(false)
 const dummyText = ref(" ")
 const items = ref([])
 const total = ref(0)
-const more = ref(false)
 const groups = ref([])
 const searchQuery = ref("")
 const filteredMenuItems = ref([])
 const isDropdownOpen = ref(false)
-const loading = ref(true)
 const error = ref(true)
 const snackbar = ref(false)
+const loading = ref(false)
+const more = ref(false)
+const tagTypes = ref({})
+const suggestionsExpanded = ref(false)
+const suggestionsLoading = ref(false)
+const suggestionsGenerated = ref(false)
 
 const props = defineProps({
   modelValue: {
@@ -184,34 +279,6 @@ const props = defineProps({
 })
 const currentProject = ref(props.project)
 
-watch(
-  () => props.project,
-  (newVal) => {
-    if (newVal === currentProject.value) {
-      return
-    }
-    currentProject.value = newVal
-    fetchData()
-    validateTags(selectedItems.value)
-  }
-)
-const check_for_error = () => {
-  return error.value
-}
-
-function are_required_tags_selected(sel) {
-  // iterate through all tag types and ensure that at least one tag of each required tag type is selected
-  const tagTypes = groups.value
-  for (let i = 0; i < tagTypes.length; i++) {
-    if (tagTypes[i].isRequired) {
-      if (!sel.some((item) => item.tag_type?.id === tagTypes[i]?.id)) {
-        return false
-      }
-    }
-  }
-  return true
-}
-
 const fetchData = () => {
   if (!currentProject.value) {
     return
@@ -220,7 +287,7 @@ const fetchData = () => {
 
   let filterOptions = {
     q: null,
-    itemsPerPage: 100,
+    itemsPerPage: 500,
     sortBy: ["tag_type.name"],
     descending: [false],
   }
@@ -234,29 +301,11 @@ const fetchData = () => {
   // add a filter to only return discoverable tags
   filters["tagFilter"] = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
 
-  if (filterOptions.q && filterOptions.q.indexOf("/") != -1) {
-    // modify the query and add a tag type filter
-    let [tagType, query] = filterOptions.q.split("/")
-    filterOptions.q = query
-    if (props.model) {
-      filters["tagTypeFilter"] = [
-        { model: "TagType", field: "name", op: "==", value: tagType },
-        { model: "TagType", field: "discoverable_" + props.model, op: "==", value: "true" },
-      ]
-    } else {
-      filters["tagTypeFilter"] = [
-        { model: "TagType", field: "name", op: "==", value: tagType },
-        ...ALL_DISCOVERABILITY_TYPES,
-      ]
-    }
-  } else {
-    if (props.model) {
-      filters["tagTypeFilter"] = [
-        { model: "TagType", field: "discoverable_" + props.model, op: "==", value: "true" },
-      ]
-    } else {
-      filters["tagTypeFilter"] = ALL_DISCOVERABILITY_TYPES
-    }
+  // Simplified tag type filtering - only filter by model if specified
+  if (props.model) {
+    filters["tagTypeFilter"] = [
+      { model: "TagType", field: "discoverable_" + props.model, op: "==", value: "true" },
+    ]
   }
 
   filterOptions = {
@@ -266,22 +315,76 @@ const fetchData = () => {
 
   filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
-  TagApi.getAll(filterOptions).then((response) => {
-    items.value = response.data.items
-    total.value = response.data.total
+  TagApi.getAll(filterOptions)
+    .then((response) => {
+      items.value = response.data.items
+      total.value = response.data.total
 
-    if (items.value.length < total.value) {
-      more.value = true
-    } else {
-      more.value = false
+      if (items.value.length < total.value) {
+        more.value = true
+      } else {
+        more.value = false
+      }
+      groups.value = convertData(items.value)
+      loading.value = false
+      validateTags(selectedItems.value)
+    })
+    .catch((error) => {
+      console.error("Error fetching tags:", error)
+      loading.value = false
+    })
+}
+
+async function fetchTagTypes() {
+  const resp = await TagTypeApi.getAll({ itemsPerPage: 5000 })
+  tagTypes.value = Object.fromEntries(resp.data.items.map((tt) => [tt.id, tt]))
+
+  // Add sample tag types for demo purposes if they don't exist
+  if (!tagTypes.value[135]) {
+    tagTypes.value[135] = {
+      id: 135,
+      name: "MITRE Tactics",
+      color: "#1976d2",
+      icon: "bullseye-arrow",
     }
-    groups.value = convertData(items.value)
-    loading.value = false
-    validateTags(selectedItems.value)
-  })
+  }
+  if (!tagTypes.value[136]) {
+    tagTypes.value[136] = {
+      id: 136,
+      name: "MITRE Techniques",
+      color: "#388e3c",
+      icon: "tools",
+    }
+  }
 }
 
 onMounted(fetchData)
+onMounted(fetchTagTypes)
+
+watch(
+  () => props.project,
+  (newVal) => {
+    if (newVal === currentProject.value) {
+      return
+    }
+    currentProject.value = newVal
+    fetchData()
+    validateTags(selectedItems.value)
+  }
+)
+
+function are_required_tags_selected(sel) {
+  // iterate through all tag types and ensure that at least one tag of each required tag type is selected
+  const tagTypes = groups.value
+  for (let i = 0; i < tagTypes.length; i++) {
+    if (tagTypes[i].isRequired) {
+      if (!sel.some((item) => item.tag_type?.id === tagTypes[i]?.id)) {
+        return false
+      }
+    }
+  }
+  return true
+}
 
 const emit = defineEmits(["update:modelValue"])
 
@@ -342,7 +445,9 @@ const closeMenu = () => {
 }
 
 const toggleMenu = () => {
+  console.log("Toggle menu clicked, current menu state:", menu.value)
   menu.value = !menu.value
+  console.log("New menu state:", menu.value)
 }
 
 const showDropdown = (state) => {
@@ -386,6 +491,20 @@ const getBackgroundColorAsStyle = (color) => {
 
 const convertData = (data) => {
   var groupedObject = data.reduce(function (r, a) {
+    // Filter out tag types where all discoverability fields are false
+    const tagType = a.tag_type
+    const hasAnyDiscoverability =
+      tagType.discoverable_incident ||
+      tagType.discoverable_case ||
+      tagType.discoverable_signal ||
+      tagType.discoverable_query ||
+      tagType.discoverable_source ||
+      tagType.discoverable_document
+
+    if (!hasAnyDiscoverability) {
+      return r // Skip this tag type
+    }
+
     if (!r[a.tag_type.id]) {
       r[a.tag_type.id] = {
         id: a.tag_type.id,
@@ -420,6 +539,317 @@ const vClickOutside = {
     document.body.removeEventListener("click", el.clickOutsideEvent)
   },
 }
+
+// Sample data for demo purposes - make reactive so it can be updated from API
+const sampleSuggestions = ref([
+  {
+    tag_type_id: 135,
+    tags: [
+      {
+        id: 58019,
+        name: "Reconnaissance",
+        reason:
+          "The attacker could use the unauthenticated API to gather information about users by mapping phone numbers to email addresses.",
+      },
+      {
+        id: 58020,
+        name: "Collection",
+        reason:
+          "The ability to automate the extraction of email addresses by inputting phone numbers suggests a tactic focused on collecting sensitive data.",
+      },
+      {
+        id: 58021,
+        name: "Impact",
+        reason:
+          "The exposure of email addresses linked to phone numbers can lead to privacy violations or facilitate further attacks like phishing.",
+      },
+    ],
+  },
+  {
+    tag_type_id: 136,
+    tags: [
+      {
+        id: 58022,
+        name: "Active Scanning",
+        reason:
+          "This technique involves actively probing a target to gather information and identify vulnerabilities, which aligns with how an attacker might exploit the unauthenticated API.",
+      },
+      {
+        id: 58023,
+        name: "Gather Victim Identity Information",
+        reason:
+          "This technique encompasses collecting information about victims, such as email addresses and phone numbers, which is relevant given the incident's focus on extracting email addresses using phone numbers.",
+      },
+      {
+        id: 58024,
+        name: "Data from Cloud Storage",
+        reason:
+          "While not a perfect fit, this technique involves accessing data from cloud storage, relating to accessing user data stored or exposed through online services, such as the unauthenticated API.",
+      },
+    ],
+  },
+])
+
+function addSuggestedTag(tag) {
+  if (!tag || !tag.id) return
+  // Find the full tag object from items.value
+  const fullTag = items.value.find((t) => t.id === tag.id)
+  if (!fullTag) return
+  if (!selectedItems.value.some((item) => item.id === fullTag.id)) {
+    selectedItems.value = [...selectedItems.value, fullTag]
+  }
+}
+
+function getTagType(tag_type_id) {
+  return tagTypes.value[tag_type_id] || {}
+}
+
+async function generateSuggestions() {
+  suggestionsLoading.value = true
+
+  try {
+    // TODO: Replace with your actual AI suggestions API call
+    // Example API call structure following the pattern used in this file:
+
+    // const aiSuggestionsPayload = {
+    //   project: currentProject.value?.name,
+    //   model: props.model,
+    //   modelId: props.modelId,
+    //   context: "incident", // or whatever context you need
+    //   // Add any other relevant data like incident description, etc.
+    // }
+
+    // const response = await AiSuggestionsApi.generateTags(aiSuggestionsPayload)
+    // sampleSuggestions.value = response.data.suggestions
+
+    // For now, keeping the mock delay - remove this when implementing real API
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    suggestionsLoading.value = false
+    suggestionsGenerated.value = true
+    suggestionsExpanded.value = true
+  } catch (error) {
+    console.error("Error generating AI suggestions:", error)
+    suggestionsLoading.value = false
+    // You might want to show an error message to the user here
+  }
+}
 </script>
 
 <style scoped src="@/styles/tagpicker.scss"></style>
+<style scoped>
+.mitre-suggestions-panel {
+  background: #f5f7fa;
+  border-radius: 6px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: padding 0.2s ease;
+}
+.mitre-suggestions-panel.collapsed {
+  padding: 8px 16px;
+}
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.suggestion-title {
+  font-weight: 400;
+  font-size: 15px;
+  color: #888;
+}
+.collapse-btn {
+  color: #666 !important;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+.collapse-btn:hover {
+  opacity: 1;
+}
+.collapse-btn.v-btn {
+  border: none !important;
+  box-shadow: none !important;
+}
+.collapse-btn.v-btn .v-btn__overlay {
+  display: none !important;
+}
+
+.suggestion-content {
+  overflow: hidden;
+}
+
+.suggestion-collapse-enter-active,
+.suggestion-collapse-leave-active {
+  transition: all 0.3s ease;
+  max-height: 500px;
+  opacity: 1;
+}
+
+.suggestion-collapse-enter-from,
+.suggestion-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.suggestion-group-label {
+  font-weight: 600;
+  margin-right: 8px;
+}
+.suggestion-chip-wrapper {
+  display: inline-block;
+}
+.suggestion-chip {
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.tactic-chip {
+  background: #e3f2fd !important;
+  color: #1a237e !important;
+}
+.technique-chip {
+  background: #e8f5e9 !important;
+  color: #1b5e20 !important;
+}
+.add-chip {
+  margin-left: 4px;
+  color: #388e3c;
+}
+.suggestion-help-text {
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 0;
+}
+.tag-picker-row {
+  display: flex;
+  align-items: flex-start;
+}
+.tag-picker-outline {
+  position: relative;
+  flex: 1;
+  border: 1.5px solid #cfd8dc;
+  border-radius: 8px;
+  padding: 12px 16px 8px 40px; /* left padding for icon */
+  background: #fff;
+  min-height: 56px;
+  margin-bottom: 16px;
+}
+.tag-add-icon {
+  position: absolute;
+  left: 12px;
+  top: 16px;
+  z-index: 2;
+}
+.tag-copy-icon {
+  margin-left: 12px;
+  margin-top: 8px;
+}
+.tag-picker-label {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  background: #fff;
+  padding: 0 4px;
+  font-size: 13px;
+  color: #757575;
+  z-index: 1;
+}
+.tag-picker-dropdown,
+.tag-picker-dropdown-wrapper {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  z-index: auto !important;
+  margin-top: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+.tag-picker-dropdown-block {
+  margin-bottom: 16px;
+}
+
+.gradient-border-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(45deg, #00d4ff, #3b82f6, #8b5cf6, #ec4899, #00d4ff);
+  background-size: 300% 300%;
+  animation: gradientBorder 3s ease infinite;
+}
+
+@keyframes gradientBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.generate-suggestions-btn {
+  color: #1a1a1a !important;
+  border: none !important;
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  --v-theme-surface: #ffffff !important;
+  --v-theme-on-surface: #1a1a1a !important;
+}
+
+.generate-suggestions-btn .v-btn__content {
+  color: #1a1a1a !important;
+}
+
+.generate-suggestions-btn.v-btn {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.generate-suggestions-btn.v-btn .v-btn__underlay {
+  background-color: #ffffff !important;
+}
+
+.generate-suggestions-btn.v-btn .v-btn__overlay {
+  background: #ffffff !important;
+  opacity: 0 !important;
+}
+
+.white-bg-wrapper {
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.gradient-border-wrapper .v-btn--variant-flat {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: none !important;
+}
+
+.generate-suggestions-btn .generate-btn-text {
+  font-weight: normal;
+  text-transform: none;
+  color: #1a1a1a;
+}
+
+/* .tag-chip {
+  font-size: 15px;
+  padding: 0 12px;
+  height: 32px;
+} */
+</style>

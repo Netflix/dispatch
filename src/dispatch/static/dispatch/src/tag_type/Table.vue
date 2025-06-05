@@ -33,28 +33,31 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.data-table-actions="{ item }">
+            <template #item.data-table-actions="slotProps">
               <v-menu location="right" origin="overlap">
-                <template #activator="{ props }">
-                  <v-btn icon variant="text" v-bind="props">
+                <template #activator="menuProps">
+                  <v-btn icon variant="text" v-bind="menuProps.props">
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item @click="createEditShow(item)">
+                  <v-list-item @click="createEditShow(slotProps.item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </v-menu>
             </template>
-            <template #item.discoverability="{ item }">
-              <span>{{ combine(item) }}</span>
+            <template #item.discoverability="slotProps">
+              <span>{{ combine(slotProps.item) }}</span>
             </template>
-            <template #item.required="{ value }">
-              <v-checkbox-btn :model-value="value" disabled />
+            <template #item.required="slotProps">
+              <v-checkbox-btn :model-value="slotProps.value" disabled />
             </template>
-            <template #item.exclusive="{ value }">
-              <v-checkbox-btn :model-value="value" disabled />
+            <template #item.exclusive="slotProps">
+              <v-checkbox-btn :model-value="slotProps.value" disabled />
+            </template>
+            <template #item.genai_suggestions="slotProps">
+              <v-checkbox-btn :model-value="slotProps.value" disabled />
             </template>
           </v-data-table-server>
         </v-card>
@@ -94,6 +97,7 @@ export default {
         { title: "Discoverability", value: "discoverability", sortable: false },
         { title: "Required", value: "required", sortable: false },
         { title: "Exclusive", value: "exclusive", sortable: false },
+        { title: "GenAI Suggestions", value: "genai_suggestions", sortable: false },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
     }
