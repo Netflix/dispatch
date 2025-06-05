@@ -32,11 +32,18 @@
         />
       </v-col>
       <v-col cols="12">
-        <v-textarea
-          v-model="resolution"
-          label="Resolution"
-          hint="Description of the actions taken to resolve the case."
-          clearable
+        <v-label class="mb-2">Resolution</v-label>
+        <v-card flat color="grey-lighten-5" class="rounded-lg">
+          <RichEditor
+            :content="resolution"
+            @update:model-value="(newValue) => (resolution = newValue)"
+            placeholder="Description of the actions taken to resolve the case..."
+            style="min-height: 200px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
+          />
+        </v-card>
+        <v-messages
+          :value="['Description of the actions taken to resolve the case.']"
+          class="v-messages--hint"
         />
       </v-col>
       <v-col cols="12">
@@ -138,23 +145,16 @@
         </v-row>
       </v-col>
       <v-col cols="12">
-        <tag-filter-auto-complete
-          label="Tags"
-          v-model="tags"
-          model="case"
-          :model-id="id"
-          :project="project"
-          show-copy
-        />
+        <case-filter-combobox v-model="related" label="Related" />
       </v-col>
       <v-col cols="12">
-        <case-filter-combobox label="Related" v-model="related" :project="project" />
+        <case-filter-combobox v-model="duplicates" label="Duplicates" />
       </v-col>
       <v-col cols="12">
-        <case-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
+        <incident-filter-combobox v-model="incidents" label="Incidents" />
       </v-col>
       <v-col cols="12">
-        <incident-filter-combobox label="Incidents" v-model="incidents" :project="project" />
+        <tag-filter-auto-complete v-model="tags" label="Tags" model="case" :project="project" />
       </v-col>
     </v-row>
   </v-container>
@@ -163,16 +163,16 @@
 <script>
 import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
-
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
-import ProjectSelect from "@/project/ProjectSelect.vue"
 import ParticipantSelect from "@/components/ParticipantSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagPicker.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
+import RichEditor from "@/components/RichEditor.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 export default {
   setup() {
@@ -191,6 +191,7 @@ export default {
     IncidentFilterCombobox,
     ParticipantSelect,
     ProjectSelect,
+    RichEditor,
     TagFilterAutoComplete,
   },
 

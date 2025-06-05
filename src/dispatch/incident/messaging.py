@@ -822,7 +822,7 @@ def send_incident_participant_has_role_ephemeral_message(
     )
     if not plugin:
         log.warning(
-            "Unabled to send incident participant has role message, no conversation plugin enabled."
+            "Unable to send incident participant has role message, no conversation plugin enabled."
         )
         return
 
@@ -862,7 +862,7 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
     )
     if not plugin:
         log.warning(
-            "Unabled to send incident participant role not assigned message, no conversation plugin enabled."  # noqa
+            "Unable to send incident participant role not assigned message, no conversation plugin enabled."  # noqa
         )
         return
 

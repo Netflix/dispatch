@@ -40,7 +40,7 @@ def test_create(session, incident, incident_type, incident_priority):
     feedback_in = FeedbackCreate(
         rating=rating,
         feedback=feedback,
-        incident=incident, # This would need to be IncidentRead.model_validate(incident)
+        incident=incident,  # This would need to be IncidentRead.model_validate(incident)
         # case=... # Similar full population as in other tests
         # participant=... # Similar full population
     )
@@ -48,10 +48,10 @@ def test_create(session, incident, incident_type, incident_priority):
     assert feedback_obj
 
 
-def test_update(session, feedback, individual_contact, case): # Added case fixture
+def test_update(session, feedback, individual_contact, case):  # Added case fixture
     from dispatch.feedback.incident.service import update
     from dispatch.feedback.incident.models import FeedbackUpdate
-    from dispatch.participant.models import Participant # ORM model
+    from dispatch.participant.models import Participant  # ORM model
 
     # Ensure feedback.case is populated for the test
     if not feedback.case:
@@ -61,10 +61,7 @@ def test_update(session, feedback, individual_contact, case): # Added case fixtu
     # Ensure feedback.participant is populated
     if not feedback.participant:
         # Create a participant for the case if needed
-        participant = Participant(
-            individual=individual_contact,
-            case_id=feedback.case.id
-        )
+        participant = Participant(individual=individual_contact, case_id=feedback.case.id)
         session.add(participant)
         session.commit()
         feedback.participant = participant
@@ -98,7 +95,8 @@ def test_update(session, feedback, individual_contact, case): # Added case fixtu
             title=feedback.case.title,
             description=feedback.case.description,
             resolution=feedback.case.resolution,
-            resolution_reason=feedback.case.resolution_reason or "Resolved successfully",  # Add resolution_reason with default value
+            resolution_reason=feedback.case.resolution_reason
+            or "Resolved successfully",  # Add resolution_reason with default value
             status=feedback.case.status,
             visibility=feedback.case.visibility,
             closed_at=feedback.case.closed_at,
@@ -108,8 +106,10 @@ def test_update(session, feedback, individual_contact, case): # Added case fixtu
             case_severity=CaseSeverityRead.model_validate(feedback.case.case_severity),
             case_priority=CasePriorityRead.model_validate(feedback.case.case_priority),
             project=ProjectRead.model_validate(feedback.case.project),
-            assignee=ParticipantReadMinimal.model_validate(feedback.case.assignee) if feedback.case.assignee else None,
-            case_costs=[]
+            assignee=ParticipantReadMinimal.model_validate(feedback.case.assignee)
+            if feedback.case.assignee
+            else None,
+            case_costs=[],
         ),
         participant=ParticipantRead.model_validate(feedback.participant),
     )

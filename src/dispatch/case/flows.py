@@ -42,7 +42,7 @@ from .messaging import (
     send_case_rating_feedback_message,
     send_case_update_notifications,
     send_event_paging_message,
-    send_event_update_prompt_reminder
+    send_event_update_prompt_reminder,
 )
 from .models import Case
 from .service import get

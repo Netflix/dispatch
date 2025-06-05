@@ -1,4 +1,3 @@
-
 from dispatch.project import service as project_service
 from dispatch.project.models import Project
 from dispatch.search_filter import service as search_filter_service

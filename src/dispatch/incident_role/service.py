@@ -84,7 +84,7 @@ def create_or_update(
                             "msg": "Incident role not found.",
                             "input": role_policy_in.name,
                         }
-                    ]
+                    ],
                 )
 
         else:

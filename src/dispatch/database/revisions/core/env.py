@@ -34,6 +34,7 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+
     def process_revision_directives(context, revision, directives):
         script = directives[0]
         if script.upgrade_ops.is_empty():

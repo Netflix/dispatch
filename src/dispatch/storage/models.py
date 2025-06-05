@@ -11,6 +11,7 @@ from dispatch.models import ResourceBase, ResourceMixin
 
 class Storage(Base, ResourceMixin):
     """SQLAlchemy model for storage resources."""
+
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
@@ -31,6 +32,7 @@ class StorageUpdate(StorageBase):
 
 class StorageRead(StorageBase):
     """Pydantic model for reading a storage resource."""
+
     description: str | None = None
 
     @field_validator("description", mode="before")

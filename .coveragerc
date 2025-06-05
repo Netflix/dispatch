@@ -19,4 +19,3 @@ omit =
     src/dispatch/api.py
     src/dispatch/extensions.py
     src/dispatch/scheduler.py
-

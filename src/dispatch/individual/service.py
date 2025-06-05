@@ -53,14 +53,16 @@ def get_by_email_and_project_id_or_raise(
     )
 
     if not individual_contact:
-        raise ValidationError([
-            {
-                "loc": ("individual",),
-                "msg": "Individual not found.",
-                "type": "value_error",
-                "input": individual_contact_in.email,
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("individual",),
+                    "msg": "Individual not found.",
+                    "type": "value_error",
+                    "input": individual_contact_in.email,
+                }
+            ]
+        )
 
     return individual_contact
 

@@ -50,9 +50,7 @@ def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> Inci
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=incident_cost_type_in.project
     )
-    incident_cost_type = IncidentCostType(
-        **incident_cost_type_in.dict(exclude={"project"})
-    )
+    incident_cost_type = IncidentCostType(**incident_cost_type_in.dict(exclude={"project"}))
     incident_cost_type.project = project  # type: ignore[attr-defined]
     db_session.add(incident_cost_type)
     db_session.commit()

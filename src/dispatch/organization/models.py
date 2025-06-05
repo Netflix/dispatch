@@ -12,6 +12,7 @@ from dispatch.models import DispatchBase, NameStr, OrganizationSlug, PrimaryKey,
 
 class Organization(Base):
     """SQLAlchemy model for organization resources."""
+
     __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
@@ -39,6 +40,7 @@ listen(Organization.name, "set", generate_slug)
 
 class OrganizationBase(DispatchBase):
     """Base Pydantic model for organization resources."""
+
     id: PrimaryKey | None = None
     name: NameStr
     description: str | None = None
@@ -50,11 +52,13 @@ class OrganizationBase(DispatchBase):
 
 class OrganizationCreate(OrganizationBase):
     """Pydantic model for creating an organization resource."""
+
     pass
 
 
 class OrganizationUpdate(DispatchBase):
     """Pydantic model for updating an organization resource."""
+
     id: PrimaryKey | None = None
     description: str | None = None
     default: bool | None = False
@@ -65,10 +69,12 @@ class OrganizationUpdate(DispatchBase):
 
 class OrganizationRead(OrganizationBase):
     """Pydantic model for reading an organization resource."""
+
     id: PrimaryKey | None = None
     slug: OrganizationSlug | None = None
 
 
 class OrganizationPagination(Pagination):
     """Pydantic model for paginated organization results."""
+
     items: list[OrganizationRead] = []

@@ -44,7 +44,7 @@ def sync_workflow(
     # might add to try more retry logic instead of just failing.
     if not instance_data:
         log.warning(
-            f"Unabled to sync instance data. WorkflowId: {instance.workflow.resource_id} WorkflowInstanceId: {instance.id}"
+            f"Unable to sync instance data. WorkflowId: {instance.workflow.resource_id} WorkflowInstanceId: {instance.id}"
         )
         return
 

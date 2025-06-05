@@ -9,8 +9,10 @@ from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.models import DispatchBase, NameStr, ProjectMixin, PrimaryKey, Pagination
 from dispatch.project.models import ProjectRead
 
+
 class IncidentSeverity(Base, ProjectMixin):
     """SQLAlchemy model for incident severity resources."""
+
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -39,6 +41,7 @@ listen(IncidentSeverity.default, "set", ensure_unique_default_per_project)
 # Pydantic models
 class IncidentSeverityBase(DispatchBase):
     """Base Pydantic model for incident severity resources."""
+
     color: str | None = None
     default: bool | None = None
     description: str | None = None
@@ -51,21 +54,25 @@ class IncidentSeverityBase(DispatchBase):
 
 class IncidentSeverityCreate(IncidentSeverityBase):
     """Pydantic model for creating an incident severity resource."""
+
     pass
 
 
 class IncidentSeverityUpdate(IncidentSeverityBase):
     """Pydantic model for updating an incident severity resource."""
+
     pass
 
 
 class IncidentSeverityRead(IncidentSeverityBase):
     """Pydantic model for reading an incident severity resource."""
+
     id: PrimaryKey
 
 
 class IncidentSeverityReadMinimal(DispatchBase):
     """Pydantic model for reading a minimal incident severity resource."""
+
     id: PrimaryKey
     color: str | None = None
     default: bool | None = None
@@ -77,4 +84,5 @@ class IncidentSeverityReadMinimal(DispatchBase):
 
 class IncidentSeverityPagination(Pagination):
     """Pydantic model for paginated incident severity results."""
+
     items: list[IncidentSeverityRead] = []

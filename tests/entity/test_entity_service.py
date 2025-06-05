@@ -1,4 +1,9 @@
-from dispatch.entity_type.models import EntityType, EntityTypeCreate, EntityTypeUpdate, EntityScopeEnum
+from dispatch.entity_type.models import (
+    EntityType,
+    EntityTypeCreate,
+    EntityTypeUpdate,
+    EntityScopeEnum,
+)
 from dispatch.entity import service as entity_service
 from tests.factories import SignalInstanceFactory
 from dispatch.project.models import ProjectRead
@@ -7,14 +12,16 @@ from dispatch.project.models import ProjectRead
 def test_get(session, entity):
     from dispatch.entity.service import get
 
-    if not hasattr(entity, 'id') or entity.id is None:
+    if not hasattr(entity, "id") or entity.id is None:
         import pytest
+
         pytest.skip("Entity fixture does not have a valid id.")
-    if not hasattr(entity, 'id') or entity.id is None:
+    if not hasattr(entity, "id") or entity.id is None:
         import pytest
+
         pytest.skip("Entity fixture does not have a valid id.")
     t_entity = get(db_session=session, entity_id=entity.id)
-    assert t_entity is not None and hasattr(t_entity, 'id') and t_entity.id == entity.id
+    assert t_entity is not None and hasattr(t_entity, "id") and t_entity.id == entity.id
 
 
 def test_get_all_by_signal(session, entity, signal_instance):
@@ -84,7 +91,9 @@ def test_get_all_desc_by_signal_with_case(session, entity, signal_instance):
     assert entities[0].id == entity.id
 
     # If we pass a non-matching case_id, should return empty
-    entities_none = get_all_desc_by_signal(db_session=session, signal_id=signal_id, case_id=case_id + 999)
+    entities_none = get_all_desc_by_signal(
+        db_session=session, signal_id=signal_id, case_id=case_id + 999
+    )
     assert len(entities_none) == 0
 
 
@@ -113,55 +122,69 @@ def test_create(session, entity_type, project):
             project=ProjectRead(
                 id=project.id,
                 name=project.name,
-                display_name=getattr(project, 'display_name', ''),
-                owner_email=getattr(project, 'owner_email', None),
-                owner_conversation=getattr(project, 'owner_conversation', None),
-                annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-                business_year_hours=getattr(project, 'business_year_hours', 2080),
-                description=getattr(project, 'description', None),
-                default=getattr(project, 'default', False),
-                color=getattr(project, 'color', None),
-                send_daily_reports=getattr(project, 'send_daily_reports', True),
-                send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-                weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-                enabled=getattr(project, 'enabled', True),
-                storage_folder_one=getattr(project, 'storage_folder_one', None),
-                storage_folder_two=getattr(project, 'storage_folder_two', None),
-                storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-                storage_use_title=getattr(project, 'storage_use_title', False),
-                allow_self_join=getattr(project, 'allow_self_join', True),
-                select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-                report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-                report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-                report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-                snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+                display_name=getattr(project, "display_name", ""),
+                owner_email=getattr(project, "owner_email", None),
+                owner_conversation=getattr(project, "owner_conversation", None),
+                annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+                business_year_hours=getattr(project, "business_year_hours", 2080),
+                description=getattr(project, "description", None),
+                default=getattr(project, "default", False),
+                color=getattr(project, "color", None),
+                send_daily_reports=getattr(project, "send_daily_reports", True),
+                send_weekly_reports=getattr(project, "send_weekly_reports", False),
+                weekly_report_notification_id=getattr(
+                    project, "weekly_report_notification_id", None
+                ),
+                enabled=getattr(project, "enabled", True),
+                storage_folder_one=getattr(project, "storage_folder_one", None),
+                storage_folder_two=getattr(project, "storage_folder_two", None),
+                storage_use_folder_one_as_primary=getattr(
+                    project, "storage_use_folder_one_as_primary", True
+                ),
+                storage_use_title=getattr(project, "storage_use_title", False),
+                allow_self_join=getattr(project, "allow_self_join", True),
+                select_commander_visibility=getattr(project, "select_commander_visibility", True),
+                report_incident_instructions=getattr(project, "report_incident_instructions", None),
+                report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+                report_incident_description_hint=getattr(
+                    project, "report_incident_description_hint", None
+                ),
+                snooze_extension_oncall_service=getattr(
+                    project, "snooze_extension_oncall_service", None
+                ),
             ),
         ),
         project=ProjectRead(
             id=project.id,
             name=project.name,
-            display_name=getattr(project, 'display_name', ''),
-            owner_email=getattr(project, 'owner_email', None),
-            owner_conversation=getattr(project, 'owner_conversation', None),
-            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-            business_year_hours=getattr(project, 'business_year_hours', 2080),
-            description=getattr(project, 'description', None),
-            default=getattr(project, 'default', False),
-            color=getattr(project, 'color', None),
-            send_daily_reports=getattr(project, 'send_daily_reports', True),
-            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-            enabled=getattr(project, 'enabled', True),
-            storage_folder_one=getattr(project, 'storage_folder_one', None),
-            storage_folder_two=getattr(project, 'storage_folder_two', None),
-            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-            storage_use_title=getattr(project, 'storage_use_title', False),
-            allow_self_join=getattr(project, 'allow_self_join', True),
-            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+            display_name=getattr(project, "display_name", ""),
+            owner_email=getattr(project, "owner_email", None),
+            owner_conversation=getattr(project, "owner_conversation", None),
+            annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+            business_year_hours=getattr(project, "business_year_hours", 2080),
+            description=getattr(project, "description", None),
+            default=getattr(project, "default", False),
+            color=getattr(project, "color", None),
+            send_daily_reports=getattr(project, "send_daily_reports", True),
+            send_weekly_reports=getattr(project, "send_weekly_reports", False),
+            weekly_report_notification_id=getattr(project, "weekly_report_notification_id", None),
+            enabled=getattr(project, "enabled", True),
+            storage_folder_one=getattr(project, "storage_folder_one", None),
+            storage_folder_two=getattr(project, "storage_folder_two", None),
+            storage_use_folder_one_as_primary=getattr(
+                project, "storage_use_folder_one_as_primary", True
+            ),
+            storage_use_title=getattr(project, "storage_use_title", False),
+            allow_self_join=getattr(project, "allow_self_join", True),
+            select_commander_visibility=getattr(project, "select_commander_visibility", True),
+            report_incident_instructions=getattr(project, "report_incident_instructions", None),
+            report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+            report_incident_description_hint=getattr(
+                project, "report_incident_description_hint", None
+            ),
+            snooze_extension_oncall_service=getattr(
+                project, "snooze_extension_oncall_service", None
+            ),
         ),
     )
     entity = create(db_session=session, entity_in=entity_in)
@@ -250,7 +273,11 @@ def test_find_entities_with_field_only(session, signal_instance, project):
     ]
     entities = find_entities(session, signal_instance, entity_types)
     assert len(entities) == 2
-    values = {getattr(e, "value", None) for e in entities if hasattr(e, "value") and isinstance(e.value, str)}
+    values = {
+        getattr(e, "value", None)
+        for e in entities
+        if hasattr(e, "value") and isinstance(e.value, str)
+    }
     assert "arn:aws:iam::123456789012:role/Test" in values
     assert "arn:aws:s3:::ap-northeast-3-123456789012-s3-server-access-logs" in values
 
@@ -319,6 +346,10 @@ def test_find_entities_multiple_entity_types(session, signal_instance, project):
 
     entities = find_entities(session, signal_instance, entity_types)
     assert len(entities) == 2
-    values = {getattr(e, "value", None) for e in entities if hasattr(e, "value") and isinstance(e.value, str)}
+    values = {
+        getattr(e, "value", None)
+        for e in entities
+        if hasattr(e, "value") and isinstance(e.value, str)
+    }
     assert "arn:aws:iam::123456789012:role/Test" in values
     assert "arn:aws:s3:::ap-northeast-3-123456789012-s3-server-access-logs" in values

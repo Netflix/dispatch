@@ -44,7 +44,7 @@ def test_create_update(session, incident_type, project):
         service=None,
         individual=None,
         engage_next_oncall=False,
-        project=project_read_in
+        project=project_read_in,
     )
     created_roles = create_or_update(
         db_session=session,
@@ -75,7 +75,7 @@ def test_create_update(session, incident_type, project):
         service=None,
         individual=None,
         engage_next_oncall=True,
-        project=project_read_in
+        project=project_read_in,
     )
     updated_roles = create_or_update(
         db_session=session,

@@ -106,7 +106,7 @@ RUN buildDeps="" \
   && rm -rf /var/lib/apt/lists/* \
   # mjml has to be installed differently here because
   # after node 14, docker will install npm files at the
-  # root directoy and fail, so we have to create a new
+  # root directory and fail, so we have to create a new
   # directory and use it for the install then copy the
   # files to the root directory to maintain backwards
   # compatibility for email generation

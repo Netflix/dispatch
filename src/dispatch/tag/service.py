@@ -26,14 +26,16 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_in: TagRead):
     tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 
     if not tag:
-        raise ValidationError([
-            {
-                "loc": ("tag",),
-                "msg": f"Tag not found: {tag_in.name}",
-                "type": "value_error",
-                "input": tag_in.name,
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "loc": ("tag",),
+                    "msg": f"Tag not found: {tag_in.name}",
+                    "type": "value_error",
+                    "input": tag_in.name,
+                }
+            ]
+        )
 
     return tag
 

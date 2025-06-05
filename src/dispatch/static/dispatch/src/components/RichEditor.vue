@@ -22,6 +22,7 @@ const props = defineProps({
 })
 
 const editor = ref(null)
+const htmlValue = ref("")
 const plainTextValue = ref("")
 
 const emit = defineEmits(["update:modelValue"])
@@ -34,6 +35,12 @@ const handleKeyDown = () => {
 
 const handleBlur = () => {
   userIsTyping.value = false
+}
+
+// Utility function to convert HTML to plain text
+const htmlToPlainText = (html) => {
+  if (!html) return ""
+  return html.replace(/<\/?[^>]+(>|$)/g, "")
 }
 
 watch(
@@ -63,7 +70,7 @@ onMounted(() => {
         // Use different placeholders depending on the node type:
         // placeholder: ({ node }) => {
         //   if (node.type.name === 'heading') {
-        //     return 'What’s the title?'
+        //     return 'What's the title?'
         //   }
 
         //   return 'Can you add some further context?'
@@ -73,10 +80,12 @@ onMounted(() => {
     content: props.content,
     onUpdate: () => {
       let content = editor.value?.getHTML()
-      // remove the HTML tags
-      plainTextValue.value = content.replace(/<\/?[^>]+(>|$)/g, "")
-      // Emitting the updated plain text
-      emit("update:modelValue", plainTextValue.value)
+      // Preserve the HTML content to maintain formatting
+      htmlValue.value = content
+      // Also maintain plain text version for backwards compatibility
+      plainTextValue.value = htmlToPlainText(content)
+      // Emit the HTML content instead of stripped plain text
+      emit("update:modelValue", htmlValue.value)
     },
     keyboardShortcuts: {
       Enter: () => {}, // Override Enter key to do nothing
@@ -92,8 +101,8 @@ onBeforeUnmount(() => {
   editor.value?.destroy()
 })
 
-// Expose plainTextValue for parent component to use
-defineExpose({ plainTextValue })
+// Expose both HTML and plain text values for parent component to use
+defineExpose({ htmlValue, plainTextValue, htmlToPlainText })
 </script>
 
 <style lang="scss">

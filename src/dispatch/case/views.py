@@ -39,7 +39,15 @@ from .flows import (
     case_update_flow,
     get_case_participants_flow,
 )
-from .models import Case, CaseCreate, CaseExpandedPagination, CasePagination, CasePaginationMinimalWithExtras, CaseRead, CaseUpdate
+from .models import (
+    Case,
+    CaseCreate,
+    CaseExpandedPagination,
+    CasePagination,
+    CasePaginationMinimalWithExtras,
+    CaseRead,
+    CaseUpdate,
+)
 from .service import create, delete, get, get_participants, update
 
 log = logging.getLogger(__name__)
@@ -143,6 +151,7 @@ def get_cases_minimal(
     pagination = search_filter_sort_paginate(model="Case", **common)
 
     return json.loads(CasePaginationMinimalWithExtras(**pagination).json())
+
 
 @router.post("", response_model=CaseRead, summary="Creates a new case.")
 def create_case(

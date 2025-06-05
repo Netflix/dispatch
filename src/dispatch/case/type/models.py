@@ -1,4 +1,5 @@
 """Models for case types and related entities in the Dispatch application."""
+
 from pydantic import field_validator, AnyHttpUrl
 
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
@@ -19,6 +20,7 @@ from dispatch.project.models import ProjectRead
 
 class CaseType(ProjectMixin, Base):
     """SQLAlchemy model for case types, representing different types of cases in the system."""
+
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -66,6 +68,7 @@ listen(CaseType.default, "set", ensure_unique_default_per_project)
 # Pydantic models
 class Document(DispatchBase):
     """Pydantic model for a document related to a case type."""
+
     id: PrimaryKey
     description: str | None = None
     name: NameStr
@@ -76,6 +79,7 @@ class Document(DispatchBase):
 
 class IncidentType(DispatchBase):
     """Pydantic model for an incident type related to a case type."""
+
     id: PrimaryKey
     description: str | None = None
     name: NameStr
@@ -84,6 +88,7 @@ class IncidentType(DispatchBase):
 
 class Service(DispatchBase):
     """Pydantic model for a service related to a case type."""
+
     id: PrimaryKey
     description: str | None = None
     external_id: str
@@ -94,6 +99,7 @@ class Service(DispatchBase):
 
 class CaseTypeBase(DispatchBase):
     """Base Pydantic model for case types, used for shared fields."""
+
     case_template_document: Document | None = None
     conversation_target: str | None = None
     default: bool | None = False
@@ -118,19 +124,23 @@ class CaseTypeBase(DispatchBase):
 
 class CaseTypeCreate(CaseTypeBase):
     """Pydantic model for creating a new case type."""
+
     pass
 
 
 class CaseTypeUpdate(CaseTypeBase):
     """Pydantic model for updating an existing case type."""
+
     id: PrimaryKey | None = None
 
 
 class CaseTypeRead(CaseTypeBase):
     """Pydantic model for reading a case type from the database."""
+
     id: PrimaryKey
 
 
 class CaseTypePagination(Pagination):
     """Pydantic model for paginated case type results."""
+
     items: list[CaseTypeRead] = []

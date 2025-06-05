@@ -43,7 +43,7 @@ def test_update(session, document):
         resource_id=document.resource_id,
         resource_type=document.resource_type,
         weblink=document.weblink,
-        filters=[]
+        filters=[],
     )
     document = update(
         db_session=session,

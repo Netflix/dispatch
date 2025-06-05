@@ -11,6 +11,7 @@ import DTooltip from "@/components/DTooltip.vue"
 import ParticipantSearchPopover from "@/participant/ParticipantSearchPopover.vue"
 import ProjectSearchPopover from "@/project/ProjectSearchPopover.vue"
 import TagSearchPopover from "@/tag/TagSearchPopover.vue"
+import RichEditor from "@/components/RichEditor.vue"
 import { useSavingState } from "@/composables/useSavingState"
 
 // Define the props

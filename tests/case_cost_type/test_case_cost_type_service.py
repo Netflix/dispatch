@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+
 def test_get(session, case_cost_type):
     from dispatch.case_cost_type.service import get
 

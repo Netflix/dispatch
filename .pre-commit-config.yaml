@@ -7,15 +7,31 @@
 # To Skip Checks:
 #
 # git commit --no-verify
+# git push --no-verify
+# test
+#
+# To update all hooks automatically:
+#
+# pre-commit autoupdate
 fail_fast: false
 
 default_language_version:
   python: python3.11.2
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: no-commit-to-branch # prevent direct commits to the `main` branch
+      - id: check-yaml
+        args: ["--unsafe"]
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # ruff version.
-    rev: v0.7.0
+    rev: v0.11.12
     hooks:
       # Run the linter.
       #
@@ -26,19 +42,27 @@ repos:
       # Run the formatter.
       - id: ruff-format
 
-  # Typos
+  # typos
   - repo: https://github.com/crate-ci/typos
-    rev: v1.26.1
+    rev: v1.33.1
     hooks:
       - id: typos
-        exclude: ^(data/dispatch-sample-data.dump|src/dispatch/static/dispatch/src/|src/dispatch/database/revisions/)
+        exclude: |
+          (?x)^(
+            src/dispatch/database/revisions/core/versions/|
+            src/dispatch/database/revisions/tenant/versions/|
+            src/dispatch/static/dispatch/src/assets/icons/|
+            data/dispatch-sample-data.dump|
+            src/dispatch/plugins/dispatch_zoom/client.py
+          )
 
-  # Pytest
+  # pytest
   - repo: local
     hooks:
       - id: tests
         name: run tests
-        entry: pytest -v tests/
+        entry: pytest -v tests
         language: system
-        types: [python]
-        stages: [push]
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

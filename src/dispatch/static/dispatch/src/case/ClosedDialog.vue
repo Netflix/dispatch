@@ -19,11 +19,18 @@
               />
             </v-col>
             <v-col cols="12">
-              <v-textarea
-                v-model="resolution"
-                label="Resolution"
-                hint="Description of the actions taken to resolve the case."
-                clearable
+              <v-label class="mb-2">Resolution</v-label>
+              <v-card flat color="grey-lighten-5" class="rounded-lg">
+                <RichEditor
+                  :content="resolution"
+                  @update:model-value="(newValue) => (resolution = newValue)"
+                  placeholder="Description of the actions taken to resolve the case..."
+                  style="min-height: 150px; margin: 10px; font-size: 0.9125rem; font-weight: 400"
+                />
+              </v-card>
+              <v-messages
+                :value="['Description of the actions taken to resolve the case.']"
+                class="v-messages--hint"
               />
             </v-col>
             <v-btn color="blue en-1" variant="text" @click="closeClosedDialog()"> Cancel </v-btn>
@@ -51,9 +58,14 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import RichEditor from "@/components/RichEditor.vue"
 
 export default {
   name: "CaseClosedDialog",
+
+  components: {
+    RichEditor,
+  },
 
   data() {
     return {

@@ -2,7 +2,11 @@ def test_get(session, entity_type):
     from dispatch.entity_type.service import get
 
     t_entity_type = get(db_session=session, entity_type_id=entity_type.id)
-    assert t_entity_type is not None and hasattr(t_entity_type, 'id') and t_entity_type.id == entity_type.id
+    assert (
+        t_entity_type is not None
+        and hasattr(t_entity_type, "id")
+        and t_entity_type.id == entity_type.id
+    )
 
 
 def test_create(session, project):
@@ -26,28 +30,34 @@ def test_create(session, project):
         project=ProjectRead(
             id=project.id,
             name=project.name,
-            display_name=getattr(project, 'display_name', ''),
-            owner_email=getattr(project, 'owner_email', None),
-            owner_conversation=getattr(project, 'owner_conversation', None),
-            annual_employee_cost=getattr(project, 'annual_employee_cost', 50000),
-            business_year_hours=getattr(project, 'business_year_hours', 2080),
-            description=getattr(project, 'description', None),
-            default=getattr(project, 'default', False),
-            color=getattr(project, 'color', None),
-            send_daily_reports=getattr(project, 'send_daily_reports', True),
-            send_weekly_reports=getattr(project, 'send_weekly_reports', False),
-            weekly_report_notification_id=getattr(project, 'weekly_report_notification_id', None),
-            enabled=getattr(project, 'enabled', True),
-            storage_folder_one=getattr(project, 'storage_folder_one', None),
-            storage_folder_two=getattr(project, 'storage_folder_two', None),
-            storage_use_folder_one_as_primary=getattr(project, 'storage_use_folder_one_as_primary', True),
-            storage_use_title=getattr(project, 'storage_use_title', False),
-            allow_self_join=getattr(project, 'allow_self_join', True),
-            select_commander_visibility=getattr(project, 'select_commander_visibility', True),
-            report_incident_instructions=getattr(project, 'report_incident_instructions', None),
-            report_incident_title_hint=getattr(project, 'report_incident_title_hint', None),
-            report_incident_description_hint=getattr(project, 'report_incident_description_hint', None),
-            snooze_extension_oncall_service=getattr(project, 'snooze_extension_oncall_service', None),
+            display_name=getattr(project, "display_name", ""),
+            owner_email=getattr(project, "owner_email", None),
+            owner_conversation=getattr(project, "owner_conversation", None),
+            annual_employee_cost=getattr(project, "annual_employee_cost", 50000),
+            business_year_hours=getattr(project, "business_year_hours", 2080),
+            description=getattr(project, "description", None),
+            default=getattr(project, "default", False),
+            color=getattr(project, "color", None),
+            send_daily_reports=getattr(project, "send_daily_reports", True),
+            send_weekly_reports=getattr(project, "send_weekly_reports", False),
+            weekly_report_notification_id=getattr(project, "weekly_report_notification_id", None),
+            enabled=getattr(project, "enabled", True),
+            storage_folder_one=getattr(project, "storage_folder_one", None),
+            storage_folder_two=getattr(project, "storage_folder_two", None),
+            storage_use_folder_one_as_primary=getattr(
+                project, "storage_use_folder_one_as_primary", True
+            ),
+            storage_use_title=getattr(project, "storage_use_title", False),
+            allow_self_join=getattr(project, "allow_self_join", True),
+            select_commander_visibility=getattr(project, "select_commander_visibility", True),
+            report_incident_instructions=getattr(project, "report_incident_instructions", None),
+            report_incident_title_hint=getattr(project, "report_incident_title_hint", None),
+            report_incident_description_hint=getattr(
+                project, "report_incident_description_hint", None
+            ),
+            snooze_extension_oncall_service=getattr(
+                project, "snooze_extension_oncall_service", None
+            ),
         ),
     )
     entity_type = create(db_session=session, entity_type_in=entity_type_in)
@@ -76,7 +86,7 @@ def test_update(session, project, entity_type):
         entity_type=entity_type,
         entity_type_in=entity_type_in,
     )
-    assert entity_type is not None and getattr(entity_type, 'name', None) == name
+    assert entity_type is not None and getattr(entity_type, "name", None) == name
 
 
 def test_delete(session, entity_type):

@@ -34,7 +34,7 @@ def version_schema(script_location: str):
     alembic_command.stamp(alembic_cfg, "head")
 
 
-def get_core_tables()  -> list[Table]:
+def get_core_tables() -> list[Table]:
     """Fetches tables that belong to the 'dispatch_core' schema."""
     core_tables: list[Table] = []
     for _, table in Base.metadata.tables.items():
