@@ -308,10 +308,11 @@ def case_new_create_flow(
                 f"Failed to get oncall service: {e}. Falling back to default oncall_name string."
             )
 
+        # send a message to the channel to inform them that they can engage the oncall
         send_event_paging_message(case, db_session, oncall_name)
 
-    # send reminder to assignee to update the security event
-    send_event_update_prompt_reminder(case, db_session)
+        # send ephemeral message to assignee to update the security event
+        send_event_update_prompt_reminder(case, db_session)
 
     if case and case.case_type.auto_close:
         # we transition the case to the closed state if its case type has auto close enabled
