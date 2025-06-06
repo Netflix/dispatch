@@ -44,7 +44,7 @@
       </span>
       <v-card v-if="menu" class="tag-picker-dropdown-block">
         <!-- Initial state: Show generate button -->
-        <div v-if="!suggestionsGenerated" class="mb-4">
+        <div v-if="!suggestionsGenerated && props.visibility !== 'Restricted'" class="mb-4">
           <div class="gradient-border-wrapper">
             <div class="white-bg-wrapper">
               <v-btn
@@ -63,6 +63,24 @@
                 <span class="generate-btn-text">Generate AI tag suggestions</span>
               </v-btn>
             </div>
+          </div>
+        </div>
+
+        <!-- Error banner: Show when there's an error -->
+        <div v-if="suggestionsGenerated && suggestionsError" class="error-banner mb-3">
+          <div class="error-content">
+            <v-icon size="18" color="#f57f17" class="mr-2">mdi-alert</v-icon>
+            <span class="error-message">{{ suggestionsError }}</span>
+            <v-btn
+              variant="text"
+              size="small"
+              @click="retryGenerateSuggestions"
+              :loading="suggestionsLoading"
+              class="retry-btn ml-3"
+            >
+              <v-icon start size="16">mdi-refresh</v-icon>
+              Try Again
+            </v-btn>
           </div>
         </div>
 
@@ -258,6 +276,7 @@ const tagTypes = ref({})
 const suggestionsExpanded = ref(false)
 const suggestionsLoading = ref(false)
 const suggestionsGenerated = ref(false)
+const suggestionsError = ref(null)
 
 const props = defineProps({
   modelValue: {
@@ -281,6 +300,10 @@ const props = defineProps({
   showCopy: {
     type: Boolean,
     default: false,
+  },
+  visibility: {
+    type: String,
+    default: null,
   },
 })
 const currentProject = ref(props.project)
@@ -565,6 +588,7 @@ function getTagType(tag_type_id) {
 
 async function generateSuggestions() {
   suggestionsLoading.value = true
+  suggestionsError.value = null
 
   try {
     if (!currentProject.value?.id) {
@@ -573,14 +597,28 @@ async function generateSuggestions() {
       return
     }
 
-    const response = await TagApi.getRecommendations(currentProject.value.id)
+    const response = await TagApi.getRecommendationsIncident(currentProject.value.id, props.modelId)
+
+    // Check for error message from backend
+    const errorMessage = response.data?.error_message || response.error_message
+    if (errorMessage) {
+      suggestionsError.value = errorMessage
+      tagSuggestions.value = []
+      suggestionsLoading.value = false
+      suggestionsGenerated.value = true
+      return
+    }
 
     // Handle the new response structure with recommendations field
     const suggestions = response.data?.recommendations || response.recommendations || []
 
-    // Ensure suggestions is an array
+    // Ensure suggestions is an array and set the value
     if (Array.isArray(suggestions)) {
       tagSuggestions.value = suggestions
+      // If no recommendations were generated, you could show a message to the user
+      if (suggestions.length === 0) {
+        console.info("No tag recommendations were generated")
+      }
     } else {
       console.error("API response recommendations is not an array:", suggestions)
       tagSuggestions.value = []
@@ -591,10 +629,18 @@ async function generateSuggestions() {
     suggestionsExpanded.value = true
   } catch (error) {
     console.error("Error generating AI suggestions:", error)
+    suggestionsError.value = "Failed to generate AI tag suggestions. Please try again later."
     tagSuggestions.value = []
     suggestionsLoading.value = false
-    // You might want to show an error message to the user here
+    suggestionsGenerated.value = true
   }
+}
+
+function retryGenerateSuggestions() {
+  // Reset the state and try again
+  suggestionsGenerated.value = false
+  suggestionsError.value = null
+  generateSuggestions()
 }
 </script>
 
@@ -690,6 +736,32 @@ async function generateSuggestions() {
   display: flex;
   align-items: center;
   margin-top: 8px;
+}
+
+.error-banner {
+  background: #fffbf0;
+  border: 1px solid #ffc947;
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+.error-content {
+  display: flex;
+  align-items: center;
+}
+.error-message {
+  font-size: 14px;
+  color: #8d6e00;
+  font-weight: 400;
+  flex: 1;
+}
+.retry-btn {
+  color: #8d6e00 !important;
+  font-size: 13px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+}
+.retry-btn:hover {
+  background-color: rgba(141, 110, 0, 0.08) !important;
 }
 .chip-group {
   display: flex;

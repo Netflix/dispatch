@@ -82,3 +82,4 @@ class TagRecommendationResponse(DispatchBase):
     """Response model for tag recommendations."""
 
     recommendations: list[TagTypeRecommendation]
+    error_message: str | None = None

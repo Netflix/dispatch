@@ -100,6 +100,7 @@
           :project="project"
           model="incident"
           :model-id="id"
+          :visibility="visibility"
           show-copy
         />
       </v-col>

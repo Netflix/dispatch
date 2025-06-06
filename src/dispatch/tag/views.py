@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
+from dispatch.ai import service as ai_service
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
@@ -64,72 +65,21 @@ def delete_tag(db_session: DbSession, tag_id: PrimaryKey):
     delete(db_session=db_session, tag_id=tag_id)
 
 
-@router.get("/recommendations/{project_id}", response_model=TagRecommendationResponse)
-def get_tag_recommendations(db_session: DbSession, project_id: int):
+@router.get(
+    "/recommendations/{project_id}/case/{case_id}", response_model=TagRecommendationResponse
+)
+def get_tag_recommendations_case(db_session: DbSession, project_id: int, case_id: int):
     """Retrieves a tag recommendation based on the model and model id."""
-    recommendations = [
-        {
-            "tag_type_id": 135,
-            "tags": [
-                {
-                    "id": 58019,
-                    "name": "Reconnaissance",
-                    "reason": (
-                        "The attacker could use the unauthenticated API to gather "
-                        "information about users by mapping phone numbers to email addresses."
-                    ),
-                },
-                {
-                    "id": 58020,
-                    "name": "Collection",
-                    "reason": (
-                        "The ability to automate the extraction of email addresses by "
-                        "inputting phone numbers suggests a tactic focused on collecting "
-                        "sensitive data."
-                    ),
-                },
-                {
-                    "id": 58021,
-                    "name": "Impact",
-                    "reason": (
-                        "The exposure of email addresses linked to phone numbers can lead "
-                        "to privacy violations or facilitate further attacks like phishing."
-                    ),
-                },
-            ],
-        },
-        {
-            "tag_type_id": 136,
-            "tags": [
-                {
-                    "id": 58022,
-                    "name": "Active Scanning",
-                    "reason": (
-                        "This technique involves actively probing a target to gather "
-                        "information and identify vulnerabilities, which aligns with how "
-                        "an attacker might exploit the unauthenticated API."
-                    ),
-                },
-                {
-                    "id": 58023,
-                    "name": "Gather Victim Identity Information",
-                    "reason": (
-                        "This technique encompasses collecting information about victims, "
-                        "such as email addresses and phone numbers, which is relevant given "
-                        "the incident's focus on extracting email addresses using phone numbers."
-                    ),
-                },
-                {
-                    "id": 58024,
-                    "name": "Data from Cloud Storage",
-                    "reason": (
-                        "While not a perfect fit, this technique involves accessing data "
-                        "from cloud storage, relating to accessing user data stored or "
-                        "exposed through online services, such as the unauthenticated API."
-                    ),
-                },
-            ],
-        },
-    ]
+    return ai_service.get_tag_recommendations(
+        db_session=db_session, project_id=project_id, case_id=case_id
+    )
 
-    return {"recommendations": recommendations}
+
+@router.get(
+    "/recommendations/{project_id}/incident/{incident_id}", response_model=TagRecommendationResponse
+)
+def get_tag_recommendations_incident(db_session: DbSession, project_id: int, incident_id: int):
+    """Retrieves a tag recommendation based on the model and model id."""
+    return ai_service.get_tag_recommendations(
+        db_session=db_session, project_id=project_id, incident_id=incident_id
+    )
