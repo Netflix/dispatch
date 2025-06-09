@@ -43,6 +43,8 @@ const state = {
       descending: [false],
       filters: {
         project: [],
+        tag_type: [],
+        discoverable: [],
       },
     },
     loading: false,

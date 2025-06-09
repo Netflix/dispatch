@@ -7,7 +7,8 @@
         <settings-breadcrumbs v-model="project" />
       </v-col>
       <v-col class="text-right">
-        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
+        <table-filter-dialog :project="project" />
+        <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -34,15 +35,15 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template #item.discoverable="{ value }">
+            <template #[`item.discoverable`]="{ value }">
               <v-checkbox-btn :model-value="value" disabled />
             </template>
-            <template #item.tag_type.name="{ item }">
+            <template #[`item.tag_type.name`]="{ item }">
               <span v-if="item.tag_type">
                 {{ item.tag_type.name }}
               </span>
             </template>
-            <template #item.data-table-actions="{ item }">
+            <template #[`item.data-table-actions`]="{ item }">
               <v-menu location="right" origin="overlap">
                 <template #activator="{ props }">
                   <v-btn icon variant="text" v-bind="props">
@@ -73,6 +74,7 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/tag/DeleteDialog.vue"
 import NewEditSheet from "@/tag/NewEditSheet.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
+import TableFilterDialog from "@/tag/TableFilterDialog.vue"
 
 export default {
   name: "TagTable",
@@ -81,6 +83,7 @@ export default {
     DeleteDialog,
     NewEditSheet,
     SettingsBreadcrumbs,
+    TableFilterDialog,
   },
 
   data() {
@@ -106,6 +109,8 @@ export default {
       "table.options.sortBy",
       "table.options.descending",
       "table.options.filters.project",
+      "table.options.filters.tag_type",
+      "table.options.filters.discoverable",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -125,17 +130,35 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
+      (vm) => [
+        vm.q,
+        vm.itemsPerPage,
+        vm.sortBy,
+        vm.descending,
+        vm.project,
+        vm.tag_type,
+        vm.discoverable,
+      ],
       () => {
         this.page = 1
         this.$router.push({ query: { project: this.project[0].name } })
-        this.getAll()
+        this.debugGetAll()
       }
     )
   },
 
   methods: {
     ...mapActions("tag", ["getAll", "createEditShow", "removeShow"]),
+
+    // Debug version of getAll to see what filters are being sent
+    debugGetAll() {
+      console.log("Table.vue calling getAll with filters:")
+      console.log("project:", this.project)
+      console.log("tag_type:", this.tag_type)
+      console.log("discoverable:", this.discoverable)
+      console.log("Full table options:", this.$store.state.tag.table.options)
+      this.getAll()
+    },
   },
 }
 </script>
