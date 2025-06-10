@@ -20,7 +20,7 @@ from .models import (
 from .flows import recalculate_entity_flow
 from .service import create, delete, get, update
 
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 router = APIRouter()
 
 
