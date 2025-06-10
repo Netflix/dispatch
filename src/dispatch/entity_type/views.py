@@ -1,8 +1,10 @@
+import logging
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.case.messaging import send_entity_update_notification
 from dispatch.case.service import get as get_case
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -18,6 +20,7 @@ from .models import (
 from .flows import recalculate_entity_flow
 from .service import create, delete, get, update
 
+log = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -112,6 +115,15 @@ def recalculate(db_session: DbSession, entity_type_id: PrimaryKey, case_id: Prim
             signal_instance=signal_instance,
         )
         updated_signal_instances.append(updated_signal_instance)
+
+    try:
+        send_entity_update_notification(
+            db_session=db_session,
+            entity_type=entity_type,
+            case=signal_instances[0].case,
+        )
+    except Exception as e:
+        log.warning(f"Failed to send entity update notification: {e}")
 
     return updated_signal_instances
 
