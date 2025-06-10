@@ -36,10 +36,8 @@ def get_by_channel_id_ignoring_channel_type(
                     f"Multiple conversations found for channel_id: {channel_id}, thread_id: {thread_id}"
                 )
                 conversation = None
-            elif conversation_count == 1:
-                conversation = conversations.one()
             else:
-                conversation = None
+                conversation = conversations.one_or_none()
 
     if conversation:
         if channel_id[0] != conversation.channel_id[0]:
