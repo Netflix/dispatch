@@ -120,7 +120,7 @@ def recalculate(db_session: DbSession, entity_type_id: PrimaryKey, case_id: Prim
         send_entity_update_notification(
             db_session=db_session,
             entity_type=entity_type,
-            case=signal_instance[0].case,
+            case=signal_instances[0].case,
         )
     except Exception as e:
         log.warning(f"Failed to send entity update notification: {e}")
