@@ -1,4 +1,7 @@
+import logging
 from .models import Conversation, ConversationCreate, ConversationUpdate
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, conversation_id: int) -> Conversation | None:
@@ -26,7 +29,17 @@ def get_by_channel_id_ignoring_channel_type(
         conversation = conversations.filter(Conversation.thread_id == thread_id).one_or_none()
 
         if not conversation:
-            conversation = conversations.one_or_none()
+            # No conversations with that thread_id, check all conversations without thread filter
+            conversation_count = conversations.count()
+            if conversation_count > 1:
+                log.warning(
+                    f"Multiple conversations found for channel_id: {channel_id}, thread_id: {thread_id}"
+                )
+                conversation = None
+            elif conversation_count == 1:
+                conversation = conversations.one()
+            else:
+                conversation = None
 
     if conversation:
         if channel_id[0] != conversation.channel_id[0]:
