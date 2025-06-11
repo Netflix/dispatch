@@ -32,6 +32,9 @@ def get_by_channel_id_ignoring_channel_type(
             # No conversations with that thread_id, check all conversations without thread filter
             conversation_count = conversations.count()
             if conversation_count > 1:
+                # this happens when a user posts in the main thread of a triage channel since
+                # there are multiple cases in the channel with that channel_id
+                # so we log a warning and return None
                 log.warning(
                     f"Multiple conversations found for channel_id: {channel_id}, thread_id: {thread_id}"
                 )
