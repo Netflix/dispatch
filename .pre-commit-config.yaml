@@ -41,4 +41,4 @@ repos:
         entry: pytest -v tests/
         language: system
         types: [python]
-        stages: [push]
+        stages: [pre-push]
