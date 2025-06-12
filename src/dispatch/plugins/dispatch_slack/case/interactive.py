@@ -73,6 +73,7 @@ from dispatch.plugins.dispatch_slack.fields import (
     case_resolution_reason_select,
     case_status_select,
     case_type_select,
+    case_visibility_select,
     description_input,
     entity_select,
     extension_request_checkbox,
@@ -265,7 +266,11 @@ def handle_update_case_command(
         Context(
             elements=[
                 MarkdownText(
-                    text=f"Note: Cases cannot be escalated here. Please use the `{context['config'].slack_command_escalate_case}` slash command."
+                    text=(
+                        "Note: Cases cannot be escalated here. Please use the "
+                        f"{SlackConversationConfiguration.model_json_schema()['properties']['slack_command_escalate_case']['default']} "
+                        "slash command."
+                    )
                 )
             ]
         ),
@@ -280,6 +285,9 @@ def handle_update_case_command(
             project_id=case.project.id,
             optional=True,
         ),
+        case_visibility_select(
+            initial_option={"text": case.visibility, "value": case.visibility},
+        )
     ]
 
     modal = Modal(
@@ -1640,6 +1648,26 @@ def create_channel_button_click(
 
 
 @app.action(
+    CaseNotificationActions.update,
+    middleware=[button_context_middleware, db_middleware, user_middleware],
+)
+def update_case_button_click(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+):
+    return handle_update_case_command(
+        ack=ack,
+        body=body,
+        client=client,
+        context=context,
+        db_session=db_session,
+    )
+
+
+@app.action(
     CaseNotificationActions.user_mfa,
     middleware=[button_context_middleware, db_middleware, user_middleware],
 )
@@ -2007,6 +2035,10 @@ def handle_edit_submission_event(
     if form_data.get(DefaultBlockIds.case_type_select):
         case_type = {"name": form_data[DefaultBlockIds.case_type_select]["name"]}
 
+    case_visibility = case.visibility
+    if form_data.get(DefaultBlockIds.case_visibility_select):
+        case_visibility = form_data[DefaultBlockIds.case_visibility_select]["value"]
+
     assignee_email = None
     if form_data.get(DefaultBlockIds.case_assignee_select):
         assignee_email = client.users_info(
@@ -2023,7 +2055,7 @@ def handle_edit_submission_event(
         resolution=form_data[DefaultBlockIds.resolution_input],
         resolution_reason=resolution_reason,
         status=form_data[DefaultBlockIds.case_status_select]["name"],
-        visibility=case.visibility,
+        visibility=case_visibility,
         case_priority=case_priority,
         case_type=case_type,
     )

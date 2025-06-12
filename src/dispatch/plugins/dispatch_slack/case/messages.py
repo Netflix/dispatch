@@ -1,7 +1,6 @@
 import logging
 from typing import NamedTuple
 
-
 from blockkit import (
     Actions,
     Button,
@@ -358,10 +357,11 @@ def create_genai_signal_message_metadata_blocks(
     if isinstance(message, dict):
         message = json_to_slack_format(message)
 
-    # Truncate the message if it exceeds Block Kit's maximum length
-    message = message[:2997] + "..." if len(message) > 3000 else message
+    # Truncate the text if it exceeds Block Kit's maximum length of 3000 characters
+    text = f":magic_wand: *GenAI Alert Analysis*\n\n{message}"
+    text = f"{text[:2997]}..." if len(text) > 3000 else text
     signal_metadata_blocks.append(
-        Section(text=f":magic_wand: *GenAI Alert Analysis*\n\n{message}"),
+        Section(text=text),
     )
     signal_metadata_blocks.append(Divider())
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
