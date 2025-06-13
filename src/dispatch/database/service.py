@@ -758,7 +758,7 @@ def search_filter_sort_paginate(
     if items_per_page == -1:
         items_per_page = None
 
-        # sometimes we get bad input for the search function
+    # sometimes we get bad input for the search function
     # TODO investigate moving to a different way to parsing queries that won't through errors
     # e.g. websearch_to_tsquery
     # https://www.postgresql.org/docs/current/textsearch-controls.html

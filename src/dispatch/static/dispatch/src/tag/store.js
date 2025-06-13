@@ -52,6 +52,15 @@ const state = {
   suggestedTags: [],
   selectedItems: [],
   validationError: null,
+  tagTypes: {},
+  groups: [],
+  loading: false,
+  more: false,
+  total: 0,
+  suggestionsLoading: false,
+  suggestionsGenerated: false,
+  suggestionsError: null,
+  tagSuggestions: [],
 }
 
 const getters = {
@@ -276,6 +285,113 @@ const actions = {
     commit("SET_TABLE_ROWS", { items: tags, total: tags.length })
     return tags
   },
+
+  async fetchTags({ commit }, { project, model }) {
+    if (!project) return
+
+    commit("SET_LOADING", true)
+
+    let filterOptions = {
+      q: null,
+      itemsPerPage: 500,
+      sortBy: ["tag_type.name"],
+      descending: [false],
+      filters: {
+        project: [{ model: "Project", field: "name", op: "==", value: project.name }],
+        tagFilter: [{ model: "Tag", field: "discoverable", op: "==", value: "true" }],
+      },
+    }
+
+    if (model) {
+      filterOptions.filters.tagTypeFilter = [
+        { model: "TagType", field: "discoverable_" + model, op: "==", value: "true" },
+      ]
+    }
+
+    filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+
+    try {
+      const response = await TagApi.getAll(filterOptions)
+      commit("SET_TABLE_ROWS", response.data)
+      commit("SET_GROUPS", convertData(response.data.items))
+      commit("SET_LOADING", false)
+      return response.data.items
+    } catch (error) {
+      console.error("Error fetching tags:", error)
+      commit("SET_LOADING", false)
+      throw error
+    }
+  },
+
+  async fetchTagTypes({ commit }) {
+    try {
+      const resp = await TagTypeApi.getAll({ itemsPerPage: 5000 })
+      const tagTypes = Object.fromEntries(resp.data.items.map((tt) => [tt.id, tt]))
+
+      // Add sample tag types for demo purposes if they don't exist
+      if (!tagTypes[135]) {
+        tagTypes[135] = {
+          id: 135,
+          name: "MITRE Tactics",
+          color: "#1976d2",
+          icon: "bullseye-arrow",
+        }
+      }
+      if (!tagTypes[136]) {
+        tagTypes[136] = {
+          id: 136,
+          name: "MITRE Techniques",
+          color: "#388e3c",
+          icon: "tools",
+        }
+      }
+
+      commit("SET_TAG_TYPES", tagTypes)
+      return tagTypes
+    } catch (error) {
+      console.error("Error fetching tag types:", error)
+      throw error
+    }
+  },
+
+  async generateSuggestions({ commit }, { projectId, modelId }) {
+    commit("SET_SUGGESTIONS_LOADING", true)
+    commit("SET_SUGGESTIONS_ERROR", null)
+
+    try {
+      const response = await TagApi.getRecommendationsIncident(projectId, modelId)
+
+      const errorMessage = response.data?.error_message || response.error_message
+      if (errorMessage) {
+        commit("SET_SUGGESTIONS_ERROR", errorMessage)
+        commit("SET_TAG_SUGGESTIONS", [])
+        return
+      }
+
+      const suggestions = response.data?.recommendations || response.recommendations || []
+      commit("SET_TAG_SUGGESTIONS", Array.isArray(suggestions) ? suggestions : [])
+      commit("SET_SUGGESTIONS_GENERATED", true)
+    } catch (error) {
+      console.error("Error generating AI suggestions:", error)
+      commit(
+        "SET_SUGGESTIONS_ERROR",
+        "Failed to generate AI tag suggestions. Please try again later."
+      )
+      commit("SET_TAG_SUGGESTIONS", [])
+    } finally {
+      commit("SET_SUGGESTIONS_LOADING", false)
+      commit("SET_SUGGESTIONS_GENERATED", true)
+    }
+  },
+
+  resetSuggestions({ commit }) {
+    commit("SET_SUGGESTIONS_GENERATED", false)
+    commit("SET_SUGGESTIONS_ERROR", null)
+  },
+
+  getTagType({ state }, tagTypeId) {
+    return state.tagTypes[tagTypeId] || {}
+  },
 }
 
 function areRequiredTagsSelected(sel, tagTypes) {
@@ -327,6 +443,64 @@ const mutations = {
   SET_VALIDATION_ERROR(state, error) {
     state.validationError = error
   },
+  SET_LOADING(state, value) {
+    state.loading = value
+  },
+  SET_MORE(state, value) {
+    state.more = value
+  },
+  SET_TOTAL(state, value) {
+    state.total = value
+  },
+  SET_GROUPS(state, groups) {
+    state.groups = groups
+  },
+  SET_TAG_TYPES(state, types) {
+    state.tagTypes = types
+  },
+  SET_SUGGESTIONS_LOADING(state, value) {
+    state.suggestionsLoading = value
+  },
+  SET_SUGGESTIONS_GENERATED(state, value) {
+    state.suggestionsGenerated = value
+  },
+  SET_SUGGESTIONS_ERROR(state, error) {
+    state.suggestionsError = error
+  },
+  SET_TAG_SUGGESTIONS(state, suggestions) {
+    state.tagSuggestions = suggestions
+  },
+}
+
+// Helper function for converting data
+function convertData(data) {
+  return data.reduce((r, a) => {
+    const tagType = a.tag_type
+    const hasAnyDiscoverability =
+      tagType.discoverable_incident ||
+      tagType.discoverable_case ||
+      tagType.discoverable_signal ||
+      tagType.discoverable_query ||
+      tagType.discoverable_source ||
+      tagType.discoverable_document
+
+    if (!hasAnyDiscoverability) return r
+
+    if (!r[a.tag_type.id]) {
+      r[a.tag_type.id] = {
+        id: a.tag_type.id,
+        icon: a.tag_type.icon,
+        label: a.tag_type.name,
+        desc: a.tag_type.description,
+        color: a.tag_type.color,
+        isRequired: a.tag_type.required,
+        isExclusive: a.tag_type.exclusive,
+        menuItems: [],
+      }
+    }
+    r[a.tag_type.id].menuItems.push(a)
+    return r
+  }, Object.create(null))
 }
 
 export default {

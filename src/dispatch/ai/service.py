@@ -416,11 +416,6 @@ def get_tag_recommendations(
         db_session=db_session, plugin_type="storage", project_id=project_id
     )
 
-    if not storage_plugin:
-        message = "AI tag suggestions are not available. No storage plugin is configured for this project."
-        log.warning(message)
-        return TagRecommendationResponse(recommendations=[], error_message=message)
-
     # get resources from the case or incident
     resources = ""
     if case_id:
@@ -437,7 +432,7 @@ def get_tag_recommendations(
         resources += f"Resolution Reason: {case.resolution_reason}\n"
         resources += f"Case type: {case.case_type.name}\n"
 
-        if case.case_document and case.case_document.resource_id:
+        if storage_plugin and case.case_document and case.case_document.resource_id:
             case_doc = storage_plugin.instance.get(
                 file_id=case.case_document.resource_id,
                 mime_type="text/plain",
@@ -451,14 +446,18 @@ def get_tag_recommendations(
         resources += f"Resolution: {incident.resolution}\n"
         resources += f"Incident type: {incident.incident_type.name}\n"
 
-        if incident.incident_document and incident.incident_document.resource_id:
+        if storage_plugin and incident.incident_document and incident.incident_document.resource_id:
             incident_doc = storage_plugin.instance.get(
                 file_id=incident.incident_document.resource_id,
                 mime_type="text/plain",
             )
             resources += f"Incident document: {incident_doc}\n"
 
-        if incident.incident_review_document and incident.incident_review_document.resource_id:
+        if (
+            storage_plugin
+            and incident.incident_review_document
+            and incident.incident_review_document.resource_id
+        ):
             incident_review_doc = storage_plugin.instance.get(
                 file_id=incident.incident_review_document.resource_id,
                 mime_type="text/plain",
@@ -474,7 +473,6 @@ def get_tag_recommendations(
         .filter(Tag.tag_type.has(TagType.genai_suggestions.is_(True)))
         .all()
     )
-    print(f"*** {tags=}")
 
     # Check if there are any tags available for AI suggestions
     if not tags:
@@ -538,12 +536,6 @@ def get_tag_recommendations(
 
     try:
         result = genai_plugin.instance.chat_completion(prompt=prompt)
-
-        # *** I just want to check it for now
-        print(f"*** {result=}")
-
-        # For testing - replace with actual AI result when ready
-        # result = """```json\n{\n    "recommendations": [\n        {\n            "tag_type_id": 135,\n            "tags": [\n                {\n                    "id": 58019,\n                    "name": "Reconnaissance",\n                    "reason": "The investigation may involve understanding the methods used by the malware to infiltrate the system, which could involve reconnaissance techniques."\n                },\n                {\n                    "id": 58020,\n                    "name": "Collection",\n                    "reason": "This tag refers to the potential collection activities by malware, which could involve gathering sensitive data from the systems."\n                },\n                {\n                    "id": 58021,\n                    "name": "Impact",\n                    "reason": "This tag is relevant as it signifies the potential consequences and severity of the malware incident on affected systems."\n                }\n            ]\n        },\n        {\n            "tag_type_id": 136,\n            "tags": [\n                {\n                    "id": 58022,\n                    "name": "Active Scanning",\n                    "reason": "This technique could relate to the malware actively scanning networks or systems to identify vulnerabilities or other targets."\n                },\n                {\n                    "id": 58023,\n                    "name": "Gather Victim Identity Information",\n                    "reason": "The malware may have attempted to collect identity-related information from the affected systems or users."\n                },\n                {\n                    "id": 58024,\n                    "name": "Data from Cloud Storage",\n                    "reason": "If the malware accessed or exfiltrated data from cloud storage solutions, this technique would be relevant."\n                }\n            ]\n        }\n    ]\n}\n```"""
 
         # Clean the JSON string by removing markdown formatting and newlines
         # Remove markdown code block markers

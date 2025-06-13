@@ -142,23 +142,13 @@ export default {
       () => {
         this.page = 1
         this.$router.push({ query: { project: this.project[0].name } })
-        this.debugGetAll()
+        this.getAll()
       }
     )
   },
 
   methods: {
     ...mapActions("tag", ["getAll", "createEditShow", "removeShow"]),
-
-    // Debug version of getAll to see what filters are being sent
-    debugGetAll() {
-      console.log("Table.vue calling getAll with filters:")
-      console.log("project:", this.project)
-      console.log("tag_type:", this.tag_type)
-      console.log("discoverable:", this.discoverable)
-      console.log("Full table options:", this.$store.state.tag.table.options)
-      this.getAll()
-    },
   },
 }
 </script>
