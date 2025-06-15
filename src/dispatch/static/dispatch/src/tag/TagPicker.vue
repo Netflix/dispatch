@@ -418,6 +418,17 @@ watch(
   }
 )
 
+// Reset suggestions when the incident/model changes
+watch(
+  () => props.modelId,
+  (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+      store.dispatch("tag/resetSuggestions")
+      suggestionsExpanded.value = false
+    }
+  }
+)
+
 // Click outside directive
 const vClickOutside = {
   mounted(el, binding) {
