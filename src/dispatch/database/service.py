@@ -461,13 +461,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
         (Tag, "TagType"): (TagType, False),
         (Tag, "Project"): (Project, False),
-        (CaseType, "Project"): (Project, False),
-        (CaseSeverity, "Project"): (Project, False),
-        (CasePriority, "Project"): (Project, False),
         (IndividualContact, "Project"): (Project, False),
-        (Case, "IndividualContact"): (Case.assignee, False),  # noqa: F601
-        (Case, "Assignee"): (Case.assignee, False),
-        (Case, "Project"): (Case.project, False),
     }
     filters = build_filters(filter_spec)
 
