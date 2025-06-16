@@ -22,9 +22,6 @@ from .core import Base, get_class_by_tablename, get_model_name_by_tablename
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
-from dispatch.case.type.models import CaseType
-from dispatch.case.severity.models import CaseSeverity
-from dispatch.case.priority.models import CasePriority
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.database.core import DbSession
