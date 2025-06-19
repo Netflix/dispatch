@@ -8,6 +8,29 @@ import PluginApi from "@/plugin/api"
 import AuthApi from "@/auth/api"
 import router from "@/router"
 
+const resolutionTooltips = {
+  Benign:
+    "The event was legitimate but posed no security threat, such as expected behavior from a known application or user.",
+  Contained:
+    "(True positive) The event was a legitimate threat but was contained to prevent further spread or damage.",
+  Escalated: "There was enough information to create an incident based on the security event.",
+  "False Positive": "The event was incorrectly flagged as a security event.",
+  "Information Gathered":
+    "Used when a case was opened with the primary purpose of collecting information.",
+  "Insufficient Information":
+    "There was not enough information to determine the nature of the event conclusively.",
+  Mitigated:
+    "(True Positive) The event was a legitimate security threat and was successfully mitigated before causing harm.",
+  "Operational Error":
+    "The event was caused by a mistake in system configuration or user operation, not malicious activity.",
+  "Policy Violation":
+    "The event was a breach of internal security policies but did not result in a security incident.",
+  "User Acknowledged":
+    "While the event was suspicious it was confirmed by the actor to be intentional.",
+}
+
+const resolutionReasons = Object.keys(resolutionTooltips)
+
 const getDefaultSelectedState = () => {
   return {
     assignee: null,
@@ -109,6 +132,8 @@ const state = {
   },
   default_project: null,
   current_user_role: null,
+  resolutionReasons,
+  resolutionTooltips,
 }
 
 const getters = {
