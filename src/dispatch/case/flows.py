@@ -42,7 +42,7 @@ from .messaging import (
     send_case_rating_feedback_message,
     send_case_update_notifications,
     send_event_paging_message,
-    send_event_update_prompt_reminder
+    send_event_update_prompt_reminder,
 )
 from .models import Case
 from .service import get
@@ -210,7 +210,7 @@ def case_auto_close_flow(case: Case, db_session: Session):
     "Runs the case auto close flow."
     # we mark the case as closed
     case.resolution = "Auto closed via case type auto close configuration."
-    case.resolution_reason = CaseResolutionReason.user_acknowledge
+    case.resolution_reason = CaseResolutionReason.user_acknowledged
     case.status = CaseStatus.closed
     db_session.add(case)
     db_session.commit()

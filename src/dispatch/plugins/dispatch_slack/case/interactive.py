@@ -2944,7 +2944,7 @@ def resolve_case(
     )
     case_in = CaseUpdate(
         title=case.title,
-        resolution_reason=CaseResolutionReason.user_acknowledge,
+        resolution_reason=CaseResolutionReason.user_acknowledged,
         resolution=context_from_user,
         visibility=case.visibility,
         status=CaseStatus.closed,

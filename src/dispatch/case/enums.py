@@ -18,7 +18,7 @@ class CaseResolutionReason(DispatchEnum):
     mitigated = "Mitigated"
     operational_error = "Operational Error"
     policy_violation = "Policy Violation"
-    user_acknowledge = "User Acknowledged"
+    user_acknowledged = "User Acknowledged"
 
 
 class CaseResolutionReasonDescription(DispatchEnum):
@@ -52,7 +52,7 @@ class CaseResolutionReasonDescription(DispatchEnum):
         "The event was a breach of internal security policies but did not result in a "
         "security incident."
     )
-    user_acknowledge = (
+    user_acknowledged = (
         "While the event was suspicious it was confirmed by the actor to be intentional."
     )
 
