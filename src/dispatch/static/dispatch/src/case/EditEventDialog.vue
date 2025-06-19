@@ -113,7 +113,7 @@ export default {
       this.timezone = local_zone_name
     },
     setTimeToNow() {
-      this.eventStart = new Date()
+      this.local_started_at = new Date()
     },
     update_started_at(val) {
       this.local_started_at = val
