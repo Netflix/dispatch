@@ -484,9 +484,7 @@ def export_timeline(
             str_len = 0
             row_idx = 0
             insert_data_request = []
-            print("cell indices")
-            print(len(cell_indices))
-            print(len(data_to_insert))
+
             for index, text in zip(cell_indices, data_to_insert, strict=True):
                 # Adjusting index based on string length
                 new_idx = index + str_len
@@ -759,9 +757,7 @@ def export_case_timeline(
             str_len = 0
             row_idx = 0
             insert_data_request = []
-            print("cell indices")
-            print(len(cell_indices))
-            print(len(data_to_insert))
+
             for index, text in zip(cell_indices, data_to_insert, strict=True):
                 # Adjusting index based on string length
                 new_idx = index + str_len
