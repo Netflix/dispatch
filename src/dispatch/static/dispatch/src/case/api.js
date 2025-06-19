@@ -62,4 +62,20 @@ export default {
   createCaseChannel(caseId, payload) {
     return API.post(`/${resource}/${caseId}/resources/conversation`, payload)
   },
+
+  createNewEvent(caseId, payload) {
+    return API.post(`/${resource}/${caseId}/event`, payload)
+  },
+
+  updateEvent(caseId, payload) {
+    return API.patch(`/${resource}/${caseId}/event`, payload)
+  },
+
+  deleteEvent(caseId, event_uuid) {
+    return API.delete(`/${resource}/${caseId}/event/${event_uuid}`)
+  },
+
+  exportTimeline(caseId, timeline_filters) {
+    return API.post(`/${resource}/${caseId}/exportTimeline`, timeline_filters)
+  },
 }
