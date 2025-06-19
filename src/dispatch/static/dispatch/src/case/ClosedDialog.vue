@@ -10,13 +10,37 @@
       <v-card-actions>
         <v-container>
           <v-row>
-            <v-col cols="12">
+            <v-col cols="12" sm="6">
               <v-select
                 v-model="resolutionReason"
                 label="Resolution Reason"
-                :items="resolutionReasons"
+                :items="$store.state.case_management.resolutionReasons"
                 hint="The general reason why a given case was resolved."
-              />
+                :menu-props="{ contentClass: 'resolution-menu' }"
+              >
+                <template #item="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <template #title>
+                      <div class="d-flex align-center justify-space-between">
+                        {{ item.title }}
+                        <v-tooltip location="right">
+                          <template #activator="{ props }">
+                            <v-icon
+                              v-bind="props"
+                              icon="mdi-information"
+                              size="small"
+                              class="ml-2"
+                            />
+                          </template>
+                          <span>{{
+                            $store.state.case_management.resolutionTooltips[item.title]
+                          }}</span>
+                        </v-tooltip>
+                      </div>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
             </v-col>
             <v-col cols="12">
               <v-textarea
@@ -59,7 +83,6 @@ export default {
     return {
       resolutionReason: "False Positive",
       resolution: "Description of the actions taken to resolve the case.",
-      resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
     }
   },
 
@@ -76,3 +99,27 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.resolution-menu {
+  max-width: 300px;
+}
+
+:deep(.v-list-item) {
+  padding: 8px 16px;
+}
+
+:deep(.v-select__content) {
+  max-width: 300px;
+}
+
+/* Lighten tooltip info icons */
+:deep(.v-tooltip .v-icon) {
+  color: #cccccc !important;
+}
+
+/* Alternative approach - target the icon directly */
+:deep(.mdi-information) {
+  color: #b0b0b0 !important;
+}
+</style>

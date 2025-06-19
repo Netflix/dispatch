@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import type { Ref } from "vue"
+import { computed } from "vue"
 
 import CaseApi from "@/case/api"
 import SearchPopover from "@/components/SearchPopover.vue"
@@ -11,12 +10,9 @@ defineProps<{ caseResolution: string }>()
 
 const store = useStore()
 const { setSaving } = useSavingState()
-const caseResolutions: Ref<string[]> = ref([
-  "False Positive",
-  "User Acknowledged",
-  "Mitigated",
-  "Escalated",
-])
+
+const caseResolutions = computed(() => store.state.case_management.resolutionReasons)
+const caseResolutionTooltips = computed(() => store.state.case_management.resolutionTooltips)
 
 const selectCaseResolution = async (caseResolutionName: string) => {
   // Get the case details from the Vuex store
@@ -37,5 +33,6 @@ const selectCaseResolution = async (caseResolutionName: string) => {
     @item-selected="selectCaseResolution"
     label="Set resolution..."
     :hotkeys="[]"
+    :tooltips="caseResolutionTooltips"
   />
 </template>
