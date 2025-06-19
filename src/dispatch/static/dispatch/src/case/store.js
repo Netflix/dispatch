@@ -578,7 +578,7 @@ const actions = {
       source: state.selected.currentEvent.source,
       description: state.selected.currentEvent.description,
       started_at: state.selected.currentEvent.started_at,
-      ended_at: state.selected.currentEvent.started_at,
+      ended_at: state.selected.currentEvent.ended_at,
       type: state.selected.currentEvent.type || "Custom event",
       details: state.selected.currentEvent.details || {},
       owner: state.selected.currentEvent.owner || "",
