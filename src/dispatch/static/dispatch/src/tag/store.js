@@ -220,9 +220,7 @@ const actions = {
       all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
     }
     if (all_tags_in_project) {
-      if (areRequiredTagsSelected(value, groups)) {
-        commit("SET_VALIDATION_ERROR", true)
-      } else {
+      if (!areRequiredTagsSelected(value, groups)) {
         const required_tag_types = groups
           .filter((tag_type) => tag_type.isRequired)
           .map((tag_type) => tag_type.label)
@@ -232,6 +230,8 @@ const actions = {
             ", "
           )})`
         )
+      } else {
+        commit("SET_VALIDATION_ERROR", null)
       }
     } else {
       commit("SET_VALIDATION_ERROR", "Only tags in selected project are allowed")

@@ -1,28 +1,33 @@
 <template>
   <div>
-    <div v-click-outside="closeMenu">
-      <span class="tag-picker-row">
-        <div class="tag-picker-outline">
-          <v-icon
-            class="panel-button tag-add-icon"
-            @click.stop="toggleMenu"
-            style="cursor: pointer"
-            >{{ menu ? "mdi-minus" : "mdi-plus" }}</v-icon
-          >
-          <div class="tag-picker-label">Tags</div>
+    <span v-click-outside="closeMenu">
+      <v-text-field
+        readonly
+        label="Tags"
+        @click="toggleMenu"
+        variant="outlined"
+        v-model="dummyText"
+        class="main-panel"
+        :rules="[check_for_error]"
+      >
+        <template #prepend-inner>
+          <v-icon class="panel-button">
+            {{ menu ? "mdi-minus" : "mdi-plus" }}
+          </v-icon>
+        </template>
+        <template #append v-if="showCopy">
+          <v-icon class="panel-button" @click.stop="copyTags">mdi-content-copy</v-icon>
+        </template>
+        <div class="form-container mt-2">
           <div class="chip-group" v-show="selectedItems.length">
             <span v-for="(item, index) in selectedItems" :key="item">
               <v-chip
                 label
                 :key="index"
+                :color="item.tag_type?.color"
                 closable
                 class="tag-chip"
-                size="small"
                 @click:close="removeItem(item.id)"
-                :style="{
-                  backgroundColor: (item.tag_type?.color || '#e0e0e0') + '22',
-                  color: item.tag_type?.color || '#333',
-                }"
               >
                 <span class="mr-2">
                   <v-icon
@@ -37,14 +42,7 @@
             </span>
           </div>
         </div>
-        <v-icon
-          v-if="showCopy"
-          class="panel-button tag-copy-icon"
-          @click.stop="copyTags"
-          style="cursor: pointer"
-          >mdi-content-copy</v-icon
-        >
-      </span>
+      </v-text-field>
       <v-card v-if="menu" class="tag-picker-dropdown-block">
         <!-- Initial state: Show generate button -->
         <div
@@ -252,7 +250,7 @@
           </ul>
         </div>
       </v-card>
-    </div>
+    </span>
     <v-snackbar v-model="snackbar" :timeout="2400" color="success">
       <v-row class="fill-height" align="center">
         <v-col class="text-center">Tags copied to the clipboard</v-col>
@@ -268,11 +266,13 @@ import { useStore } from "vuex"
 
 const store = useStore()
 const menu = ref(false)
+const dummyText = ref(" ")
 const searchQuery = ref("")
 const filteredMenuItems = ref([])
 const isDropdownOpen = ref(false)
 const snackbar = ref(false)
 const suggestionsExpanded = ref(false)
+const error = ref(null)
 
 const props = defineProps({
   modelValue: {
@@ -322,19 +322,74 @@ const selectedItems = computed({
   set: (value) => {
     const tags = value.filter((v) => typeof v !== "string")
     emit("update:modelValue", tags)
-    store.dispatch("tag/validateTags", {
-      value: tags,
-      groups: groups.value,
-      currentProject: props.project,
-    })
+    validateTags(tags)
   },
 })
 
 const emit = defineEmits(["update:modelValue"])
 
+// Validation function
+const check_for_error = () => {
+  return error.value
+}
+
+function are_required_tags_selected(sel) {
+  // iterate through all tag types and ensure that at least one tag of each required tag type is selected
+  const tagTypes = Object.values(groups.value)
+  for (let i = 0; i < tagTypes.length; i++) {
+    if (tagTypes[i].isRequired) {
+      if (!sel.some((item) => item.tag_type?.id === tagTypes[i]?.id)) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
+function validateTags(value) {
+  // Don't validate if groups haven't been loaded yet
+  if (!groups.value || Object.keys(groups.value).length === 0) {
+    return
+  }
+
+  const project_id = props.project?.id || 0
+  var all_tags_in_project = false
+  if (project_id) {
+    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+  } else {
+    const project_name = props.project?.name
+    if (!project_name) {
+      error.value = true
+      dummyText.value += " "
+      return
+    }
+    all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
+  }
+
+  if (all_tags_in_project) {
+    const requiredSelected = are_required_tags_selected(value)
+
+    if (!requiredSelected) {
+      const required_tag_types = Object.values(groups.value)
+        .filter((tag_type) => tag_type.isRequired)
+        .map((tag_type) => tag_type.label)
+      error.value = `Please select at least one tag from each required category (${required_tag_types.join(
+        ", "
+      )})`
+    } else {
+      error.value = null
+    }
+  } else {
+    error.value = "Only tags in selected project are allowed"
+  }
+  dummyText.value += " "
+}
+
 // Methods
 const fetchData = async () => {
-  if (!props.project) return
+  if (!props.project) {
+    return
+  }
   await store.dispatch("tag/fetchTags", {
     project: props.project,
     model: props.model,
@@ -388,6 +443,7 @@ const showDropdown = (state) => {
 const removeItem = (index) => {
   const value = selectedItems.value.filter((item) => item.id !== index)
   selectedItems.value = value
+  validateTags(value)
 }
 
 const performSearch = () => {
@@ -414,6 +470,7 @@ const isItemDisabled = (group, item) => {
 onMounted(() => {
   fetchData()
   fetchTagTypes()
+  // Don't validate initially - wait for groups to be loaded
 })
 
 watch(
@@ -421,8 +478,21 @@ watch(
   (newVal) => {
     if (newVal) {
       fetchData()
+      // Validate after project changes
+      validateTags(selectedItems.value)
     }
   }
+)
+
+// Watch for groups to be loaded and validate
+watch(
+  () => groups.value,
+  (newGroups) => {
+    if (newGroups && Object.keys(newGroups).length > 0) {
+      validateTags(selectedItems.value)
+    }
+  },
+  { immediate: true }
 )
 
 // When suggestions are generated, expand the suggestions box by default
