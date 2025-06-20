@@ -259,7 +259,6 @@ const actions = {
   async fetchAllTagsWithEligibleTypes({ commit, dispatch }, { project }) {
     // 1. Fetch eligible tag type ids
     const eligibleTagTypeIds = await dispatch("fetchEligibleTagTypes")
-    console.log("Eligible tag type IDs:", eligibleTagTypeIds)
     // 2. Fetch tags for this project
     const tagFilterOptions = {
       filters: {
@@ -278,10 +277,7 @@ const actions = {
     const tagResp = await TagApi.getAll(params)
     // 3. Filter tags client-side as a safeguard
     const tags = tagResp.data.items.filter((tag) => eligibleTagTypeIds.includes(tag.tag_type.id))
-    console.log(
-      "Filtered tags:",
-      tags.map((t) => t.tag_type.name)
-    )
+
     commit("SET_TABLE_ROWS", { items: tags, total: tags.length })
     return tags
   },

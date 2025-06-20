@@ -85,26 +85,9 @@ export default {
 
   methods: {
     applyFilters() {
-      // Debug logging
-      console.log("Applying filters:")
-      console.log("local_tag_type:", this.local_tag_type)
-      console.log("local_discoverable:", this.local_discoverable)
-
-      // Check the structure of tag_type objects
-      if (this.local_tag_type && this.local_tag_type.length > 0) {
-        console.log("First tag_type object:", this.local_tag_type[0])
-        console.log("Has id?", this.local_tag_type[0].id)
-        console.log("Has name?", this.local_tag_type[0].name)
-      }
-
       // we set the filter values
       this.tag_type = this.local_tag_type
       this.discoverable = this.local_discoverable
-
-      // Debug: Check what's in the store after setting filters
-      console.log("After setting filters:")
-      console.log("Store tag_type:", this.tag_type)
-      console.log("Store discoverable:", this.discoverable)
 
       // we close the dialog
       this.display = false
