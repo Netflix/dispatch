@@ -785,9 +785,10 @@ def copy_case_events_to_incident(
 
     for case_event in case_events:
         # Create a new event for the incident with the same data
+        copied_source = f"{case_event.source} (copied from {case.name})"
         event_service.log_incident_event(
             db_session=db_session,
-            source=f"Copied from case {case.name}",
+            source=copied_source,
             description=case_event.description,
             incident_id=incident.id,
             individual_id=case_event.individual_id,
