@@ -350,11 +350,7 @@ def case_stable_create_flow(*, case_id: int, organization_slug: OrganizationSlug
     # we transition the case to the triage state
     case_triage_status_flow(case=case, db_session=db_session)
 
-    case = get(db_session=db_session, case_id=case_id)
-    case_stable_status_flow(
-        case=case,
-        db_session=db_session,
-    )
+    case_stable_status_flow(case=case, db_session=db_session)
 
 
 @background_task

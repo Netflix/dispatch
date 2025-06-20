@@ -359,11 +359,23 @@ def get_participant_role_time_seconds(case: Case, participant_role: ParticipantR
     if participant_role_time.total_seconds() < 0:
         return 0
 
-    # Apply engagement multiplier based on role
-    engagement_multiplier = get_engagement_multiplier(participant_role.role)
-    adjusted_time_seconds = int(participant_role_time.total_seconds() * engagement_multiplier)
+    # we calculate the number of hours the participant has spent in the incident role
+    participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
 
-    return adjusted_time_seconds
+    # we make the assumption that participants only spend 8 hours a day working on the incident,
+    # if the incident goes past 24hrs
+    # TODO(mvilanova): adjust based on incident priority
+    if participant_role_time_hours > HOURS_IN_DAY:
+        days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
+        participant_role_time_hours = ((days * HOURS_IN_DAY) / 3) + hours
+
+    # we make the assumption that participants spend more or less time based on their role
+    # and we adjust the time spent based on that
+    return (
+        participant_role_time_hours
+        * SECONDS_IN_HOUR
+        * get_engagement_multiplier(participant_role.role)
+    )
 
 
 def get_total_participant_roles_time_seconds(case: Case) -> int:
