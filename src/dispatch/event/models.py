@@ -70,7 +70,7 @@ class EventCreateMinimal(DispatchBase):
     started_at: datetime
     source: str
     description: str
-    details: dict
+    details: dict | None = None
     type: str | None = None
     owner: str | None = None
     pinned: bool | None = False

@@ -10,13 +10,13 @@ from dispatch.enums import Visibility
 def test_get(session, case: Case):
     from dispatch.case.service import get
 
-    case_id = getattr(case, 'id', None)
+    case_id = getattr(case, "id", None)
     if case_id is None:
         raise AssertionError("case.id is None; cannot run test_get.")
-    if hasattr(case_id, '__int__'):
+    if hasattr(case_id, "__int__"):
         case_id = int(case_id)
     t_case = get(db_session=session, case_id=case_id)
-    if t_case is not None and getattr(t_case, 'id', None) is not None:
+    if t_case is not None and getattr(t_case, "id", None) is not None:
         assert isinstance(t_case.id, int)
         assert t_case.id == case_id
     else:
@@ -26,13 +26,13 @@ def test_get(session, case: Case):
 def test_get_by_name(session, case: Case):
     from dispatch.case.service import get_by_name
 
-    case_name = getattr(case, 'name', None)
+    case_name = getattr(case, "name", None)
     if case_name is None:
         raise AssertionError("case.name is None; cannot run test_get_by_name.")
-    if hasattr(case_name, '__str__'):
+    if hasattr(case_name, "__str__"):
         case_name = str(case_name)
     t_case = get_by_name(db_session=session, project_id=case.project.id, name=case_name)
-    if t_case is not None and getattr(t_case, 'name', None) is not None:
+    if t_case is not None and getattr(t_case, "name", None) is not None:
         assert isinstance(t_case.name, str)
         assert t_case.name == case_name
     else:
@@ -71,6 +71,7 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
     from dispatch.case.service import create as create_case
 
     case_type.project = project
+    case_type.oncall_service = None  # Ensure fallback to current_user
     case_severity.project = project
     case_priority.project = project
     session.add(case_type)
@@ -92,7 +93,6 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=True,
         tags=[],
         event=False,
@@ -131,7 +131,6 @@ def test_create__no_conversation_target(
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=True,
         tags=[],
         event=False,
@@ -169,7 +168,6 @@ def test_create__fails_with_no_conversation_target(
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=False,
         tags=[],
         event=False,
@@ -210,21 +208,21 @@ def test_update(session, case: Case, project):
         db_session=session, case=case, case_in=case_in, current_user=current_user
     )
     if case_out is not None:
-        assert getattr(case_out, 'title', None) == "XXX"
-        assert getattr(case_out, 'description', None) == "YYY"
-        assert getattr(case_out, 'resolution', None) == "True Positive"
-        assert getattr(case_out, 'status', None) == CaseStatus.closed
-        assert getattr(case_out, 'visibility', None) == Visibility.restricted
+        assert getattr(case_out, "title", None) == "XXX"
+        assert getattr(case_out, "description", None) == "YYY"
+        assert getattr(case_out, "resolution", None) == "True Positive"
+        assert getattr(case_out, "status", None) == CaseStatus.closed
+        assert getattr(case_out, "visibility", None) == Visibility.restricted
 
 
 def test_delete(session, case: Case):
     from dispatch.case.service import delete as case_delete
     from dispatch.case.service import get as case_get
 
-    case_id = getattr(case, 'id', None)
+    case_id = getattr(case, "id", None)
     if case_id is None:
         raise AssertionError("case.id is None; cannot run test_delete.")
-    if hasattr(case_id, '__int__'):
+    if hasattr(case_id, "__int__"):
         case_id = int(case_id)
     case_delete(
         db_session=session,

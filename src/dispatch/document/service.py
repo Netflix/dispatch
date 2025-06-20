@@ -27,6 +27,19 @@ def get_by_incident_id_and_resource_type(
     )
 
 
+def get_by_case_id_and_resource_type(
+    *, db_session, case_id: int, project_id: int, resource_type: str
+) -> Document | None:
+    """Returns a document based on the given case and id and document resource type."""
+    return (
+        db_session.query(Document)
+        .filter(Document.case_id == case_id)
+        .filter(Document.project_id == project_id)
+        .filter(Document.resource_type == resource_type)
+        .one_or_none()
+    )
+
+
 def get_project_forms_export_template(*, db_session, project_id: int) -> Document | None:
     """Fetches the project forms export template."""
     resource_type = DocumentResourceTemplateTypes.forms
@@ -89,12 +102,14 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
             .one_or_none()
         )
         if faq_doc:
-            raise ValidationError([
-                {
-                    "msg": "FAQ document already defined for this project.",
-                    "loc": "document",
-                }
-            ])
+            raise ValidationError(
+                [
+                    {
+                        "msg": "FAQ document already defined for this project.",
+                        "loc": "document",
+                    }
+                ]
+            )
 
     if document_in.resource_type == DocumentResourceTemplateTypes.forms:
         forms_doc = (
@@ -104,12 +119,14 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
             .one_or_none()
         )
         if forms_doc:
-            raise ValidationError([
-                {
-                    "msg": "Forms export template document already defined for this project.",
-                    "loc": "document",
-                }
-            ])
+            raise ValidationError(
+                [
+                    {
+                        "msg": "Forms export template document already defined for this project.",
+                        "loc": "document",
+                    }
+                ]
+            )
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)

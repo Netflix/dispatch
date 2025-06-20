@@ -473,6 +473,20 @@ class CaseJoinPermission(BasePermission):
         return True
 
 
+class CaseEventPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[
+                OrganizationAdminPermission,
+                CaseParticipantPermission,
+            ],
+            request=request,
+        )
+
+
 class FeedbackDeletePermission(BasePermission):
     def has_required_permissions(
         self,
