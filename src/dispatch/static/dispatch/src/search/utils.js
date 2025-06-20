@@ -133,8 +133,8 @@ export default {
         }
       } else {
         each(value, function (value) {
-          // filter null values
-          if (!value) {
+          // filter null/undefined values but allow false
+          if (value === null || value === undefined) {
             return
           }
           if (["commander", "participant", "assignee"].includes(key) && has(value, "email")) {
@@ -166,8 +166,8 @@ export default {
               value: value.name,
             })
           } else if (has(value, "model")) {
-            // avoid filter null values
-            if (value.value) {
+            // avoid filter null/undefined values but allow false
+            if (value.value !== null && value.value !== undefined) {
               subFilter.push({
                 model: value.model,
                 field: value.field,

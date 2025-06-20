@@ -13,8 +13,12 @@ export default {
     return API.get(`${resource}/${tagId}`)
   },
 
-  getRecommendations(model, modelId) {
-    return API.get(`/${resource}/recommendations/${model}/${modelId}`)
+  getRecommendationsCase(projectId, caseId) {
+    return API.get(`/${resource}/recommendations/${projectId}/case/${caseId}`)
+  },
+
+  getRecommendationsIncident(projectId, incidentId) {
+    return API.get(`/${resource}/recommendations/${projectId}/incident/${incidentId}`)
   },
 
   create(payload) {

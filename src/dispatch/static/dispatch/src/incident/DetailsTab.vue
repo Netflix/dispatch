@@ -100,7 +100,10 @@
           :project="project"
           model="incident"
           :model-id="id"
+          :visibility="visibility"
           show-copy
+          :showGenAISuggestions="true"
+          modelType="incident"
         />
       </v-col>
       <v-col cols="12">

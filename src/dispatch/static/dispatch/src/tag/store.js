@@ -3,6 +3,7 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
+import TagTypeApi from "@/tag_type/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -42,10 +43,24 @@ const state = {
       descending: [false],
       filters: {
         project: [],
+        tag_type: [],
+        discoverable: [],
       },
     },
     loading: false,
   },
+  suggestedTags: [],
+  selectedItems: [],
+  validationError: null,
+  tagTypes: {},
+  groups: [],
+  loading: false,
+  more: false,
+  total: 0,
+  suggestionsLoading: false,
+  suggestionsGenerated: false,
+  suggestionsError: null,
+  tagSuggestions: [],
 }
 
 const getters = {
@@ -128,6 +143,267 @@ const actions = {
       )
     })
   },
+  async fetchSuggestedTags({ commit }, suggestedTagData) {
+    // Fetch all tag and tag_type data needed for the suggestions
+    const tagTypeIds = suggestedTagData.map((g) => g.tag_type_id)
+    const tagIds = suggestedTagData.flatMap((g) => g.tags.map((t) => t.id))
+    const tagFilterOptions = {
+      filters: {
+        tagIdFilter: tagIds.map((id) => ({ model: "Tag", field: "id", op: "==", value: id })),
+        tagTypeIdFilter: tagTypeIds.map((id) => ({
+          model: "TagType",
+          field: "id",
+          op: "==",
+          value: id,
+        })),
+      },
+      itemsPerPage: 100,
+    }
+    const params = SearchUtils.createParametersFromTableOptions({ ...tagFilterOptions })
+    const tagResp = await TagApi.getAll(params)
+    const tags = tagResp.data.items
+    // Group tags by tag_type_id
+    const tagTypeMap = {}
+    tags.forEach((tag) => {
+      if (tag.tag_type && tag.tag_type.id) {
+        tagTypeMap[tag.tag_type.id] = tag.tag_type
+      }
+    })
+    // Also ensure all tag_types are present (in case some are not attached to tags)
+    suggestedTagData.forEach((group) => {
+      if (!tagTypeMap[group.tag_type_id]) {
+        tagTypeMap[group.tag_type_id] = {
+          id: group.tag_type_id,
+          name: "",
+          icon: "",
+          color: "#1976d2",
+        }
+      }
+    })
+    // Build the suggestion structure for rendering
+    const result = suggestedTagData.map((group) => {
+      const tag_type = tagTypeMap[group.tag_type_id]
+      return {
+        tag_type,
+        tags: group.tags.map((t) => {
+          const tag = tags.find((tg) => tg.id === t.id)
+          return {
+            ...t,
+            tag,
+          }
+        }),
+      }
+    })
+    commit("SET_SUGGESTED_TAGS", result)
+  },
+  addSuggestedTag({ commit, state }, tagObj) {
+    if (!tagObj || !tagObj.id) return
+    if (!state.selectedItems.some((item) => item.id === tagObj.id)) {
+      commit("ADD_SELECTED_TAG", tagObj)
+    }
+  },
+  removeTag({ commit }, tagId) {
+    commit("REMOVE_SELECTED_TAG", tagId)
+  },
+  validateTags({ commit }, { value, groups, currentProject }) {
+    // project_id logic
+    const project_id = currentProject?.id || 0
+    let all_tags_in_project = false
+    if (project_id) {
+      all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+    } else {
+      const project_name = currentProject?.name
+      if (!project_name) {
+        commit("SET_VALIDATION_ERROR", true)
+        return
+      }
+      all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
+    }
+    if (all_tags_in_project) {
+      if (!areRequiredTagsSelected(value, groups)) {
+        const required_tag_types = groups
+          .filter((tag_type) => tag_type.isRequired)
+          .map((tag_type) => tag_type.label)
+        commit(
+          "SET_VALIDATION_ERROR",
+          `Please select at least one tag from each required category (${required_tag_types.join(
+            ", "
+          )})`
+        )
+      } else {
+        commit("SET_VALIDATION_ERROR", null)
+      }
+    } else {
+      commit("SET_VALIDATION_ERROR", "Only tags in selected project are allowed")
+    }
+  },
+  async fetchEligibleTagTypes() {
+    // Fetch all tag types where any discoverable_* is true
+    const discoverableFields = [
+      "discoverable_incident",
+      "discoverable_case",
+      "discoverable_signal",
+      "discoverable_query",
+      "discoverable_source",
+      "discoverable_document",
+    ]
+    const orFilters = discoverableFields.map((field) => ({ field, op: "==", value: true }))
+    const params = {
+      filters: { or: orFilters },
+      itemsPerPage: 5000, // adjust as needed
+    }
+    const resp = await TagTypeApi.getAll(params)
+    return resp.data.items.map((tt) => tt.id)
+  },
+
+  async fetchAllTagsWithEligibleTypes({ commit, dispatch }, { project }) {
+    // 1. Fetch eligible tag type ids
+    const eligibleTagTypeIds = await dispatch("fetchEligibleTagTypes")
+    // 2. Fetch tags for this project
+    const tagFilterOptions = {
+      filters: {
+        project: [{ model: "Project", field: "name", op: "==", value: project.name }],
+        tagTypeIdFilter: eligibleTagTypeIds.map((id) => ({
+          model: "TagType",
+          field: "id",
+          op: "==",
+          value: id,
+        })),
+        tagFilter: [{ model: "Tag", field: "discoverable", op: "==", value: "true" }],
+      },
+      itemsPerPage: 5000, // adjust as needed
+    }
+    const params = SearchUtils.createParametersFromTableOptions({ ...tagFilterOptions })
+    const tagResp = await TagApi.getAll(params)
+    // 3. Filter tags client-side as a safeguard
+    const tags = tagResp.data.items.filter((tag) => eligibleTagTypeIds.includes(tag.tag_type.id))
+
+    commit("SET_TABLE_ROWS", { items: tags, total: tags.length })
+    return tags
+  },
+
+  async fetchTags({ commit }, { project, model }) {
+    if (!project) return
+
+    commit("SET_LOADING", true)
+
+    let filterOptions = {
+      q: null,
+      itemsPerPage: 500,
+      sortBy: ["tag_type.name"],
+      descending: [false],
+      filters: {
+        project: [{ model: "Project", field: "name", op: "==", value: project.name }],
+        tagFilter: [{ model: "Tag", field: "discoverable", op: "==", value: "true" }],
+      },
+    }
+
+    if (model) {
+      filterOptions.filters.tagTypeFilter = [
+        { model: "TagType", field: "discoverable_" + model, op: "==", value: "true" },
+      ]
+    }
+
+    filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+
+    try {
+      const response = await TagApi.getAll(filterOptions)
+      commit("SET_TABLE_ROWS", response.data)
+      commit("SET_GROUPS", convertData(response.data.items))
+      commit("SET_LOADING", false)
+      return response.data.items
+    } catch (error) {
+      console.error("Error fetching tags:", error)
+      commit("SET_LOADING", false)
+      throw error
+    }
+  },
+
+  async fetchTagTypes({ commit }) {
+    try {
+      const resp = await TagTypeApi.getAll({ itemsPerPage: 5000 })
+      const tagTypes = Object.fromEntries(resp.data.items.map((tt) => [tt.id, tt]))
+
+      // Add sample tag types for demo purposes if they don't exist
+      if (!tagTypes[135]) {
+        tagTypes[135] = {
+          id: 135,
+          name: "MITRE Tactics",
+          color: "#1976d2",
+          icon: "bullseye-arrow",
+        }
+      }
+      if (!tagTypes[136]) {
+        tagTypes[136] = {
+          id: 136,
+          name: "MITRE Techniques",
+          color: "#388e3c",
+          icon: "tools",
+        }
+      }
+
+      commit("SET_TAG_TYPES", tagTypes)
+      return tagTypes
+    } catch (error) {
+      console.error("Error fetching tag types:", error)
+      throw error
+    }
+  },
+
+  async generateSuggestions({ commit }, { projectId, modelId, modelType = "incident" }) {
+    commit("SET_SUGGESTIONS_LOADING", true)
+    commit("SET_SUGGESTIONS_ERROR", null)
+
+    try {
+      let response
+      if (modelType === "case") {
+        response = await TagApi.getRecommendationsCase(projectId, modelId)
+      } else {
+        response = await TagApi.getRecommendationsIncident(projectId, modelId)
+      }
+
+      const errorMessage = response.data?.error_message || response.error_message
+      if (errorMessage) {
+        commit("SET_SUGGESTIONS_ERROR", errorMessage)
+        commit("SET_TAG_SUGGESTIONS", [])
+        return
+      }
+
+      const suggestions = response.data?.recommendations || response.recommendations || []
+      commit("SET_TAG_SUGGESTIONS", Array.isArray(suggestions) ? suggestions : [])
+      commit("SET_SUGGESTIONS_GENERATED", true)
+    } catch (error) {
+      console.error("Error generating AI suggestions:", error)
+      commit(
+        "SET_SUGGESTIONS_ERROR",
+        "Failed to generate AI tag suggestions. Please try again later."
+      )
+      commit("SET_TAG_SUGGESTIONS", [])
+    } finally {
+      commit("SET_SUGGESTIONS_LOADING", false)
+      commit("SET_SUGGESTIONS_GENERATED", true)
+    }
+  },
+
+  resetSuggestions({ commit }) {
+    commit("SET_SUGGESTIONS_GENERATED", false)
+    commit("SET_SUGGESTIONS_ERROR", null)
+  },
+
+  getTagType({ state }, tagTypeId) {
+    return state.tagTypes[tagTypeId] || {}
+  },
+}
+
+function areRequiredTagsSelected(sel, tagTypes) {
+  for (let i = 0; i < tagTypes.length; i++) {
+    if (tagTypes[i].isRequired) {
+      if (!sel.some((item) => item.tag_type?.id === tagTypes[i]?.id)) {
+        return false
+      }
+    }
+  }
+  return true
 }
 
 const mutations = {
@@ -156,6 +432,76 @@ const mutations = {
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
   },
+  SET_SUGGESTED_TAGS(state, tags) {
+    state.suggestedTags = tags
+  },
+  ADD_SELECTED_TAG(state, tag) {
+    state.selectedItems = [...(state.selectedItems || []), tag]
+  },
+  REMOVE_SELECTED_TAG(state, tagId) {
+    state.selectedItems = (state.selectedItems || []).filter((item) => item.id !== tagId)
+  },
+  SET_VALIDATION_ERROR(state, error) {
+    state.validationError = error
+  },
+  SET_LOADING(state, value) {
+    state.loading = value
+  },
+  SET_MORE(state, value) {
+    state.more = value
+  },
+  SET_TOTAL(state, value) {
+    state.total = value
+  },
+  SET_GROUPS(state, groups) {
+    state.groups = groups
+  },
+  SET_TAG_TYPES(state, types) {
+    state.tagTypes = types
+  },
+  SET_SUGGESTIONS_LOADING(state, value) {
+    state.suggestionsLoading = value
+  },
+  SET_SUGGESTIONS_GENERATED(state, value) {
+    state.suggestionsGenerated = value
+  },
+  SET_SUGGESTIONS_ERROR(state, error) {
+    state.suggestionsError = error
+  },
+  SET_TAG_SUGGESTIONS(state, suggestions) {
+    state.tagSuggestions = suggestions
+  },
+}
+
+// Helper function for converting data
+function convertData(data) {
+  return data.reduce((r, a) => {
+    const tagType = a.tag_type
+    const hasAnyDiscoverability =
+      tagType.discoverable_incident ||
+      tagType.discoverable_case ||
+      tagType.discoverable_signal ||
+      tagType.discoverable_query ||
+      tagType.discoverable_source ||
+      tagType.discoverable_document
+
+    if (!hasAnyDiscoverability) return r
+
+    if (!r[a.tag_type.id]) {
+      r[a.tag_type.id] = {
+        id: a.tag_type.id,
+        icon: a.tag_type.icon,
+        label: a.tag_type.name,
+        desc: a.tag_type.description,
+        color: a.tag_type.color,
+        isRequired: a.tag_type.required,
+        isExclusive: a.tag_type.exclusive,
+        menuItems: [],
+      }
+    }
+    r[a.tag_type.id].menuItems.push(a)
+    return r
+  }, Object.create(null))
 }
 
 export default {
