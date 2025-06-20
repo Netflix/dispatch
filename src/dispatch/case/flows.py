@@ -42,7 +42,7 @@ from .messaging import (
     send_case_rating_feedback_message,
     send_case_update_notifications,
     send_event_paging_message,
-    send_event_update_prompt_reminder
+    send_event_update_prompt_reminder,
 )
 from .models import Case
 from .service import get
@@ -768,6 +768,42 @@ def map_case_roles_to_incident_roles(
     return list(incident_roles) or None
 
 
+def copy_case_events_to_incident(
+    case: Case,
+    incident: Incident,
+    db_session: Session,
+):
+    """Copies all timeline events from a case to an incident."""
+    # Get all events from the case
+    case_events = event_service.get_by_case_id(db_session=db_session, case_id=case.id).all()
+
+    if not case_events:
+        log.info(f"No events to copy from case {case.id} to incident {incident.id}")
+        return
+
+    log.info(f"Copying {len(case_events)} events from case {case.id} to incident {incident.id}")
+
+    for case_event in case_events:
+        # Create a new event for the incident with the same data
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=f"Copied from case {case.name}",
+            description=case_event.description,
+            incident_id=incident.id,
+            individual_id=case_event.individual_id,
+            started_at=case_event.started_at,
+            ended_at=case_event.ended_at,
+            details=case_event.details,
+            type=case_event.type,
+            owner=case_event.owner,
+            pinned=case_event.pinned,
+        )
+
+    log.info(
+        f"Successfully copied {len(case_events)} events from case {case.id} to incident {incident.id}"
+    )
+
+
 def common_escalate_flow(
     case: Case,
     incident: Incident,
@@ -792,6 +828,9 @@ def common_escalate_flow(
     case.incidents.append(incident)
     db_session.add(case)
     db_session.commit()
+
+    # Copy timeline events from case to incident
+    copy_case_events_to_incident(case=case, incident=incident, db_session=db_session)
 
     event_service.log_case_event(
         db_session=db_session,
@@ -862,7 +901,10 @@ def common_escalate_flow(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
+            description=(
+                f"The members of the incident's tactical group {incident.tactical_group.email} "
+                f"have been given permission to access the case's storage folder"
+            ),
             case_id=case.id,
         )
 
