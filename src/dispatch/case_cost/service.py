@@ -329,13 +329,28 @@ def get_participant_role_time_seconds(case: Case, participant_role: ParticipantR
     participant_role_renounced_at = datetime.now(tz=timezone.utc)
 
     if case.status not in [CaseStatus.new, CaseStatus.triage]:
-        # we set the renounced_at default time to the stable_at time if the stable_at time exists
+        # Determine the earliest relevant timestamp for cost calculation cut-off
+        timestamps = []
         if case.stable_at:
             # Ensure stable_at is timezone-aware
             stable_at = case.stable_at
             if not stable_at.tzinfo:
                 stable_at = stable_at.replace(tzinfo=timezone.utc)
-            participant_role_renounced_at = stable_at
+            timestamps.append(stable_at)
+        if case.escalated_at:
+            # Ensure escalated_at is timezone-aware
+            escalated_at = case.escalated_at
+            if not escalated_at.tzinfo:
+                escalated_at = escalated_at.replace(tzinfo=timezone.utc)
+            timestamps.append(escalated_at)
+        if case.closed_at:
+            # Ensure closed_at is timezone-aware
+            closed_at = case.closed_at
+            if not closed_at.tzinfo:
+                closed_at = closed_at.replace(tzinfo=timezone.utc)
+            timestamps.append(closed_at)
+        if timestamps:
+            participant_role_renounced_at = min(timestamps)
 
     if participant_role.renounced_at:
         # the participant left the conversation or got assigned another role
