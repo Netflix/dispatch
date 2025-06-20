@@ -202,10 +202,10 @@ const actions = {
       commit("ADD_SELECTED_TAG", tagObj)
     }
   },
-  removeTag({ commit, state }, tagId) {
+  removeTag({ commit }, tagId) {
     commit("REMOVE_SELECTED_TAG", tagId)
   },
-  validateTags({ commit, state }, { value, groups, currentProject }) {
+  validateTags({ commit }, { value, groups, currentProject }) {
     // project_id logic
     const project_id = currentProject?.id || 0
     let all_tags_in_project = false
@@ -350,12 +350,17 @@ const actions = {
     }
   },
 
-  async generateSuggestions({ commit }, { projectId, modelId }) {
+  async generateSuggestions({ commit }, { projectId, modelId, modelType = "incident" }) {
     commit("SET_SUGGESTIONS_LOADING", true)
     commit("SET_SUGGESTIONS_ERROR", null)
 
     try {
-      const response = await TagApi.getRecommendationsIncident(projectId, modelId)
+      let response
+      if (modelType === "case") {
+        response = await TagApi.getRecommendationsCase(projectId, modelId)
+      } else {
+        response = await TagApi.getRecommendationsIncident(projectId, modelId)
+      }
 
       const errorMessage = response.data?.error_message || response.error_message
       if (errorMessage) {

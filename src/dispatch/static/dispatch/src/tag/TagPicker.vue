@@ -47,7 +47,12 @@
       </span>
       <v-card v-if="menu" class="tag-picker-dropdown-block">
         <!-- Initial state: Show generate button -->
-        <div v-if="!suggestionsGenerated && props.visibility !== 'Restricted'" class="mb-4">
+        <div
+          v-if="
+            !suggestionsGenerated && props.visibility !== 'Restricted' && props.showGenAISuggestions
+          "
+          class="mb-4"
+        >
           <div class="gradient-border-wrapper">
             <div class="white-bg-wrapper">
               <v-btn
@@ -70,7 +75,10 @@
         </div>
 
         <!-- Error banner: Show when there's an error -->
-        <div v-if="suggestionsGenerated && suggestionsError" class="error-banner mb-3">
+        <div
+          v-if="suggestionsGenerated && suggestionsError && props.showGenAISuggestions"
+          class="error-banner mb-3"
+        >
           <div class="error-content">
             <v-icon size="18" color="#f57f17" class="mr-2">mdi-alert</v-icon>
             <span class="error-message">{{ suggestionsError }}</span>
@@ -89,7 +97,7 @@
 
         <!-- Suggestions panel: Show when generated (expanded or collapsed) -->
         <div
-          v-if="suggestionsGenerated && tagSuggestions.length > 0"
+          v-if="suggestionsGenerated && tagSuggestions.length > 0 && props.showGenAISuggestions"
           :class="[
             'mitre-suggestions-panel',
             suggestionsExpanded ? 'mb-4' : 'mb-3',
@@ -291,6 +299,14 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  showGenAISuggestions: {
+    type: Boolean,
+    default: false,
+  },
+  modelType: {
+    type: String,
+    default: "incident", // "incident" or "case"
+  },
 })
 
 // Computed properties from store
@@ -334,6 +350,7 @@ const generateSuggestions = async () => {
   await store.dispatch("tag/generateSuggestions", {
     projectId: props.project.id,
     modelId: props.modelId,
+    modelType: props.modelType,
   })
 }
 
