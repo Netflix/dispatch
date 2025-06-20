@@ -141,8 +141,9 @@ def get_or_create_case_response_cost_by_model_type(
 
     if not response_cost_type:
         log.warning(
-            f"A default cost type for model type {model_type} doesn't exist and could not be created in the {case.project.name} project. "
-            f"Response costs for case {case.name} won't be calculated for this model."
+            f"A default cost type for model type {model_type} doesn't exist and could not be "
+            f"created in the {case.project.name} project. Response costs for case {case.name} "
+            "won't be calculated for this model."
         )
         return None
 
@@ -169,12 +170,14 @@ def fetch_case_events(
 
     Args:
         case: The case to fetch events for.
-        activity: The activity to fetch events for. This defines the plugin event to fetch and how much response effort each event requires.
+        activity: The activity to fetch events for. This defines the plugin event to fetch and
+            how much response effort each event requires.
         oldest: The timestamp to start fetching events from.
         db_session: The database session.
 
     Returns:
-        list[tuple[datetime.timestamp, str | None]]: A list of tuples containing the timestamp and user_id of each event.
+        list[tuple[datetime.timestamp, str | None]]: A list of tuples containing the timestamp and
+            user_id of each event.
     """
 
     plugin_instance = plugin_service.get_active_instance_by_slug(
@@ -184,7 +187,8 @@ def fetch_case_events(
     )
     if not plugin_instance:
         log.warning(
-            f"Cannot fetch cost model activity. Its associated plugin {activity.plugin_event.plugin.title} is not enabled."
+            f"Cannot fetch cost model activity. Its associated plugin "
+            f"{activity.plugin_event.plugin.title} is not enabled."
         )
         return []
 
@@ -238,7 +242,8 @@ def update_case_participant_activities(
     )
     if not case_response_cost:
         log.warning(
-            f"Cannot calculate case response cost for case {case.name}. No default case response cost type created or found."
+            f"Cannot calculate case response cost for case {case.name}. No default case response "
+            "cost type created or found."
         )
         return
 
@@ -314,45 +319,67 @@ def calculate_case_response_cost(case: Case, db_session: Session) -> int:
     return results
 
 
-def get_participant_role_time_seconds(case: Case, participant_role: ParticipantRole) -> float:
-    """Calculates the time spent by a participant in a case role starting from a given time.
-
-    The participant's time spent in the case role is adjusted based on the role's engagement multiplier.
-
-    Args:
-        case: The case the participant is part of.
-        participant_role: The role of the participant.
-        start_at: Only time spent after this will be considered.
-
-    Returns:
-        float: The time spent by the participant in the case role in seconds.
-    """
+def get_participant_role_time_seconds(case: Case, participant_role: ParticipantRole) -> int:
+    """Returns the time a participant has spent in a given role in seconds."""
+    # Skip calculating cost for participants with the observer role
     if participant_role.role == ParticipantRoleType.observer:
-        # skip calculating cost for participants with the observer role
         return 0
 
-    # we set the renounced_at default time to the current time
-    participant_role_renounced_at = datetime.now(tz=timezone.utc).replace(tzinfo=None)
-    if participant_role.renounced_at:
-        participant_role_renounced_at = participant_role.renounced_at
-    elif case.status == CaseStatus.closed:
-        if case.closed_at:
-            participant_role_renounced_at = case.closed_at
-    elif case.status == CaseStatus.escalated:
+    # we get the time the participant has spent in the role so far
+    participant_role_renounced_at = datetime.now(tz=timezone.utc)
+
+    if case.status not in [CaseStatus.new, CaseStatus.triage]:
+        # Determine the earliest relevant timestamp for cost calculation cut-off
+        timestamps = []
+        if case.stable_at:
+            # Ensure stable_at is timezone-aware
+            stable_at = case.stable_at
+            if not stable_at.tzinfo:
+                stable_at = stable_at.replace(tzinfo=timezone.utc)
+            timestamps.append(stable_at)
         if case.escalated_at:
-            participant_role_renounced_at = case.escalated_at
+            # Ensure escalated_at is timezone-aware
+            escalated_at = case.escalated_at
+            if not escalated_at.tzinfo:
+                escalated_at = escalated_at.replace(tzinfo=timezone.utc)
+            timestamps.append(escalated_at)
+        if case.closed_at:
+            # Ensure closed_at is timezone-aware
+            closed_at = case.closed_at
+            if not closed_at.tzinfo:
+                closed_at = closed_at.replace(tzinfo=timezone.utc)
+            timestamps.append(closed_at)
+        if timestamps:
+            participant_role_renounced_at = min(timestamps)
 
-    # the time the participant has spent in the case role since the last case cost update
-    participant_role_time = participant_role_renounced_at - participant_role.assumed_at
+    if participant_role.renounced_at:
+        # the participant left the conversation or got assigned another role
+        # Ensure renounced_at is timezone-aware for comparison
+        renounced_at = participant_role.renounced_at
+        if not renounced_at.tzinfo:
+            renounced_at = renounced_at.replace(tzinfo=timezone.utc)
+
+        if renounced_at < participant_role_renounced_at:
+            # we use the role's renounced_at time if it happened before the
+            # case was marked as stable or closed
+            participant_role_renounced_at = renounced_at
+
+    # Ensure assumed_at is timezone-aware
+    assumed_at = participant_role.assumed_at
+    if not assumed_at.tzinfo:
+        assumed_at = assumed_at.replace(tzinfo=timezone.utc)
+
+    # we calculate the time the participant has spent in the role
+    participant_role_time = participant_role_renounced_at - assumed_at
     if participant_role_time.total_seconds() < 0:
-        # the participant was added after the case was closed/escalated
         return 0
 
-    # we calculate the number of hours the participant has spent in the case role
+    # we calculate the number of hours the participant has spent in the incident role
     participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
 
-    # we make the assumption that participants only spend 8 hours a day working on the case,
-    # if the case goes past 24hrs
+    # we make the assumption that participants only spend 8 hours a day working on the incident,
+    # if the incident goes past 24hrs
+    # TODO(mvilanova): adjust based on incident priority
     if participant_role_time_hours > HOURS_IN_DAY:
         days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
         participant_role_time_hours = ((days * HOURS_IN_DAY) / 3) + hours

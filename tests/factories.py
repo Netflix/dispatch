@@ -770,7 +770,7 @@ class CaseFactory(BaseFactory):
     description = FuzzyText()
     resolution = FuzzyText()
     resolution_reason = FuzzyChoice(["False Positive", "User Acknowledged"])
-    status = FuzzyChoice(["New", "Triage", "Escalated", "Closed"])
+    status = FuzzyChoice(["New", "Triage", "Escalated", "Stable", "Closed"])
     project = SubFactory(ProjectFactory)
     case_priority = SubFactory(CasePriorityFactory)
     case_severity = SubFactory(CaseSeverityFactory)

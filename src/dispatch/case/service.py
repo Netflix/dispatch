@@ -93,8 +93,10 @@ def get_all_by_status(
                 Case.created_at,
                 Case.updated_at,
                 Case.triage_at,
+                Case.escalated_at,
+                Case.stable_at,
                 Case.closed_at,
-            )
+            ),
         )
         .filter(Case.project_id == project_id)
         .filter(Case.status.in_(statuses))
@@ -141,6 +143,15 @@ def get_all_last_x_hours_by_status(
             .all()
         )
 
+    if status == CaseStatus.stable:
+        return (
+            db_session.query(Case)
+            .filter(Case.project_id == project_id)
+            .filter(Case.status == CaseStatus.stable)
+            .filter(Case.stable_at >= now - timedelta(hours=hours))
+            .all()
+        )
+
     if status == CaseStatus.closed:
         return (
             db_session.query(Case)
@@ -152,13 +163,16 @@ def get_all_last_x_hours_by_status(
 
 
 def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None) -> Case:
-    """Creates a new case.
+    """
+    Creates a new case.
 
     Returns:
         The created case.
 
     Raises:
-        ValidationError: If the case type does not have a conversation target and the case is not being created with a dedicated channel, the case will not be created.
+        ValidationError: If the case type does not have a conversation target and
+        the case is not being created with a dedicated channel, the case will not
+        be created.
     """
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=case_in.project
@@ -177,7 +191,9 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
     if not case_in.dedicated_channel:
         if not case_type or not case_type.conversation_target:
             raise ValueError(
-                f"Cases without dedicated channels require a conversation target. Case type with name {case_in.case_type.name} does not have a conversation target. The case will not be created."
+                f"Cases without dedicated channels require a conversation target. "
+                f"Case type with name {case_in.case_type.name} does not have a "
+                f"conversation target. The case will not be created."
             )
 
     case = Case(

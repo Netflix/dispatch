@@ -57,6 +57,10 @@ CASE_STATUS_DESCRIPTIONS = {
     CaseStatus.new: "This case is new and needs triaging.",
     CaseStatus.triage: "This case is being triaged.",
     CaseStatus.escalated: "This case has been escalated.",
+    CaseStatus.stable: (
+        "This case is stable, the bulk of the investigation has been completed "
+        "or most of the risk has been mitigated."
+    ),
     CaseStatus.closed: "This case has been closed.",
 }
 
