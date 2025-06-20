@@ -130,8 +130,15 @@
       <v-col cols="12">
         <v-row>
           <v-col cols="6">
+            <date-time-picker-menu label="Stable At" v-model="stable_at" />
+          </v-col>
+          <v-col cols="6">
             <date-time-picker-menu label="Escalated At" v-model="escalated_at" />
           </v-col>
+        </v-row>
+      </v-col>
+      <v-col cols="12">
+        <v-row>
           <v-col cols="6">
             <date-time-picker-menu label="Closed At" v-model="closed_at" />
           </v-col>
@@ -199,6 +206,7 @@ export default {
       statuses: [
         { title: "New", value: "New" },
         { title: "Triage", value: "Triage" },
+        { title: "Stable", value: "Stable" },
         { title: "Escalated", value: "Escalated" },
         { title: "Closed", value: "Closed" },
       ],
@@ -233,6 +241,7 @@ export default {
       "selected.resolution_reason",
       "selected.resolution",
       "selected.signals",
+      "selected.stable_at",
       "selected.status",
       "selected.tags",
       "selected.title",

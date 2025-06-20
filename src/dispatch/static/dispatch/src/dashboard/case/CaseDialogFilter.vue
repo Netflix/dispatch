@@ -183,6 +183,7 @@ export default {
           "name",
           "project",
           "reported_at",
+          "stable_at",
           "status",
           "tags",
           "title",

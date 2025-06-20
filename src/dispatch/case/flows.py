@@ -42,7 +42,7 @@ from .messaging import (
     send_case_rating_feedback_message,
     send_case_update_notifications,
     send_event_paging_message,
-    send_event_update_prompt_reminder
+    send_event_update_prompt_reminder,
 )
 from .models import Case
 from .service import get
@@ -337,10 +337,8 @@ def case_triage_create_flow(*, case_id: int, organization_slug: OrganizationSlug
 
 
 @background_task
-def case_escalated_create_flow(
-    *, case_id: int, organization_slug: OrganizationSlug, db_session=None
-):
-    """Runs the case escalated creation flow."""
+def case_stable_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
+    """Runs the case stable create flow."""
     # we run the case new creation flow
     case_new_create_flow(
         case_id=case_id, organization_slug=organization_slug, db_session=db_session
@@ -352,9 +350,36 @@ def case_escalated_create_flow(
     # we transition the case to the triage state
     case_triage_status_flow(case=case, db_session=db_session)
 
-    # we transition the case to the escalated state
+    case = get(db_session=db_session, case_id=case_id)
+    case_stable_status_flow(
+        case=case,
+        db_session=db_session,
+    )
+
+
+@background_task
+def case_escalated_create_flow(
+    *, case_id: int, organization_slug: OrganizationSlug, db_session=None
+):
+    """Runs the case escalated create flow."""
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
+
+    # then to the stable state
+    case_stable_status_flow(case=case, db_session=db_session)
+
     case_escalated_status_flow(
-        case=case, organization_slug=organization_slug, db_session=db_session
+        case=case,
+        organization_slug=organization_slug,
+        db_session=db_session,
     )
 
 
@@ -516,11 +541,18 @@ def case_escalated_status_flow(
     incident_type: IncidentType | None,
     incident_description: str | None,
 ):
-    """Runs the case escalated transition flow."""
-    # we set the escalated_at time
+    """Runs the case escalated status flow."""
+    # we set the escalated at time
     case.escalated_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Case escalated",
+        case_id=case.id,
+    )
 
     case_to_incident_escalate_flow(
         case=case,
@@ -530,6 +562,21 @@ def case_escalated_status_flow(
         incident_priority=incident_priority,
         incident_type=incident_type,
         incident_description=incident_description,
+    )
+
+
+def case_stable_status_flow(case: Case, db_session=None):
+    """Runs the case stable status flow."""
+    # we set the stable at time
+    case.stable_at = datetime.utcnow()
+    db_session.add(case)
+    db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Case marked as stable",
+        case_id=case.id,
     )
 
 
@@ -719,6 +766,46 @@ def case_status_transition_flow_dispatcher(
         case (CaseStatus.escalated, CaseStatus.closed):
             # Escalated -> Closed
             case_closed_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.escalated, CaseStatus.stable):
+            # Escalated -> Stable
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.triage, CaseStatus.stable):
+            # Triage -> Stable
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.new, CaseStatus.stable):
+            # New -> Stable
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.stable, CaseStatus.closed):
+            # Stable -> Closed
+            case_closed_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.closed, CaseStatus.stable):
+            # Closed -> Stable
+            case_active_status_flow(case, db_session)
+            case_stable_status_flow(
                 case=case,
                 db_session=db_session,
             )
