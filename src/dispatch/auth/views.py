@@ -25,6 +25,7 @@ from .models import (
     UserLoginResponse,
     UserOrganization,
     UserPagination,
+    UserProject,
     UserRead,
     UserRegister,
     UserRegisterResponse,
@@ -32,8 +33,18 @@ from .models import (
     UserUpdate,
     UserPasswordUpdate,
     AdminPasswordReset,
+    UserSettingsRead,
+    UserSettingsUpdate,
 )
-from .service import get, get_by_email, update, create
+from dispatch.project.models import ProjectRead
+from .service import (
+    get,
+    get_by_email,
+    update,
+    create,
+    get_or_create_user_settings,
+    update_user_settings,
+)
 
 
 log = logging.getLogger(__name__)
@@ -264,7 +275,20 @@ def get_me(
     db_session: DbSession,
     current_user: CurrentUser,
 ):
-    return current_user
+    # Get user settings and include in response  
+    user_settings = get_or_create_user_settings(db_session=db_session, user_id=current_user.id)
+    
+    # Create a response dict that includes settings
+    response_data = {
+        "id": current_user.id,
+        "email": current_user.email,
+        "projects": current_user.projects,
+        "organizations": current_user.organizations,
+        "experimental_features": current_user.experimental_features,
+        "settings": user_settings,
+    }
+    
+    return response_data
 
 
 @auth_router.get("/myrole")
@@ -378,6 +402,32 @@ def mfa_check(
 
     finally:
         log.info("MFA check completed")
+
+
+@auth_router.get("/me/settings", response_model=UserSettingsRead)
+def get_my_settings(
+    *,
+    db_session: DbSession,
+    current_user: CurrentUser,
+):
+    """Get current user's settings."""
+    settings = get_or_create_user_settings(db_session=db_session, user_id=int(current_user.id))
+    return settings
+
+
+@auth_router.put("/me/settings", response_model=UserSettingsRead)
+def update_my_settings(
+    *,
+    db_session: DbSession,
+    current_user: CurrentUser,
+    settings_in: UserSettingsUpdate,
+):
+    """Update current user's settings."""
+    settings = get_or_create_user_settings(db_session=db_session, user_id=int(current_user.id))
+    updated_settings = update_user_settings(
+        db_session=db_session, settings=settings, settings_in=settings_in
+    )
+    return updated_settings
 
 
 if DISPATCH_AUTH_REGISTRATION_ENABLED:

@@ -130,6 +130,18 @@ class DispatchUserProject(Base, TimeStampMixin):
     role = Column(String, nullable=False, default=UserRoles.member)
 
 
+class DispatchUserSettings(Base, TimeStampMixin):
+    """SQLAlchemy model for user settings."""
+
+    __table_args__ = {"schema": "dispatch_core"}
+
+    id = Column(Integer, primary_key=True)
+    dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), unique=True)
+    dispatch_user = relationship(DispatchUser, backref="settings")
+
+    auto_add_to_incident_bridges = Column(Boolean, default=True)
+
+
 class UserProject(DispatchBase):
     """Pydantic model for a user's project membership."""
 
@@ -202,6 +214,7 @@ class UserRead(UserBase):
     id: PrimaryKey
     role: str | None = None
     experimental_features: bool | None = None
+    settings: "UserSettingsRead | None" = None
 
 
 class UserUpdate(DispatchBase):
@@ -321,3 +334,28 @@ class MfaPayload(DispatchBase):
     action: str
     project_id: int
     challenge_id: str
+
+
+class UserSettingsBase(DispatchBase):
+    """Base Pydantic model for user settings."""
+
+    auto_add_to_incident_bridges: bool = True
+
+
+class UserSettingsRead(UserSettingsBase):
+    """Pydantic model for reading user settings."""
+
+    id: PrimaryKey | None = None
+    dispatch_user_id: PrimaryKey | None = None
+
+
+class UserSettingsUpdate(UserSettingsBase):
+    """Pydantic model for updating user settings."""
+
+    pass
+
+
+class UserSettingsCreate(UserSettingsBase):
+    """Pydantic model for creating user settings."""
+
+    dispatch_user_id: PrimaryKey

@@ -5,6 +5,7 @@ from pydantic import field_validator, Field, ConfigDict
 from urllib.parse import urlparse
 
 from sqlalchemy import (
+    Boolean,
     Column,
     ForeignKey,
     Integer,
@@ -140,6 +141,7 @@ class IndividualContactReadMinimal(DispatchBase):
     title: str | None = None
     weblink: str | None = None
     external_id: str | None = None
+    auto_add_to_incident_bridges: bool | None = True
 
     # Ensure validation is turned off for tests
     model_config = ConfigDict(
