@@ -71,6 +71,7 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
     from dispatch.case.service import create as create_case
 
     case_type.project = project
+    case_type.oncall_service = None  # Ensure fallback to current_user
     case_severity.project = project
     case_priority.project = project
     session.add(case_type)
@@ -92,7 +93,6 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=True,
         tags=[],
         event=False,
@@ -131,7 +131,6 @@ def test_create__no_conversation_target(
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=True,
         tags=[],
         event=False,
@@ -169,7 +168,6 @@ def test_create__fails_with_no_conversation_target(
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=False,
         tags=[],
         event=False,
@@ -233,3 +231,54 @@ def test_delete(session, case: Case):
 
     t_case = case_get(db_session=session, case_id=case_id)
     assert not t_case
+
+
+def test_copy_case_events_to_incident(session, case: Case, incident):
+    """Test that case events are properly copied to incident when escalating."""
+    from dispatch.case.flows import copy_case_events_to_incident
+    from dispatch.event.service import get_by_case_id, get_by_incident_id, log_case_event
+
+    # Create some test events for the case
+    log_case_event(
+        db_session=session,
+        source="Test Source",
+        description="Test case event 1",
+        case_id=case.id,
+    )
+
+    log_case_event(
+        db_session=session,
+        source="Test Source 2",
+        description="Test case event 2",
+        case_id=case.id,
+    )
+
+    # Verify case has events
+    case_events = get_by_case_id(db_session=session, case_id=case.id).all()
+    initial_case_event_count = len(case_events)
+    assert initial_case_event_count == 2
+
+    # Verify incident has no events initially
+    incident_events = get_by_incident_id(db_session=session, incident_id=incident.id).all()
+    initial_incident_event_count = len(incident_events)
+    assert initial_incident_event_count == 0
+
+    # Copy events from case to incident
+    copy_case_events_to_incident(case=case, incident=incident, db_session=session)
+
+    # Verify incident now has the copied events
+    incident_events_after = get_by_incident_id(db_session=session, incident_id=incident.id).all()
+    final_incident_event_count = len(incident_events_after)
+    assert final_incident_event_count == initial_case_event_count
+
+    # Verify case events are unchanged
+    case_events_after = get_by_case_id(db_session=session, case_id=case.id).all()
+    final_case_event_count = len(case_events_after)
+    assert final_case_event_count == initial_case_event_count
+
+    # Verify the copied events have the correct source
+    for event in incident_events_after:
+        assert (
+            event.source == f"Test Source (copied from {case.name})"
+            or event.source == f"Test Source 2 (copied from {case.name})"
+        )
