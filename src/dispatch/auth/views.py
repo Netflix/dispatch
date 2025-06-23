@@ -25,7 +25,6 @@ from .models import (
     UserLoginResponse,
     UserOrganization,
     UserPagination,
-    UserProject,
     UserRead,
     UserRegister,
     UserRegisterResponse,
@@ -36,7 +35,6 @@ from .models import (
     UserSettingsRead,
     UserSettingsUpdate,
 )
-from dispatch.project.models import ProjectRead
 from .service import (
     get,
     get_by_email,

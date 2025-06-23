@@ -5,7 +5,6 @@ from pydantic import field_validator, Field, ConfigDict
 from urllib.parse import urlparse
 
 from sqlalchemy import (
-    Boolean,
     Column,
     ForeignKey,
     Integer,
