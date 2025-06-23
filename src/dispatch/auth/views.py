@@ -275,9 +275,9 @@ def get_me(
     db_session: DbSession,
     current_user: CurrentUser,
 ):
-    # Get user settings and include in response  
+    # Get user settings and include in response
     user_settings = get_or_create_user_settings(db_session=db_session, user_id=current_user.id)
-    
+
     # Create a response dict that includes settings
     response_data = {
         "id": current_user.id,
@@ -287,7 +287,7 @@ def get_me(
         "experimental_features": current_user.experimental_features,
         "settings": user_settings,
     }
-    
+
     return response_data
 
 

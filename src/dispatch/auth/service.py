@@ -155,7 +155,8 @@ def create(*, db_session, organization: str, user_in: (UserRegister | UserCreate
 
     # create the user
     user = DispatchUser(
-        **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}), password=password
+        **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}),
+        password=password,
     )
 
     org = organization_service.get_by_slug_or_raise(
@@ -306,9 +307,7 @@ def get_or_create_user_settings(*, db_session, user_id: int) -> DispatchUserSett
     return settings
 
 
-def create_user_settings(
-    *, db_session, settings_in: UserSettingsCreate
-) -> DispatchUserSettings:
+def create_user_settings(*, db_session, settings_in: UserSettingsCreate) -> DispatchUserSettings:
     """Create user settings."""
     settings = DispatchUserSettings(**settings_in.model_dump())
     db_session.add(settings)
@@ -325,10 +324,10 @@ def update_user_settings(
 ) -> DispatchUserSettings:
     """Update user settings."""
     settings_data = settings_in.model_dump(exclude_unset=True)
-    
+
     for field, value in settings_data.items():
         setattr(settings, field, value)
-    
+
     db_session.commit()
     db_session.refresh(settings)
     return settings
