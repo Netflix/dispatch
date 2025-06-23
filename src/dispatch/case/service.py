@@ -222,6 +222,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser = None
             "visibility": case.visibility,
         },
         case_id=case.id,
+        pinned=True,
     )
 
     assignee_email = None

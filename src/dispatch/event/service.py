@@ -262,6 +262,27 @@ def delete_incident_event(
     delete(db_session=db_session, event_id=event.id)
 
 
+def update_case_event(
+    db_session,
+    event_in: EventUpdate,
+) -> Event:
+    """Updates an event in the case timeline."""
+    event = get_by_uuid(db_session=db_session, uuid=event_in.uuid)
+    event = update(db_session=db_session, event=event, event_in=event_in)
+
+    return event
+
+
+def delete_case_event(
+    db_session,
+    uuid: str,
+):
+    """Deletes a case event."""
+    event = get_by_uuid(db_session=db_session, uuid=uuid)
+
+    delete(db_session=db_session, event_id=event.id)
+
+
 def export_timeline(
     db_session,
     timeline_filters: str,
@@ -463,9 +484,7 @@ def export_timeline(
             str_len = 0
             row_idx = 0
             insert_data_request = []
-            print("cell indices")
-            print(len(cell_indices))
-            print(len(data_to_insert))
+
             for index, text in zip(cell_indices, data_to_insert, strict=True):
                 # Adjusting index based on string length
                 new_idx = index + str_len
@@ -543,5 +562,277 @@ def export_timeline(
         log.error("No data to export")
         raise Exception("No data to export, please check filter selection")
     # raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[{"msg": "No timeline data to export"}]) from None
+
+    return True
+
+
+def export_case_timeline(
+    db_session,
+    timeline_filters: str,
+    case_id: int,
+):
+    case = case_service.get(db_session=db_session, case_id=case_id)
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project_id, plugin_type="document"
+    )
+    if not plugin:
+        log.error("Document not created. No storage plugin enabled.")
+        return False
+
+    """gets timeline events for case"""
+    event = get_by_case_id(db_session=db_session, case_id=case_id)
+    table_data = []
+    dates = set()
+    data_inserted = False
+
+    """Filters events based on user filter"""
+    for e in event:
+        time_header = "Time (UTC)"
+        event_timestamp = e.started_at.strftime("%Y-%m-%d %H:%M:%S")
+        if not e.owner:
+            e.owner = "Dispatch"
+        if timeline_filters.get("timezone").strip() == "America/Los_Angeles":
+            time_header = "Time (PST/PDT)"
+            event_timestamp = (
+                pytz.utc.localize(e.started_at)
+                .astimezone(pytz.timezone(timeline_filters.get("timezone").strip()))
+                .replace(tzinfo=None)
+                .strftime("%Y-%m-%d %H:%M:%S")
+            )
+        date, time = str(event_timestamp).split(" ")
+        if e.pinned or timeline_filters.get(e.type):
+            if date in dates:
+                if timeline_filters.get("exportOwner"):
+                    table_data.append(
+                        {time_header: time, "Description": e.description, "Owner": e.owner}
+                    )
+                else:
+                    table_data.append({time_header: time, "Description": e.description})
+
+            else:
+                dates.add(date)
+                if timeline_filters.get("exportOwner"):
+                    table_data.append({time_header: date, "Description": "\t", "Owner": "\t"})
+                    table_data.append(
+                        {time_header: time, "Description": e.description, "Owner": e.owner}
+                    )
+                else:
+                    table_data.append({time_header: date, "Description": "\t"})
+                    table_data.append({time_header: time, "Description": e.description})
+
+    if table_data:
+        table_data = json.loads(json.dumps(table_data))
+        num_columns = len(table_data[0].keys() if table_data else [])
+        column_headers = table_data[0].keys()
+
+        documents_list = []
+        if timeline_filters.get("caseDocument"):
+            documents = document_service.get_by_case_id_and_resource_type(
+                db_session=db_session,
+                case_id=case_id,
+                project_id=case.project.id,
+                resource_type="dispatch-case-document",
+            )
+            if documents:
+                documents_list.append((documents.resource_id, "Case"))
+
+        for doc_id, doc_name in documents_list:
+            # Checks for existing table in the document
+            table_exists, curr_table_start, curr_table_end, _ = plugin.instance.get_table_details(
+                document_id=doc_id, header="Timeline", doc_name=doc_name
+            )
+
+            # Deletes existing table
+            if table_exists:
+                delete_table_request = [
+                    {
+                        "deleteContentRange": {
+                            "range": {
+                                "segmentId": "",
+                                "startIndex": curr_table_start,
+                                "endIndex": curr_table_end,
+                            }
+                        }
+                    }
+                ]
+                if plugin.instance.delete_table(document_id=doc_id, request=delete_table_request):
+                    log.debug("Existing table in the doc has been deleted")
+
+            else:
+                log.debug("Table doesn't exist under header, creating new table")
+                curr_table_start += 1
+
+            # Insert new table with required rows & columns
+            insert_table_request = [
+                {
+                    "insertTable": {
+                        "rows": len(table_data) + 1,
+                        "columns": num_columns,
+                        "location": {"index": curr_table_start - 1},
+                    }
+                }
+            ]
+            if plugin.instance.insert(document_id=doc_id, request=insert_table_request):
+                log.debug("Table skeleton inserted successfully")
+
+            else:
+                log.error(
+                    f"Unable to insert table skeleton in the {doc_name} document with id {doc_id}"
+                )
+                raise Exception(
+                    f"Unable to insert table skeleton for timeline export in the {doc_name} document"
+                )
+
+            # Formatting & inserting empty table
+            insert_data_request = [
+                {
+                    "updateTableCellStyle": {
+                        "tableCellStyle": {
+                            "backgroundColor": {
+                                "color": {"rgbColor": {"green": 0.4, "red": 0.4, "blue": 0.4}}
+                            }
+                        },
+                        "fields": "backgroundColor",
+                        "tableRange": {
+                            "columnSpan": num_columns,
+                            "rowSpan": 1,
+                            "tableCellLocation": {
+                                "columnIndex": 0,
+                                "rowIndex": 0,
+                                "tableStartLocation": {"index": curr_table_start},
+                            },
+                        },
+                    }
+                },
+                {
+                    "updateTableColumnProperties": {
+                        "tableStartLocation": {
+                            "index": curr_table_start,
+                        },
+                        "columnIndices": [0],
+                        "tableColumnProperties": {
+                            "width": {"magnitude": 90, "unit": "PT"},
+                            "widthType": "FIXED_WIDTH",
+                        },
+                        "fields": "width,widthType",
+                    }
+                },
+            ]
+
+            if timeline_filters.get("exportOwner"):
+                insert_data_request.append(
+                    {
+                        "updateTableColumnProperties": {
+                            "tableStartLocation": {
+                                "index": curr_table_start,
+                            },
+                            "columnIndices": [2],
+                            "tableColumnProperties": {
+                                "width": {"magnitude": 105, "unit": "PT"},
+                                "widthType": "FIXED_WIDTH",
+                            },
+                            "fields": "width,widthType",
+                        }
+                    }
+                )
+
+            if plugin.instance.insert(document_id=doc_id, request=insert_data_request):
+                log.debug("Table Formatted successfully")
+
+            else:
+                log.error(
+                    f"Unable to format table for timeline export in {doc_name} document with id {doc_id}"
+                )
+                raise Exception(
+                    f"Unable to format table for timeline export in the {doc_name} document"
+                )
+
+            # Calculating table cell indices
+            _, _, _, cell_indices = plugin.instance.get_table_details(
+                document_id=doc_id, header="Timeline", doc_name=doc_name
+            )
+            data_to_insert = list(column_headers) + [
+                item for row in table_data for item in row.values()
+            ]
+            str_len = 0
+            row_idx = 0
+            insert_data_request = []
+
+            for index, text in zip(cell_indices, data_to_insert, strict=True):
+                # Adjusting index based on string length
+                new_idx = index + str_len
+
+                insert_data_request.append(
+                    {"insertText": {"location": {"index": new_idx}, "text": text}}
+                )
+
+                # Header field formatting
+                if text in column_headers:
+                    insert_data_request.append(
+                        {
+                            "updateTextStyle": {
+                                "range": {"startIndex": new_idx, "endIndex": new_idx + len(text)},
+                                "textStyle": {
+                                    "bold": True,
+                                    "foregroundColor": {
+                                        "color": {"rgbColor": {"red": 1, "green": 1, "blue": 1}}
+                                    },
+                                    "fontSize": {"magnitude": 10, "unit": "PT"},
+                                },
+                                "fields": "bold,foregroundColor",
+                            }
+                        }
+                    )
+
+                # Formating for date rows
+                if text == "\t":
+                    insert_data_request.append(
+                        {
+                            "updateTableCellStyle": {
+                                "tableCellStyle": {
+                                    "backgroundColor": {
+                                        "color": {
+                                            "rgbColor": {"green": 0.8, "red": 0.8, "blue": 0.8}
+                                        }
+                                    }
+                                },
+                                "fields": "backgroundColor",
+                                "tableRange": {
+                                    "columnSpan": num_columns,
+                                    "rowSpan": 1,
+                                    "tableCellLocation": {
+                                        "tableStartLocation": {"index": curr_table_start},
+                                        "columnIndex": 0,
+                                        "rowIndex": row_idx // len(column_headers),
+                                    },
+                                },
+                            }
+                        }
+                    )
+
+                # Formating for time column
+                if row_idx % num_columns == 0:
+                    insert_data_request.append(
+                        {
+                            "updateTextStyle": {
+                                "range": {"startIndex": new_idx, "endIndex": new_idx + len(text)},
+                                "textStyle": {
+                                    "bold": True,
+                                },
+                                "fields": "bold",
+                            }
+                        }
+                    )
+
+                row_idx += 1
+                str_len += len(text) if text else 0
+
+            data_inserted = plugin.instance.insert(document_id=doc_id, request=insert_data_request)
+        if not data_inserted:
+            raise Exception(f"Encountered error while inserting data into the {doc_name} document")
+
+    else:
+        log.error("No data to export")
+        raise Exception("No data to export, please check filter selection")
 
     return True
