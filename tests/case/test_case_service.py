@@ -71,6 +71,7 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
     from dispatch.case.service import create as create_case
 
     case_type.project = project
+    case_type.oncall_service = None  # Ensure fallback to current_user
     case_severity.project = project
     case_priority.project = project
     session.add(case_type)
@@ -92,7 +93,6 @@ def test_create(session, participant, case_type, case_severity, case_priority, p
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=True,
         tags=[],
         event=False,
@@ -131,7 +131,6 @@ def test_create__no_conversation_target(
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=True,
         tags=[],
         event=False,
@@ -169,7 +168,6 @@ def test_create__fails_with_no_conversation_target(
         case_priority=case_priority,
         reporter=participant,
         project=project,
-        assignee=participant,
         dedicated_channel=False,
         tags=[],
         event=False,

@@ -141,6 +141,7 @@ from dispatch.task.models import Task, TaskCreate
 from dispatch.ticket import flows as ticket_flows
 from dispatch.messaging.strings import reminder_select_values
 from dispatch.plugins.dispatch_slack.messaging import build_unexpected_error_message
+from dispatch.auth import service as auth_service
 
 log = logging.getLogger(__file__)
 
@@ -782,30 +783,28 @@ def replace_slack_users_in_message(client: Any, message: str) -> str:
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
-    """Handles an event where the configured timeline reaction is added to a message."""
+    """Handles an event where the configured timeline reaction is added to a message for incidents or cases."""
     ack()
 
     conversation_id = context["channel_id"]
     message_ts = payload["item"]["ts"]
     message_ts_utc = datetime.utcfromtimestamp(float(message_ts))
 
-    # we fetch the message information
     response = dispatch_slack_service.list_conversation_messages(
         client, conversation_id, latest=message_ts, limit=1, inclusive=1
     )
     message_text = replace_slack_users_in_message(client, response["messages"][0]["text"])
     message_sender_id = response["messages"][0]["user"]
 
-    # TODO: (wshel) handle case reactions
-    if context["subject"].type == IncidentSubjects.incident:
-        individual = None
-        # we fetch the incident
+    subject_type = context["subject"].type
+    individual = None
+    source = "Slack message"
+    event_id = None
+
+    if subject_type == IncidentSubjects.incident:
         incident = incident_service.get(
             db_session=db_session, incident_id=int(context["subject"].id)
         )
-
-        # we fetch the individual who sent the message
-        # if user is not found, we default to "Unknown"
         try:
             message_sender_email = get_user_email(client=client, user_id=message_sender_id)
             if message_sender_email:
@@ -814,24 +813,20 @@ def handle_timeline_added_event(
                     email=message_sender_email,
                     project_id=incident.project.id,
                 )
-        except Exception:
+        except Exception as e:
+            log.error(f"Error getting user email: {e}")
             individual = None
-
-        source = "Slack message"
-        # if the individual is not found, see if it is a bot
         if not individual:
-            if bot_user_id := context["bot_user_id"]:
+            if bot_user_id := context.get("bot_user_id"):
                 try:
                     bot = dispatch_slack_service.get_user_info_by_id(client, bot_user_id)
                     bot_name = bot["profile"]["real_name"]
                     source = f"Slack message from {bot_name}"
-                except Exception:
-                    pass
+                except Exception as e:
+                    log.error(f"Error getting bot info: {e}")
         else:
             source = f"Slack message from {individual.name}"
-
-        # we log the event
-        event_service.log_incident_event(
+        event = event_service.log_incident_event(
             db_session=db_session,
             source=source,
             description=message_text,
@@ -841,6 +836,53 @@ def handle_timeline_added_event(
             type=EventType.imported_message,
             owner=individual.name if individual else None,
         )
+        db_session.commit()
+        event_id = event.id
+        log.info(f"Logged incident event with ID: {event_id}")
+    elif subject_type == CaseSubjects.case:
+        case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
+        try:
+            message_sender_email = dispatch_slack_service.get_user_email(
+                client=client, user_id=message_sender_id
+            )
+            if message_sender_email:
+                individual = individual_service.get_by_email_and_project(
+                    db_session=db_session,
+                    email=message_sender_email,
+                    project_id=case.project.id,
+                )
+        except Exception as e:
+            log.error(f"Error getting user email: {e}")
+            individual = None
+        if not individual:
+            if bot_user_id := context.get("bot_user_id"):
+                try:
+                    bot = dispatch_slack_service.get_user_info_by_id(client, bot_user_id)
+                    bot_name = bot["profile"]["real_name"]
+                    source = f"Slack message from {bot_name}"
+                except Exception as e:
+                    log.error(f"Error getting bot info: {e}")
+        else:
+            source = f"Slack message from {individual.name}"
+        dispatch_user_id = None
+        if individual:
+            dispatch_user = auth_service.get_by_email(db_session=db_session, email=individual.email)
+            dispatch_user_id = dispatch_user.id if dispatch_user else None
+        event = event_service.log_case_event(
+            db_session=db_session,
+            source=source,
+            description=message_text,
+            case_id=int(context["subject"].id),
+            dispatch_user_id=dispatch_user_id,
+            started_at=message_ts_utc,
+            type=EventType.imported_message,
+            owner=individual.name if individual else "Unknown",
+        )
+        db_session.commit()
+        event_id = event.id
+        log.info(f"Logged case event with ID: {event_id}")
+    else:
+        log.info(f"TIMELINE HANDLER: Unknown subject type: {subject_type}")
 
 
 @message_dispatcher.add(
