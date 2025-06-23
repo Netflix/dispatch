@@ -36,7 +36,7 @@ from dispatch.project.models import Project
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
-from dispatch.tag_type.models import TagType
+
 from dispatch.task.models import Task
 from typing import Annotated
 
@@ -134,12 +134,23 @@ class Filter(object):
         operator = self.operator
         value = self.value
 
+        # Special handling for TagType.id filtering on Tag model
+        # Needed since TagType.id is not a column on the Tag model
+        # Convert TagType.id filter to tag_type_id filter on Tag model
+        if (
+            filter_spec.get("model") == "TagType"
+            and filter_spec.get("field") == "id"
+            and default_model
+            and getattr(default_model, "__tablename__", None) == "tag"
+        ):
+            filter_spec = {"model": "Tag", "field": "tag_type_id", "op": filter_spec.get("op")}
+
         model = get_model_from_spec(filter_spec, query, default_model)
 
         function = operator.function
         arity = operator.arity
 
-        field_name = self.filter_spec["field"]
+        field_name = filter_spec["field"]
         field = Field(model, field_name)
         sqlalchemy_field = field.get_sqlalchemy_field()
 
@@ -400,8 +411,18 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
                                     filter_spec = {
                                                     'or': [
-                                                                    {'model': 'Foo', 'field': 'id', 'op': '==', 'value': '1'},
-                                                                    {'model': 'Bar', 'field': 'id', 'op': '==', 'value': '2'},
+                                                                    {
+                                                                        'model': 'Foo',
+                                                                        'field': 'id',
+                                                                        'op': '==',
+                                                                        'value': '1'
+                                                                    },
+                                                                    {
+                                                                        'model': 'Bar',
+                                                                        'field': 'id',
+                                                                        'op': '==',
+                                                                        'value': '2'
+                                                                    },
                                                     ]
                                     }
 
@@ -456,7 +477,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Signal, "TagType"): (Signal.tags, True),
         (SignalInstance, "Entity"): (SignalInstance.entities, True),
         (SignalInstance, "EntityType"): (SignalInstance.entities, True),
-        (Tag, "TagType"): (TagType, False),
+        # (Tag, "TagType"): (TagType, False),  # Disabled: filtering by tag_type_id directly
         (Tag, "Project"): (Project, False),
         (IndividualContact, "Project"): (Project, False),
     }
@@ -733,7 +754,41 @@ def search_filter_sort_paginate(
     # e.g. websearch_to_tsquery
     # https://www.postgresql.org/docs/current/textsearch-controls.html
     try:
-        query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
+        # Check if this model is likely to have duplicate results from many-to-many joins
+        # Models with many secondary relationships (like Tag) can cause count inflation
+        models_needing_distinct = ["Tag"]  # Add other models here as needed
+
+        if model in models_needing_distinct and items_per_page is not None:
+            # Use custom pagination that handles DISTINCT properly
+            from collections import namedtuple
+
+            Pagination = namedtuple(
+                "Pagination", ["page_number", "page_size", "num_pages", "total_results"]
+            )
+
+            # Get total count using distinct ID to avoid duplicates
+            # Remove ORDER BY clause for counting since it's not needed and causes issues with DISTINCT
+            count_query = query.with_entities(model_cls.id).distinct().order_by(None)
+            total_count = count_query.count()
+
+            # Apply DISTINCT to the main query as well to avoid duplicate results
+            # Remove ORDER BY clause since it can conflict with DISTINCT when ordering by joined table columns
+            query = query.distinct().order_by(None)
+
+            # Apply pagination to the distinct query
+            offset = (page - 1) * items_per_page if page > 1 else 0
+            query = query.offset(offset).limit(items_per_page)
+
+            # Calculate number of pages
+            num_pages = (
+                (total_count + items_per_page - 1) // items_per_page if items_per_page > 0 else 1
+            )
+
+            pagination = Pagination(page, items_per_page, num_pages, total_count)
+        else:
+            # Use standard pagination for other models
+            query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
+
     except ProgrammingError as e:
         log.debug(e)
         return {
