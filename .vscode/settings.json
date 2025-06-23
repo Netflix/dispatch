@@ -22,8 +22,12 @@
   "files.insertFinalNewline": true,
   "python.testing.pytestEnabled": true,
   "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.tabSize": 4,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "never"
+      "source.organizeImports": "never",
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
     }
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",

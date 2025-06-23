@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request
 
@@ -17,9 +17,11 @@ from dispatch.auth.permissions import (
 )
 from dispatch.auth.service import CurrentUser
 from dispatch.case.enums import CaseStatus
-from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
+from dispatch.case.filters import CaseFilter
+from fastapi_filter import FilterDepends
+from fastapi import Query
 from dispatch.event import flows as event_flows
 from dispatch.event.models import EventCreateMinimal, EventUpdate
 from dispatch.incident import service as incident_service
@@ -46,8 +48,6 @@ from .flows import (
 from .models import (
     Case,
     CaseCreate,
-    CaseExpandedPagination,
-    CasePagination,
     CasePaginationMinimalWithExtras,
     CaseRead,
     CaseUpdate,
@@ -123,28 +123,61 @@ def get_case_participants(
 
 @router.get("", summary="Retrieves a list of cases.")
 def get_cases(
-    common: CommonParameters,
+    db_session: DbSession,
+    current_user: CurrentUser,
+    case_filter: CaseFilter = FilterDepends(CaseFilter),
+    limit: int = Query(25, ge=1, le=100, description="Number of items per page"),
+    offset: int = Query(0, ge=0, description="Number of items to skip"),
     include: list[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
+    # Custom email filtering parameters
+    assignee_email__in: Annotated[list[str] | None, Query(alias="assignee_email__in[]", description="Filter by assignee email addresses")] = None,
+    reporter_email__in: Annotated[list[str] | None, Query(alias="reporter_email__in[]", description="Filter by reporter email addresses")] = None,
 ):
-    """Retrieves all cases."""
-    pagination = search_filter_sort_paginate(model="Case", **common)
+    """Retrieves all cases using FastAPI-Filter."""
+    import json
+
+    # Set email filters on the case filter instance
+    case_filter.set_email_filters(
+        assignee_emails=assignee_email__in,
+        reporter_emails=reporter_email__in
+    )
+
+    # Apply the filter to the query (includes email filtering)
+    query = case_filter.filter(db_session.query(Case))
+
+    # Get total count before pagination
+    total_count = query.count()
+
+    # Apply pagination
+    cases = query.offset(offset).limit(limit).all()
+
+    # Build response using existing models
+    from dispatch.case.models import CasePagination, CaseExpandedPagination
+
+    pagination_data = {
+        "items": cases,
+        "total": total_count,
+        "page": offset // limit + 1 if limit > 0 else 1,
+        "itemsPerPage": limit,
+    }
 
     if expand:
-        return json.loads(CaseExpandedPagination(**pagination).json())
+        return json.loads(CaseExpandedPagination(**pagination_data).model_dump_json())
 
     if include:
+        from dispatch.common.utils.views import create_pydantic_include
         # only allow two levels for now
         include_sets = create_pydantic_include(include)
-
         include_fields = {
             "items": {"__all__": include_sets},
             "itemsPerPage": ...,
             "page": ...,
             "total": ...,
         }
-        return json.loads(CaseExpandedPagination(**pagination).json(include=include_fields))
-    return json.loads(CasePagination(**pagination).json())
+        return json.loads(CaseExpandedPagination(**pagination_data).model_dump_json(include=include_fields))
+
+    return json.loads(CasePagination(**pagination_data).model_dump_json())
 
 
 @router.get("/minimal", summary="Retrieves a list of cases with minimal data.")

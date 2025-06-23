@@ -151,7 +151,7 @@ const actions = {
     AuthApi.getUserRole().then((response) => {
       commit("SET_CURRENT_USER_ROLE", response.data)
     })
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Case")
+    let params = SearchUtils.createFastAPIFilterParameters({ ...state.table.options }, "Case")
     return CaseApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
