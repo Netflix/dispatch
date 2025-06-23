@@ -48,6 +48,17 @@ const getDefaultSelectedState = () => {
     visibility: null,
     workflow_instances: null,
     event: false,
+    currentEvent: {
+      uuid: null,
+      source: "",
+      description: "",
+      started_at: null,
+      ended_at: null,
+      type: "Custom event",
+      details: {},
+      owner: "",
+      pinned: false,
+    },
   }
 }
 
@@ -67,6 +78,8 @@ const state = {
     showHandoffDialog: false,
     showClosedDialog: false,
     showNewSheet: false,
+    showEditEventDialog: false,
+    showDeleteEventDialog: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -106,6 +119,13 @@ const state = {
     saving: false,
     loading: false,
     bulkEditLoading: false,
+  },
+  timeline_filters: {
+    field_updates: true,
+    assessment_updates: false,
+    user_curated_events: false,
+    participant_updates: true,
+    other_events: true,
   },
   default_project: null,
   current_user_role: null,
@@ -471,6 +491,169 @@ const actions = {
       }, [])
     })
   },
+  // Timeline event actions
+  showNewEventDialog({ commit }, started_at) {
+    commit("SET_SELECTED_CURRENT_EVENT", {
+      uuid: null,
+      source: "Case Participant",
+      description: "",
+      started_at: started_at,
+      ended_at: started_at,
+      type: "Custom event",
+      details: {},
+      owner: "",
+      pinned: false,
+    })
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  showNewEditEventDialog({ commit }, event) {
+    commit("SET_SELECTED_CURRENT_EVENT", {
+      uuid: event.uuid,
+      source: event.source,
+      description: event.description,
+      started_at: event.started_at,
+      ended_at: event.started_at,
+      type: event.type,
+      details: event.details,
+      owner: event.owner,
+      pinned: event.pinned,
+    })
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  showDeleteEventDialog({ commit }, event) {
+    commit("SET_SELECTED_CURRENT_EVENT", {
+      started_at: event.started_at,
+      description: event.description,
+      uuid: event.uuid,
+    })
+    commit("SET_DIALOG_DELETE_EVENT", true)
+  },
+  showNewPreEventDialog({ commit }, started_at) {
+    commit("SET_SELECTED_CURRENT_EVENT", {
+      uuid: null,
+      source: "Case Participant",
+      description: "",
+      started_at: started_at,
+      ended_at: started_at,
+      type: "Custom event",
+      details: {},
+      owner: "",
+      pinned: false,
+    })
+    commit("SET_DIALOG_EDIT_EVENT", true)
+  },
+  closeEditEventDialog({ commit }) {
+    commit("SET_DIALOG_EDIT_EVENT", false)
+  },
+  closeDeleteEventDialog({ commit }) {
+    commit("SET_DIALOG_DELETE_EVENT", false)
+  },
+  storeNewEvent({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.createNewEvent(state.selected.id, {
+      source: "Case Participant",
+      description: state.selected.currentEvent.description,
+      started_at: state.selected.currentEvent.started_at,
+      type: "Custom event",
+      details: {},
+    })
+      .then(() => {
+        dispatch("getDetails", { id: state.selected.id })
+        commit("SET_DIALOG_EDIT_EVENT", false)
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Event created successfully.", type: "success" },
+          { root: true }
+        )
+        commit("SET_SELECTED_LOADING", false)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
+  updateExistingEvent({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.updateEvent(state.selected.id, {
+      uuid: state.selected.currentEvent.uuid,
+      source: state.selected.currentEvent.source,
+      description: state.selected.currentEvent.description,
+      started_at: state.selected.currentEvent.started_at,
+      ended_at: state.selected.currentEvent.ended_at,
+      type: state.selected.currentEvent.type || "Custom event",
+      details: state.selected.currentEvent.details || {},
+      owner: state.selected.currentEvent.owner || "",
+      pinned: state.selected.currentEvent.pinned || false,
+    })
+      .then(() => {
+        dispatch("getDetails", { id: state.selected.id })
+        commit("SET_DIALOG_EDIT_EVENT", false)
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Event updated successfully.", type: "success" },
+          { root: true }
+        )
+        commit("SET_SELECTED_LOADING", false)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
+  deleteEvent({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.deleteEvent(state.selected.id, state.selected.currentEvent.uuid)
+      .then(() => {
+        dispatch("getDetails", { id: state.selected.id })
+        commit("SET_DIALOG_DELETE_EVENT", false)
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Event deleted successfully.", type: "success" },
+          { root: true }
+        )
+        commit("SET_SELECTED_LOADING", false)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
+  togglePin({ commit, dispatch }, event) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.updateEvent(state.selected.id, {
+      uuid: event.uuid,
+      source: event.source,
+      description: event.description,
+      started_at: event.started_at,
+      ended_at: event.started_at,
+      type: event.type || "Custom event",
+      details: event.details || {},
+      owner: event.owner || "",
+      pinned: !event.pinned,
+    })
+      .then(() => {
+        dispatch("getDetails", { id: state.selected.id })
+        commit("SET_SELECTED_LOADING", false)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
+  exportDoc({ commit }, timeline_filters) {
+    commit(
+      "notification_backend/addBeNotification",
+      { text: "Timeline export initiated. This may take a few minutes.", type: "success" },
+      { root: true }
+    ),
+      CaseApi.exportTimeline(state.selected.id, timeline_filters)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Timeline exported successfully.", type: "success" },
+            { root: true }
+          )
+        })
+        .catch(() => {
+          commit("SET_DIALOG_EDIT_EVENT", false)
+        })
+  },
 }
 
 const mutations = {
@@ -533,6 +716,15 @@ const mutations = {
   },
   SET_CURRENT_USER_ROLE(state, value) {
     state.current_user_role = value
+  },
+  SET_SELECTED_CURRENT_EVENT(state, value) {
+    state.selected.currentEvent = value
+  },
+  SET_DIALOG_EDIT_EVENT(state, value) {
+    state.dialogs.showEditEventDialog = value
+  },
+  SET_DIALOG_DELETE_EVENT(state, value) {
+    state.dialogs.showDeleteEventDialog = value
   },
 }
 
