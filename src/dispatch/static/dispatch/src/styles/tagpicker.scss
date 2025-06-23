@@ -97,10 +97,287 @@ button {
 [id^="togList"] ~ label .tag-group-icon-up,
 [id^="togList"]:checked ~ label .tag-group-icon-down,
 [id^="togList"] ~ .checkbox-label {
-  display:none;
+  display: none;
 }
 [id^="togList"] ~ label .tag-group-icon-down,
 [id^="togList"]:checked ~ label .tag-group-icon-up,
-[id^="togList"]:checked ~ .checkbox-label{
-  display:block;
+[id^="togList"]:checked ~ .checkbox-label {
+  display: block;
+}
+
+// New styles from TagPicker.vue
+.mitre-suggestions-panel {
+  background: #f5f7fa;
+  border-radius: 6px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: padding 0.2s ease;
+
+  &.collapsed {
+    padding: 8px 16px;
+  }
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.suggestion-title {
+  font-weight: 400;
+  font-size: 15px;
+  color: #888;
+
+  &.clickable {
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #555;
+    }
+  }
+}
+
+.collapse-btn {
+  color: #666 !important;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &.v-btn {
+    border: none !important;
+    box-shadow: none !important;
+
+    .v-btn__overlay {
+      display: none !important;
+    }
+  }
+}
+
+.suggestion-content {
+  overflow: hidden;
+}
+
+.suggestion-collapse-enter-active,
+.suggestion-collapse-leave-active {
+  transition: all 0.3s ease;
+  max-height: 500px;
+  opacity: 1;
+}
+
+.suggestion-collapse-enter-from,
+.suggestion-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.suggestion-group-label {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.suggestion-chip-wrapper {
+  display: inline-block;
+}
+
+.suggestion-chip {
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.tactic-chip {
+  background: #e3f2fd !important;
+  color: #1a237e !important;
+}
+
+.technique-chip {
+  background: #e8f5e9 !important;
+  color: #1b5e20 !important;
+}
+
+.add-chip {
+  margin-left: 4px;
+  color: #388e3c;
+}
+
+.suggestion-help-text {
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.error-banner {
+  background: #fffbf0;
+  border: 1px solid #ffc947;
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+}
+
+.error-message {
+  font-size: 14px;
+  color: #8d6e00;
+  font-weight: 400;
+  flex: 1;
+}
+
+.retry-btn {
+  color: #8d6e00 !important;
+  font-size: 13px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+
+  &:hover {
+    background-color: rgba(141, 110, 0, 0.08) !important;
+  }
+}
+
+.tag-picker-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.tag-picker-outline {
+  position: relative;
+  flex: 1;
+  border: 1.5px solid #cfd8dc;
+  border-radius: 8px;
+  padding: 12px 16px 8px 40px; /* left padding for icon */
+  background: #fff;
+  min-height: 56px;
+  margin-bottom: 16px;
+}
+
+.tag-add-icon {
+  position: absolute;
+  left: 12px;
+  top: 16px;
+  z-index: 2;
+}
+
+.tag-copy-icon {
+  margin-left: 12px;
+  margin-top: 8px;
+}
+
+.tag-picker-label {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  background: #fff;
+  padding: 0 4px;
+  font-size: 13px;
+  color: #757575;
+  z-index: 1;
+}
+
+.tag-picker-dropdown,
+.tag-picker-dropdown-wrapper {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  z-index: auto !important;
+  margin-top: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+.tag-picker-dropdown-block {
+  margin-bottom: 16px;
+}
+
+.gradient-border-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(45deg, #00d4ff, #3b82f6, #8b5cf6, #ec4899, #00d4ff);
+  background-size: 300% 300%;
+  animation: gradientBorder 3s ease infinite;
+}
+
+@keyframes gradientBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.generate-suggestions-btn {
+  color: #1a1a1a !important;
+  border: none !important;
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  --v-theme-surface: #ffffff !important;
+  --v-theme-on-surface: #1a1a1a !important;
+
+  .v-btn__content {
+    color: #1a1a1a !important;
+  }
+
+  &.v-btn {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+
+    .v-btn__underlay {
+      background-color: #ffffff !important;
+    }
+
+    .v-btn__overlay {
+      background: #ffffff !important;
+      opacity: 0 !important;
+    }
+  }
+}
+
+.white-bg-wrapper {
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.gradient-border-wrapper .v-btn--variant-flat {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border: none !important;
+}
+
+.generate-suggestions-btn .generate-btn-text {
+  font-weight: normal;
+  text-transform: none;
+  color: #1a1a1a;
+}
+
+// Ensure icons inside tag chips and suggestions display correctly
+.tag-chip .v-icon,
+.suggestion-chip .v-icon {
+  color: inherit !important;
+  background: none !important;
+  font-family: "Material Design Icons" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  text-transform: none !important;
+  speak: never;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
