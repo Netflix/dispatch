@@ -38,6 +38,7 @@ from .flows import (
     case_delete_flow,
     case_escalated_create_flow,
     case_new_create_flow,
+    case_remove_participant_flow,
     case_to_incident_endpoint_escalate_flow,
     case_triage_create_flow,
     case_update_flow,
@@ -425,6 +426,53 @@ def join_case(
         current_user.email,
         case_id=current_case.id,
         organization_slug=organization,
+    )
+
+
+@router.delete(
+    "/{case_id}/remove/{email}",
+    summary="Removes an individual from a case.",
+    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+)
+def remove_participant_from_case(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    email: str,
+    current_case: CurrentCase,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Removes an individual from a case."""
+    background_tasks.add_task(
+        case_remove_participant_flow,
+        email,
+        case_id=current_case.id,
+        db_session=db_session,
+    )
+
+
+@router.post(
+    "/{case_id}/add/{email}",
+    summary="Adds an individual to a case.",
+    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+)
+def add_participant_to_case(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    email: str,
+    current_case: CurrentCase,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Adds an individual to a case."""
+    background_tasks.add_task(
+        case_add_or_reactivate_participant_flow,
+        email,
+        case_id=current_case.id,
+        organization_slug=organization,
+        db_session=db_session,
     )
 
 
