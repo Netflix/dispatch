@@ -25,7 +25,9 @@ log = logging.getLogger(__name__)
 def calculate_cases_response_cost(db_session: Session, project: Project):
     """Calculates and saves the response cost for all cases."""
     cases = case_service.get_all_by_status(
-        db_session=db_session, project_id=project.id, statuses=[CaseStatus.new, CaseStatus.triage]
+        db_session=db_session,
+        project_id=project.id,
+        statuses=[CaseStatus.new, CaseStatus.triage, CaseStatus.stable],
     )
 
     for case in cases:
@@ -38,15 +40,23 @@ def calculate_cases_response_cost(db_session: Session, project: Project):
                 case=case, db_session=db_session, model_type=CostModelType.new
             )
 
-            # we don't need to update the cost of closed cases if they already have a response cost and this was updated after the case was closed
+            # we don't need to update the cost of closed cases if they already have a response
+            # cost and this was updated after the case was closed
             if case.status == CaseStatus.closed:
                 if case_response_cost_classic:
                     if case_response_cost_classic.updated_at > case.closed_at:
                         continue
-            # we don't need to update the cost of escalated cases if they already have a response cost and this was updated after the case was escalated
+            # we don't need to update the cost of escalated cases if they already have a response
+            # cost and this was updated after the case was escalated
             if case.status == CaseStatus.escalated:
                 if case_response_cost_classic:
                     if case_response_cost_classic.updated_at > case.escalated_at:
+                        continue
+            # we don't need to update the cost of stable cases if they already have a response
+            # cost and this was updated after the case was marked as stable
+            if case.status == CaseStatus.stable:
+                if case_response_cost_classic:
+                    if case.stable_at and case_response_cost_classic.updated_at > case.stable_at:
                         continue
 
             # we calculate the response cost amount

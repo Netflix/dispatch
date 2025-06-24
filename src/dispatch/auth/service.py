@@ -29,11 +29,14 @@ from .models import (
     DispatchUser,
     DispatchUserOrganization,
     DispatchUserProject,
+    DispatchUserSettings,
     UserOrganization,
     UserProject,
     UserRegister,
     UserUpdate,
     UserCreate,
+    UserSettingsCreate,
+    UserSettingsUpdate,
 )
 
 
@@ -152,7 +155,8 @@ def create(*, db_session, organization: str, user_in: (UserRegister | UserCreate
 
     # create the user
     user = DispatchUser(
-        **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}), password=password
+        **user_in.model_dump(exclude={"password", "organizations", "projects", "role"}),
+        password=password,
     )
 
     org = organization_service.get_by_slug_or_raise(
@@ -264,11 +268,13 @@ def get_current_user(request: Request) -> DispatchUser:
         )
         raise InvalidCredentialException
 
-    return get_or_create(
+    user = get_or_create(
         db_session=request.state.db,
         organization=request.state.organization,
         user_in=UserRegister(email=user_email),
     )
+
+    return user
 
 
 CurrentUser = Annotated[DispatchUser, Depends(get_current_user)]
@@ -279,3 +285,49 @@ def get_current_role(
 ) -> UserRoles:
     """Attempts to get the current user depending on the configured authentication provider."""
     return current_user.get_organization_role(organization_slug=request.state.organization)
+
+
+def get_user_settings(*, db_session, user_id: int) -> DispatchUserSettings | None:
+    """Get user settings for a specific user."""
+    return (
+        db_session.query(DispatchUserSettings)
+        .filter(DispatchUserSettings.dispatch_user_id == user_id)
+        .one_or_none()
+    )
+
+
+def get_or_create_user_settings(*, db_session, user_id: int) -> DispatchUserSettings:
+    """Get or create user settings for a specific user."""
+    settings = get_user_settings(db_session=db_session, user_id=user_id)
+
+    if not settings:
+        settings_in = UserSettingsCreate(dispatch_user_id=user_id)
+        settings = create_user_settings(db_session=db_session, settings_in=settings_in)
+
+    return settings
+
+
+def create_user_settings(*, db_session, settings_in: UserSettingsCreate) -> DispatchUserSettings:
+    """Create user settings."""
+    settings = DispatchUserSettings(**settings_in.model_dump())
+    db_session.add(settings)
+    db_session.commit()
+    db_session.refresh(settings)
+    return settings
+
+
+def update_user_settings(
+    *,
+    db_session,
+    settings: DispatchUserSettings,
+    settings_in: UserSettingsUpdate,
+) -> DispatchUserSettings:
+    """Update user settings."""
+    settings_data = settings_in.model_dump(exclude_unset=True)
+
+    for field, value in settings_data.items():
+        setattr(settings, field, value)
+
+    db_session.commit()
+    db_session.refresh(settings)
+    return settings

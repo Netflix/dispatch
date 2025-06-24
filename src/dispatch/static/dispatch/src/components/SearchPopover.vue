@@ -3,11 +3,14 @@ import { computed, ref, watch } from "vue"
 import { useHotKey } from "@/composables/useHotkey"
 import type { Ref } from "vue"
 
+type Key = keyof typeof KeyboardEvent.prototype
+
 const props = defineProps<{
-  hotkeys: string[]
+  hotkeys: Key[]
   initialValue: string
   items: any[]
   label: string
+  tooltips?: Record<string, string> // Optional tooltip text for each item
 }>()
 
 const emit = defineEmits(["item-selected"])
@@ -90,11 +93,9 @@ const toggleMenu = () => {
               single-line
               hide-details
               flat
-            >
-              <template #label>
-                <span class="text-subtitle-2 font-weight-regular"> {{ props.label }} </span>
-              </template>
-            </v-text-field>
+              :placeholder="props.label"
+              class="small-placeholder"
+            />
           </v-col>
           <v-col align-self="end" cols="3" class="pb-2">
             <div v-for="(hotkey, index) in props.hotkeys" :key="`hotkey-${index}`">
@@ -105,7 +106,30 @@ const toggleMenu = () => {
         <v-divider />
         <v-list lines="one">
           <div v-for="(item, index) in filteredItems" :key="`item-${index}`">
+            <v-tooltip
+              v-if="props.tooltips && props.tooltips[item]"
+              :text="props.tooltips[item]"
+              location="right"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <v-list-item
+                  v-bind="tooltipProps"
+                  @click="selectItem(item)"
+                  @mouseover="hoveredData = item"
+                  @mouseleave="hoveredData = ''"
+                  density="compact"
+                  rounded="lg"
+                  class="ml-1 mr-1"
+                  active-class="ma-4"
+                >
+                  <span class="dispatch-text-title">
+                    <slot :item="item">{{ item }}</slot>
+                  </span>
+                </v-list-item>
+              </template>
+            </v-tooltip>
             <v-list-item
+              v-else
               @click="selectItem(item)"
               @mouseover="hoveredData = item"
               @mouseleave="hoveredData = ''"
@@ -135,5 +159,11 @@ const toggleMenu = () => {
 .menu-activator:hover {
   border: 1px solid rgb(239, 241, 244) !important;
   border-radius: 4px; /* adjust as needed */
+}
+
+.small-placeholder {
+  :deep(input::placeholder) {
+    font-size: 14px;
+  }
 }
 </style>

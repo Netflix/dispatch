@@ -5,7 +5,9 @@ def test_case_messaging(session, case):
 
     case.status = CaseStatus.triage
     t_case = case_service.get_all_by_status(
-        db_session=session, project_id=case.project.id, statuses=[CaseStatus.new, CaseStatus.triage]
+        db_session=session,
+        project_id=case.project.id,
+        statuses=[CaseStatus.new, CaseStatus.triage, CaseStatus.stable],
     )
     send_case_close_reminder(case=t_case[0], db_session=session)
     pass

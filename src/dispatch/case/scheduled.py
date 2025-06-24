@@ -76,3 +76,25 @@ def case_triage_reminder(db_session: Session, project: Project):
         if q >= 1:
             # we only send one reminder per case per day
             send_case_triage_reminder(case, db_session)
+
+
+@scheduler.add(every(1).day.at("18:00"), name="case-stable-reminder")
+@timer
+@scheduled_project_task
+def case_stable_reminder(db_session: Session, project: Project):
+    """Sends a reminder to the case assignee to close their stable case."""
+    cases = get_all_by_status(
+        db_session=db_session, project_id=project.id, statuses=[CaseStatus.stable]
+    )
+
+    for case in cases:
+        try:
+            span = datetime.utcnow() - case.stable_at
+            q, r = divmod(span.days, 7)
+            if q >= 1 and date.today().isoweekday() == 1:
+                # we only send the reminder for cases that have been stable
+                # longer than a week and only on Mondays
+                send_case_close_reminder(case, db_session)
+        except Exception as e:
+            # if one fails we don't want all to fail
+            log.exception(e)

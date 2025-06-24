@@ -158,6 +158,28 @@ const actions = {
         console.error("Error occurred while updating experimental features: ", error)
       })
   },
+  refreshCurrentUser({ commit }) {
+    return UserApi.getUserInfo()
+      .then((response) => {
+        commit("SET_CURRENT_USER", response.data)
+        return response.data
+      })
+      .catch((error) => {
+        console.error("Error occurred while refreshing current user: ", error)
+        throw error
+      })
+  },
+  updateUserSettings({ commit }, settings) {
+    return UserApi.updateUserSettings(settings)
+      .then((response) => {
+        commit("SET_USER_SETTINGS", response.data)
+        return response.data
+      })
+      .catch((error) => {
+        console.error("Error occurred while updating user settings: ", error)
+        throw error
+      })
+  },
   createExpirationCheck({ state, commit }) {
     // expiration time minus 10 min
     let expire_at = subMinutes(fromUnixTime(state.currentUser.exp), 10)
@@ -213,6 +235,12 @@ const mutations = {
   },
   SET_USER_PROJECTS(state, value) {
     state.currentUser.projects = value
+  },
+  SET_USER_SETTINGS(state, value) {
+    state.currentUser.settings = value
+  },
+  SET_CURRENT_USER(state, value) {
+    state.currentUser = { ...state.currentUser, ...value }
   },
 }
 
