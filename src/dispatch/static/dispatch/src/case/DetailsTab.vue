@@ -162,6 +162,8 @@
           :model-id="id"
           :project="project"
           show-copy
+          :showGenAISuggestions="true"
+          modelType="case"
         />
       </v-col>
       <v-col cols="12">
