@@ -99,6 +99,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     dedicated_channel = Column(Boolean, default=False)
     genai_analysis = Column(JSONB, default={}, nullable=False, server_default="{}")
     event = Column(Boolean, default=False)
+    stable_at = Column(DateTime)
 
     search_vector = Column(
         TSVectorType(
@@ -328,6 +329,7 @@ class CaseReadMinimal(CaseBase):
     status: CaseStatus | None = None  # Used in table and for action disabling
     closed_at: datetime | None = None
     reported_at: datetime | None = None
+    stable_at: datetime | None = None
     dedicated_channel: bool | None = None  # Used by CaseStatus component
     case_type: CaseTypeRead
     case_severity: CaseSeverityRead
@@ -335,6 +337,7 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     assignee: ParticipantReadMinimal | None = None
     case_costs: list[CaseCostReadMinimal] = []
+
 
 class CaseReadMinimalWithExtras(CaseBase):
     """Pydantic model for reading minimal case data."""
@@ -349,6 +352,7 @@ class CaseReadMinimalWithExtras(CaseBase):
     status: CaseStatus | None = None  # Used in table and for action disabling
     reported_at: datetime | None = None
     triage_at: datetime | None = None
+    stable_at: datetime | None = None
     escalated_at: datetime | None = None
     closed_at: datetime | None = None
     dedicated_channel: bool | None = None  # Used by CaseStatus component
@@ -379,6 +383,7 @@ class CaseRead(CaseBase):
     closed_at: datetime | None = None
     conversation: ConversationRead | None = None
     created_at: datetime | None = None
+    stable_at: datetime | None = None
     documents: list[DocumentRead] | None = []
     duplicates: list[CaseReadBasic] | None = []
     escalated_at: datetime | None = None
@@ -413,6 +418,7 @@ class CaseUpdate(CaseBase):
     case_severity: CaseSeverityBase | None = None
     case_type: CaseTypeBase | None = None
     closed_at: datetime | None = None
+    stable_at: datetime | None = None
     duplicates: list[CaseReadBasic] | None = []
     related: list[CaseRead] | None = []
     reporter: ParticipantUpdate | None = None
@@ -451,10 +457,12 @@ class CasePagination(Pagination):
 
     items: list[CaseReadMinimal] = []
 
+
 class CasePaginationMinimalWithExtras(Pagination):
     """Pydantic model for paginated minimal case results."""
 
     items: list[CaseReadMinimalWithExtras] = []
+
 
 class CaseExpandedPagination(Pagination):
     """Pydantic model for paginated expanded case results."""
