@@ -81,14 +81,22 @@
               </template>
             </v-list-item>
             <v-divider />
-            <v-list-subheader>Experimental Features</v-list-subheader>
+            <v-list-subheader>User Preferences</v-list-subheader>
             <v-switch
               v-model="currentUser().experimental_features"
               inset
               class="ml-5"
               color="blue"
               @update:model-value="updateExperimentalFeatures()"
-              :label="currentUser().experimental_features ? 'Enabled' : 'Disabled'"
+              label="Experimental Features"
+            />
+            <v-switch
+              v-model="bridgePreference"
+              inset
+              class="ml-5"
+              color="blue"
+              @click.stop
+              label="Add me automatically to incident bridges"
             />
             <v-divider />
             <v-list-subheader>Organizations</v-list-subheader>
@@ -162,6 +170,26 @@ export default {
       },
       get() {
         return this.$store.state.query.q
+      },
+    },
+    bridgePreference: {
+      get() {
+        return this.currentUser()?.settings?.auto_add_to_incident_bridges ?? true
+      },
+      set(value) {
+        // Call Vuex action to update settings
+        this.$store
+          .dispatch("auth/updateUserSettings", {
+            auto_add_to_incident_bridges: value,
+          })
+          .then(() => {
+            console.log("Bridge preference updated to:", value)
+          })
+          .catch((error) => {
+            console.error("Error occurred while updating bridge preference: ", error)
+            // Refresh user data to ensure UI is in sync with server
+            this.$store.dispatch("auth/refreshCurrentUser")
+          })
       },
     },
   },
