@@ -74,7 +74,7 @@ class ZoomConferencePlugin(ConferencePlugin):
         )
 
         conference_response = create_meeting(
-            client, self.configuration.api_user_id, name, description=description, title=title
+            client, self.configuration.api_user_id, name, description=description, title=title, duration=self.configuration.default_duration_minutes
         )
 
         conference_json = conference_response.json()

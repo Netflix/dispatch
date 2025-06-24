@@ -146,6 +146,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
             description=description,
             participants=participants,
             title=title,
+            duration=self.configuration.default_duration_minutes,
         )
 
         meet_url = ""

@@ -36,7 +36,7 @@ def get_individual(db_session: DbSession, individual_contact_id: PrimaryKey):
                     "msg": "Individual not found.",
                     "input": individual_contact_id,
                 }
-            ]
+            ],
         )
     return individual
 
@@ -56,12 +56,14 @@ def create_individual(db_session: DbSession, individual_contact_in: IndividualCo
         project_id=individual_contact_in.project.id,
     )
     if individual:
-        raise ValidationError([
-            {
-                "msg": "An individual with this email already exists.",
-                "loc": "email",
-            }
-        ])
+        raise ValidationError(
+            [
+                {
+                    "msg": "An individual with this email already exists.",
+                    "loc": "email",
+                }
+            ]
+        )
     return create(db_session=db_session, individual_contact_in=individual_contact_in)
 
 
@@ -88,7 +90,7 @@ def update_individual(
                     "msg": "Individual not found.",
                     "input": individual_contact_id,
                 }
-            ]
+            ],
         )
     return update(
         db_session=db_session,
@@ -116,6 +118,6 @@ def delete_individual(db_session: DbSession, individual_contact_id: PrimaryKey):
                     "msg": "Individual not found.",
                     "input": individual_contact_id,
                 }
-            ]
+            ],
         )
     delete(db_session=db_session, individual_contact_id=individual_contact_id)

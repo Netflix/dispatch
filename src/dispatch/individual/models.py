@@ -140,6 +140,7 @@ class IndividualContactReadMinimal(DispatchBase):
     title: str | None = None
     weblink: str | None = None
     external_id: str | None = None
+    auto_add_to_incident_bridges: bool | None = True
 
     # Ensure validation is turned off for tests
     model_config = ConfigDict(

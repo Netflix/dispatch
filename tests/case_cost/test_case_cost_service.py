@@ -271,7 +271,6 @@ def test_calculate_case_response_cost_classic(
     # Verify cost calculation
     hourly_rate = get_hourly_rate(case.project)
     expected_cost = math.ceil(hourly_rate)  # Cost for 1 hour with full engagement
-    assert cost > 0
     assert cost == expected_cost  # Should be exactly the hourly rate for 1 hour at full engagement
 
 
@@ -351,3 +350,71 @@ def test_update_case_response_cost(
     results = update_case_response_cost(case=case, db_session=session)
     assert results[CostModelType.new] > 0
     assert results[CostModelType.classic] >= 0
+
+
+def test_case_cost_stops_at_stable_time(
+    case, session, participant, participant_role, case_cost_type
+):
+    """Tests that case cost calculations stop at the stable_at time."""
+    from datetime import datetime, timedelta, timezone
+    from dispatch.case_cost.service import (
+        calculate_case_response_cost_classic,
+        get_participant_role_time_seconds,
+    )
+    from dispatch.participant_role.models import ParticipantRoleType
+    from dispatch.case.enums import CostModelType, CaseStatus
+
+    # Set up timestamps with exact timing
+    now = datetime.now(timezone.utc)
+    two_hours_ago = now - timedelta(hours=2)
+    one_hour_ago = now - timedelta(hours=1)
+    stable_time = one_hour_ago  # Case was marked stable 1 hour ago
+
+    # Set up participant role with exact timing
+    participant_role.role = ParticipantRoleType.assignee  # Full engagement multiplier
+    participant_role.assumed_at = two_hours_ago.replace(tzinfo=None)
+    participant_role.renounced_at = now.replace(tzinfo=None)  # Still active
+
+    # Set up participant
+    participant.participant_roles = [participant_role]
+    case.participants = [participant]
+
+    # Set up cost type for classic model
+    case_cost_type.model_type = CostModelType.classic
+    case_cost_type.project = case.project
+
+    # Test 1: Case is active (no stable_at set)
+    case.status = CaseStatus.triage
+    case.stable_at = None
+    active_cost = calculate_case_response_cost_classic(case=case, db_session=session)
+    active_time = get_participant_role_time_seconds(case=case, participant_role=participant_role)
+
+    assert active_cost > 0
+    assert active_time > 0
+
+    # Test 2: Case is stable (stable_at set to 1 hour ago)
+    case.status = CaseStatus.stable
+    case.stable_at = stable_time
+    stable_cost = calculate_case_response_cost_classic(case=case, db_session=session)
+    stable_time_seconds = get_participant_role_time_seconds(
+        case=case, participant_role=participant_role
+    )
+
+    assert stable_cost > 0
+    assert stable_time_seconds > 0
+    assert stable_cost < active_cost  # Cost should be less since it stopped at stable_at
+    assert stable_time_seconds < active_time  # Time should be less since it stopped at stable_at
+
+    # Test 3: Verify the time difference matches expected stable time
+    expected_stable_time = int((stable_time - two_hours_ago).total_seconds())
+    assert stable_time_seconds == expected_stable_time
+
+    # Test 4: Case was stable before participant joined (should be 0)
+    case.stable_at = two_hours_ago - timedelta(hours=1)  # Stable before participant joined
+    early_stable_cost = calculate_case_response_cost_classic(case=case, db_session=session)
+    early_stable_time = get_participant_role_time_seconds(
+        case=case, participant_role=participant_role
+    )
+
+    assert early_stable_cost == 0
+    assert early_stable_time == 0

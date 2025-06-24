@@ -70,14 +70,25 @@ const handleSelection = (selection: string) => {
   }
 }
 
-const descriptionMap = {
-  "Case created": "created a case",
-  "Case ticket created": "created a case ticket",
-  "Case participants resolved": "resolved case participants",
-  "Case conversation created": "started a case conversation",
-  "Conversation added to case": "added conversation to case",
-  "Case participants added to conversation.": "added case participants to conversation",
-  // Add more mappings as needed...
+const getEventDescription = (event) => {
+  const descriptionMap = {
+    "Case ticket created": "created a case ticket",
+    "Case participants resolved": "resolved case participants",
+    "Case conversation created": "started a case conversation",
+    "Conversation added to case": "added conversation to case",
+    "Case participants added to conversation.": "added case participants to conversation",
+    // Add more mappings as needed...
+  }
+
+  // Special handling for "Case created" to include visibility
+  if (event.description === "Case created") {
+    const visibility = event.details?.visibility
+    return `created ${
+      visibility === "Open" ? "an open" : visibility === "Restricted" ? "a restricted" : "a"
+    } case`
+  }
+
+  return descriptionMap[event.description] || event.description
 }
 </script>
 
@@ -109,7 +120,7 @@ const descriptionMap = {
                   <b>
                     {{ sourceIconMap[event.source]?.sourceName || event.source }}
                   </b>
-                  {{ descriptionMap[event.description] || event.description }} ·
+                  {{ getEventDescription(event) }} ·
                   <DTooltip :text="formatToUTC(event.started_at)" hotkeys="">
                     <template #activator="{ tooltip }">
                       <span class="dispatch-text-paragraph" v-bind="tooltip">
