@@ -1,7 +1,7 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
-import SearchUtils from "@/search/utils"
+import { createFastAPIFilterParameters } from "@/search/fastapi-filter"
 import CaseApi from "@/case/api"
 import ProjectApi from "@/project/api"
 import PluginApi from "@/plugin/api"
@@ -151,7 +151,7 @@ const actions = {
     AuthApi.getUserRole().then((response) => {
       commit("SET_CURRENT_USER_ROLE", response.data)
     })
-    let params = SearchUtils.createFastAPIFilterParameters({ ...state.table.options }, "Case")
+    let params = createFastAPIFilterParameters({ ...state.table.options }, "Case")
     return CaseApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)

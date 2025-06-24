@@ -131,8 +131,8 @@ def get_cases(
     include: list[str] = Query([], alias="include[]"),
     expand: bool = Query(default=False),
     # Custom email filtering parameters
-    assignee_email__in: Annotated[list[str] | None, Query(alias="assignee_email__in[]", description="Filter by assignee email addresses")] = None,
-    reporter_email__in: Annotated[list[str] | None, Query(alias="reporter_email__in[]", description="Filter by reporter email addresses")] = None,
+    assignee_email__in: list[str] | None = None,
+    reporter_email__in: list[str] | None = None,
 ):
     """Retrieves all cases using FastAPI-Filter."""
     import json
