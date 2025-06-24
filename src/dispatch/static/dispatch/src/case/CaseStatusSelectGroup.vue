@@ -53,7 +53,7 @@
           <v-item v-slot="{ toggle }">
             <div class="overlap-card" :class="status.hoverClass" @click="openDialog(status.name)">
               <v-sheet variant="outlined" color="grey-lighten-1" :class="status.sheetClass">
-                <DTooltip :text="status.tooltip" hotkeys="">
+                <DTooltip v-if="status.tooltip" :text="status.tooltip" hotkeys="">
                   <template #activator="{ tooltip }">
                     <v-card
                       class="d-flex align-center"
@@ -82,13 +82,39 @@
                         <div v-else class="flex-grow-1 text-center text--disabled dispatch-font">
                           {{ status.label }}
                         </div>
-                        <span>{{
-                          status.tooltip ? status.tooltip : `Not yet ${status.label.toLowerCase()}`
-                        }}</span>
+                        <span v-if="status.tooltip">{{ formatToUTC(status.tooltip) }}</span>
+                        <span v-else>{{ `Not yet ${status.label.toLowerCase()}` }}</span>
                       </v-scroll-y-transition>
                     </v-card>
                   </template>
                 </DTooltip>
+                <v-card
+                  v-else
+                  class="d-flex align-center"
+                  :class="status.sheetClass"
+                  height="30"
+                  width="100%"
+                  @click="toggle"
+                  variant="flat"
+                  color="grey-lighten-4"
+                >
+                  <v-scroll-y-transition>
+                    <div
+                      v-if="isActiveStatus(status.name)"
+                      class="flex-grow-1 text-center dispatch-font-enabled"
+                    >
+                      <v-badge :color="status.color" bordered dot offset-x="10" offset-y="-8" />{{
+                        status.label
+                      }}
+                    </div>
+
+                    <div v-else class="flex-grow-1 text-center text--disabled dispatch-font">
+                      {{ status.label }}
+                    </div>
+                    <span v-if="status.tooltip">{{ formatToUTC(status.tooltip) }}</span>
+                    <span v-else>{{ `Not yet ${status.label.toLowerCase()}` }}</span>
+                  </v-scroll-y-transition>
+                </v-card>
               </v-sheet>
             </div>
           </v-item>
@@ -127,7 +153,7 @@ const statuses = computed(() => [
     name: "New",
     label: "Created",
     color: "red",
-    hoverClass: "hover-card-three",
+    hoverClass: "hover-card-four",
     sheetClass: "rounded-s-xl arrow",
     tooltip: props.modelValue.created_at,
   },
@@ -135,9 +161,17 @@ const statuses = computed(() => [
     name: "Triage",
     label: "Triaged",
     color: "red",
-    hoverClass: "hover-card-two",
+    hoverClass: "hover-card-three",
     sheetClass: "arrow",
     tooltip: props.modelValue.triage_at,
+  },
+  {
+    name: "Stable",
+    label: "Stable",
+    color: "blue",
+    hoverClass: "hover-card-two",
+    sheetClass: "arrow",
+    tooltip: props.modelValue.stable_at,
   },
   {
     name: "Closed",
@@ -263,6 +297,10 @@ const isActiveStatus = (status) => {
 .hover-card-three {
   position: relative;
   z-index: 3;
+}
+.hover-card-four {
+  position: relative;
+  z-index: 4;
 }
 
 .dispatch-font {

@@ -5,6 +5,7 @@ class CaseStatus(DispatchEnum):
     new = "New"
     triage = "Triage"
     escalated = "Escalated"
+    stable = "Stable"
     closed = "Closed"
 
 

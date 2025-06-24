@@ -97,6 +97,7 @@ const caseDefaults = {
   ticket: null,
   title: "",
   triage_at: null,
+  stable_at: null,
   updated_at: null,
   visibility: "",
   workflow_instances: null,

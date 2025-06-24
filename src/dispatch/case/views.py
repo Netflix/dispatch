@@ -38,6 +38,7 @@ from .flows import (
     case_delete_flow,
     case_escalated_create_flow,
     case_new_create_flow,
+    case_stable_create_flow,
     case_to_incident_endpoint_escalate_flow,
     case_triage_create_flow,
     case_update_flow,
@@ -211,6 +212,12 @@ def create_case(
     elif case.status == CaseStatus.closed:
         background_tasks.add_task(
             case_closed_create_flow,
+            case_id=case.id,
+            organization_slug=organization,
+        )
+    elif case.status == CaseStatus.stable:
+        background_tasks.add_task(
+            case_stable_create_flow,
             case_id=case.id,
             organization_slug=organization,
         )
