@@ -554,6 +554,11 @@ The case priority has been changed from {{ case_priority_old }} to {{ case_prior
     "\n", " "
 ).strip()
 
+CASE_VISIBILITY_CHANGE_DESCRIPTION = """
+The case visibility has been changed from {{ case_visibility_old }} to {{ case_visibility_new }}.""".replace(
+    "\n", " "
+).strip()
+
 CASE_STATUS_CHANGE = {
     "title": "Status Change",
     "text": CASE_STATUS_CHANGE_DESCRIPTION,
@@ -569,6 +574,11 @@ CASE_SEVERITY_CHANGE = {
 CASE_PRIORITY_CHANGE = {
     "title": "Priority Change",
     "text": CASE_PRIORITY_CHANGE_DESCRIPTION,
+}
+
+CASE_VISIBILITY_CHANGE = {
+    "title": "Visibility Change",
+    "text": CASE_VISIBILITY_CHANGE_DESCRIPTION,
 }
 
 INCIDENT_NAME = {
