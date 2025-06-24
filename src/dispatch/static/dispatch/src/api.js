@@ -6,26 +6,6 @@ import router from "./router"
 
 const instance = axios.create({
   baseURL: "/api/v1",
-  paramsSerializer: {
-    serialize: (params) => {
-      const searchParams = new URLSearchParams()
-
-      Object.entries(params).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          // For arrays, add each value as a separate parameter (FastAPI-Filter format)
-          value.forEach((item) => {
-            if (item != null) {
-              searchParams.append(key, String(item))
-            }
-          })
-        } else if (value != null) {
-          searchParams.append(key, String(value))
-        }
-      })
-
-      return searchParams.toString()
-    },
-  },
 })
 
 const authProviderSlug =

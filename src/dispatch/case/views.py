@@ -123,6 +123,7 @@ def get_case_participants(
 
 @router.get("", summary="Retrieves a list of cases.")
 def get_cases(
+    request: Request,
     db_session: DbSession,
     current_user: CurrentUser,
     case_filter: CaseFilter = FilterDepends(CaseFilter),
@@ -136,6 +137,27 @@ def get_cases(
 ):
     """Retrieves all cases using FastAPI-Filter."""
     import json
+    from urllib.parse import parse_qs
+
+    # Handle array bracket notation from frontend (e.g., status__in[]=Escalated)
+    query_params = dict(request.query_params)
+
+    # Process array bracket parameters
+    for key in list(query_params.keys()):
+        if key.endswith('[]'):
+            # Remove the brackets from the key
+            clean_key = key[:-2]
+            # Get all values for this parameter (FastAPI automatically converts to list)
+            if hasattr(request.query_params, 'getlist'):
+                values = request.query_params.getlist(key)
+            else:
+                # Fallback: parse the raw query string
+                raw_params = parse_qs(str(request.url.query))
+                values = raw_params.get(key, [])
+
+            # Set the clean parameter on the filter if it exists
+            if hasattr(case_filter, clean_key):
+                setattr(case_filter, clean_key, values)
 
     # Set email filters on the case filter instance
     case_filter.set_email_filters(
