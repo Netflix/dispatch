@@ -164,6 +164,7 @@ export default {
       allFields: [
         { text: "Reported At", value: "reported_at", sortable: false },
         { text: "Triage At", value: "triage_at", sortable: false },
+        { text: "Stable At", value: "stable_at", sortable: false },
         { text: "Escalated At", value: "escalated_at", sortable: false },
         { text: "Closed At", value: "closed_at", sortable: false },
         { text: "Name", value: "name", sortable: false },
