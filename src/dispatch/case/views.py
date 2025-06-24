@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -11,6 +12,7 @@ from dispatch.auth.permissions import (
     CaseEditPermission,
     CaseJoinPermission,
     CaseViewPermission,
+    CaseEventPermission,
     PermissionsDependency,
 )
 from dispatch.auth.service import CurrentUser
@@ -18,6 +20,8 @@ from dispatch.case.enums import CaseStatus
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
+from dispatch.event import flows as event_flows
+from dispatch.event.models import EventCreateMinimal, EventUpdate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentCreate, IncidentRead
 from dispatch.individual.models import IndividualContactRead
@@ -427,5 +431,115 @@ def join_case(
         case_add_or_reactivate_participant_flow,
         current_user.email,
         case_id=current_case.id,
+        organization_slug=organization,
+    )
+
+
+@router.post(
+    "/{case_id}/event",
+    summary="Creates a custom event.",
+    dependencies=[Depends(PermissionsDependency([CaseEventPermission]))],
+)
+def create_custom_event(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    current_case: CurrentCase,
+    event_in: EventCreateMinimal,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    if event_in.details is None:
+        event_in.details = {}
+    event_in.details.update({"created_by": current_user.email, "added_on": str(datetime.utcnow())})
+    """Creates a custom event."""
+    background_tasks.add_task(
+        event_flows.log_case_event,
+        user_email=current_user.email,
+        case_id=current_case.id,
+        event_in=event_in,
+        organization_slug=organization,
+    )
+
+
+@router.patch(
+    "/{case_id}/event",
+    summary="Updates a custom event.",
+    dependencies=[Depends(PermissionsDependency([CaseEventPermission]))],
+)
+def update_custom_event(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    current_case: CurrentCase,
+    event_in: EventUpdate,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    if event_in.details:
+        event_in.details.update(
+            {
+                **event_in.details,
+                "updated_by": current_user.email,
+                "updated_on": str(datetime.utcnow()),
+            }
+        )
+    else:
+        event_in.details = {"updated_by": current_user.email, "updated_on": str(datetime.utcnow())}
+    """Updates a custom event."""
+    background_tasks.add_task(
+        event_flows.update_case_event,
+        event_in=event_in,
+        organization_slug=organization,
+    )
+
+
+@router.post(
+    "/{case_id}/exportTimeline",
+    summary="Exports timeline events.",
+    dependencies=[Depends(PermissionsDependency([CaseEventPermission]))],
+)
+def export_timeline_event(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    current_case: CurrentCase,
+    timeline_filters: dict,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    try:
+        event_flows.export_case_timeline(
+            timeline_filters=timeline_filters,
+            case_id=case_id,
+            organization_slug=organization,
+            db_session=db_session,
+        )
+    except Exception as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=[{"msg": (f"{str(e)}.",)}],
+        ) from e
+
+
+@router.delete(
+    "/{case_id}/event/{event_uuid}",
+    summary="Deletes a custom event.",
+    dependencies=[Depends(PermissionsDependency([CaseEventPermission]))],
+)
+def delete_custom_event(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    current_case: CurrentCase,
+    event_uuid: str,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Deletes a custom event."""
+    background_tasks.add_task(
+        event_flows.delete_case_event,
+        event_uuid=event_uuid,
         organization_slug=organization,
     )

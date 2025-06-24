@@ -170,6 +170,23 @@
                   </span>
                 </v-tooltip>
               </v-col>
+              <v-col cols="5">
+                <v-checkbox
+                  v-model="genai_suggestions"
+                  label="Enable GenAI suggestions"
+                  hint="If activated, GenAI will suggest tags of this type."
+                />
+              </v-col>
+              <v-col cols="7">
+                <v-tooltip max-width="500px" open-delay="50" location="bottom">
+                  <template #activator="{ props }">
+                    <v-icon class="mt-4" v-bind="props">mdi-information</v-icon>
+                  </template>
+                  <span>
+                    If activated, GenAI will provide tag suggestions for this tag type in the UI.
+                  </span>
+                </v-tooltip>
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
@@ -217,6 +234,7 @@ export default {
       "selected.exclusive",
       "selected.required",
       "selected.use_for_project_folder",
+      "selected.genai_suggestions",
       "selected.loading",
     ]),
     ...mapFields("tag_type", {
