@@ -193,7 +193,7 @@ def test_update(session, case: Case, project):
         title="XXX",
         description="YYY",
         resolution="True Positive",
-        resolution_reason=CaseResolutionReason.user_acknowledge,
+        resolution_reason=CaseResolutionReason.user_acknowledged,
         status=CaseStatus.closed,
         visibility=Visibility.restricted,
         assignee=case.assignee,
