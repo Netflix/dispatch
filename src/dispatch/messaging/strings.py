@@ -323,7 +323,7 @@ You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to clos
 ).strip()
 
 CASE_TRIAGE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-Please ensure you triage the case based on its priority.""".replace(
+Please ensure you triage the case based on its priority and update its title, priority, severity and tags.""".replace(
     "\n", " "
 ).strip()
 
