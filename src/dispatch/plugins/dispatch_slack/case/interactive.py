@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 from dispatch.auth.models import DispatchUser, MfaChallengeStatus
 from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
-from dispatch.case.enums import CaseResolutionReason, CaseStatus
+from dispatch.case.enums import CaseResolutionReason, CaseStatus, CaseResolutionReasonDescription
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
 from dispatch.case.type import service as case_type_service
 from dispatch.config import DISPATCH_UI_URL
@@ -68,6 +68,7 @@ from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguratio
 from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.enums import SlackAPIErrorCode
 from dispatch.plugins.dispatch_slack.fields import (
+    DefaultActionIds,
     DefaultBlockIds,
     case_priority_select,
     case_resolution_reason_select,
@@ -287,7 +288,7 @@ def handle_update_case_command(
         ),
         case_visibility_select(
             initial_option={"text": case.visibility, "value": case.visibility},
-        )
+        ),
     ]
 
     modal = Modal(
@@ -2084,10 +2085,13 @@ def resolve_button_click(
     reason = case.resolution_reason
     blocks = [
         (
-            case_resolution_reason_select(initial_option={"text": reason, "value": reason})
+            case_resolution_reason_select(
+                initial_option={"text": reason, "value": reason}, dispatch_action=True
+            )
             if reason
-            else case_resolution_reason_select()
+            else case_resolution_reason_select(dispatch_action=True)
         ),
+        Context(elements=[MarkdownText(text="Select a resolution reason to see its description")]),
         resolution_input(initial_value=case.resolution),
     ]
 
@@ -2100,6 +2104,62 @@ def resolve_button_click(
         private_metadata=context["subject"].json(),
     ).build()
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+@app.action(
+    DefaultActionIds.case_resolution_reason_select,
+    middleware=[action_context_middleware, db_middleware],
+)
+def handle_resolution_reason_select_action(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+):
+    """Handles the resolution reason select action."""
+    ack()
+
+    # Get the selected resolution reason
+    values = body["view"]["state"]["values"]
+    block_id = DefaultBlockIds.case_resolution_reason_select
+    action_id = DefaultActionIds.case_resolution_reason_select
+    resolution_reason = values[block_id][action_id]["selected_option"]["value"]
+
+    # Get the description for the selected reason
+    try:
+        # Map the resolution reason string to the enum key
+        reason_key = resolution_reason.lower().replace(" ", "_")
+        description = CaseResolutionReasonDescription[reason_key].value
+    except KeyError:
+        description = "No description available"
+
+    # Get the current case
+    case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
+
+    # Rebuild the modal with the updated description
+    blocks = [
+        case_resolution_reason_select(
+            initial_option={"text": resolution_reason, "value": resolution_reason},
+            dispatch_action=True,
+        ),
+        Context(elements=[MarkdownText(text=f"*Description:* {description}")]),
+        resolution_input(initial_value=case.resolution),
+    ]
+
+    modal = Modal(
+        title="Resolve Case",
+        blocks=blocks,
+        submit="Resolve",
+        close="Close",
+        callback_id=CaseResolveActions.submit,
+        private_metadata=context["subject"].json(),
+    ).build()
+
+    client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )
 
 
 @app.action(CaseNotificationActions.triage, middleware=[button_context_middleware, db_middleware])
@@ -2884,7 +2944,7 @@ def resolve_case(
     )
     case_in = CaseUpdate(
         title=case.title,
-        resolution_reason=CaseResolutionReason.user_acknowledge,
+        resolution_reason=CaseResolutionReason.user_acknowledged,
         resolution=context_from_user,
         visibility=case.visibility,
         status=CaseStatus.closed,

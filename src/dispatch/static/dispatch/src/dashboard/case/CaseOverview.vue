@@ -33,6 +33,13 @@
       </v-col>
       <v-col cols="12" sm="6" lg="4">
         <stat-widget
+          icon="mdi-domain"
+          :title="toNumberString(totalCasesStable)"
+          sup-title="Cases Stable"
+        />
+      </v-col>
+      <v-col cols="12" sm="6" lg="4">
+        <stat-widget
           icon="mdi-clock"
           :title="toNumberString(totalHours)"
           sup-title="Total Hours (New to Closed)"
@@ -233,6 +240,14 @@ export default {
     totalCasesEscalated() {
       return sumBy(this.items, function (item) {
         if (item.escalated_at && item.incidents.length > 0) {
+          return 1
+        }
+        return 0
+      })
+    },
+    totalCasesStable() {
+      return sumBy(this.items, function (item) {
+        if (item.stable_at) {
           return 1
         }
         return 0

@@ -30,4 +30,10 @@ export default {
   verifyMfa(payload) {
     return API.post(`/auth/mfa`, payload)
   },
+  getUserSettings() {
+    return API.get(`/auth/me/settings`)
+  },
+  updateUserSettings(payload) {
+    return API.put(`/auth/me/settings`, payload)
+  },
 }

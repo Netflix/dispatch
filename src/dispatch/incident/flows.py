@@ -24,6 +24,7 @@ from dispatch.incident.type.service import get as get_incident_type
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
+from dispatch.auth import service as auth_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
@@ -56,6 +57,26 @@ from .messaging import (
 from .models import Incident, IncidentStatus
 
 log = logging.getLogger(__name__)
+
+
+def filter_participants_for_bridge(participant_emails: list[str], project_id: int, db_session: Session) -> list[str]:
+    """Filter participant emails to only include those who have opted into bridge participation."""
+    filtered_emails = []
+    for email in participant_emails:
+        # Get the dispatch user by email
+        dispatch_user = auth_service.get_by_email(db_session=db_session, email=email)
+        if dispatch_user:
+            # Get or create user settings
+            user_settings = auth_service.get_or_create_user_settings(
+                db_session=db_session, user_id=dispatch_user.id
+            )
+            # Check if user has opted into bridge participation
+            if user_settings.auto_add_to_incident_bridges:
+                filtered_emails.append(email)
+        else:
+            # If no dispatch user found, default to adding them (they can't opt out without a user account)
+            filtered_emails.append(email)
+    return filtered_emails
 
 
 def get_incident_participants(
@@ -224,10 +245,15 @@ def incident_create_resources(
     # we create the conference room
     if not incident.conference:
         # we only include individuals that are directly participating in the
-        # resolution of the incident
+        # resolution of the incident and have opted into bridge participation
         conference_participants = tactical_participant_emails
         if incident.tactical_group:
             conference_participants = [incident.tactical_group.email]
+        else:
+            # filter participants based on their bridge participation preferences
+            conference_participants = filter_participants_for_bridge(
+                tactical_participant_emails, incident.project.id, db_session
+            )
         conference_flows.create_conference(
             incident=incident, participants=conference_participants, db_session=db_session
         )

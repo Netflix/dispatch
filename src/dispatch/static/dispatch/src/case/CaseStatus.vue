@@ -52,6 +52,7 @@ export default {
           New: "red",
           Triage: "orange",
           Escalated: "yellow",
+          Stable: "blue",
           Closed: "success",
         }[this.status] || "error"
       )
