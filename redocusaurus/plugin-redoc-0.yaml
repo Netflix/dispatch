@@ -517,6 +517,7 @@ components:
         - New
         - Triage
         - Escalated
+        - Stable
         - Closed
       title: CaseStatus
       type: string
