@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, date
 from schedule import every
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from dispatch.decorators import scheduled_project_task, timer
 from dispatch.project.models import Project
@@ -17,6 +18,7 @@ from dispatch.scheduler import scheduler
 
 from .enums import CaseStatus
 from .messaging import send_case_close_reminder, send_case_triage_reminder
+from .models import Case
 from .service import (
     get_all_by_status,
 )
@@ -31,7 +33,9 @@ log = logging.getLogger(__name__)
 def case_close_reminder(db_session: Session, project: Project):
     """Sends a reminder to the case assignee to close out their case."""
     cases = get_all_by_status(
-        db_session=db_session, project_id=project.id, statuses=[CaseStatus.triage]
+        db_session=db_session,
+        project_id=project.id,
+        statuses=[CaseStatus.triage]
     )
 
     for case in cases:
@@ -52,8 +56,17 @@ def case_close_reminder(db_session: Session, project: Project):
 @scheduled_project_task
 def case_triage_reminder(db_session: Session, project: Project):
     """Sends a reminder to the case assignee to triage their case."""
-    cases = get_all_by_status(
-        db_session=db_session, project_id=project.id, statuses=[CaseStatus.new]
+
+    cases = (
+        db_session.query(Case)
+        .filter(Case.project_id == project.id)
+        .filter(
+            or_(
+                Case.title == "Security Event Triage",
+                Case.status == CaseStatus.new
+            )
+        )
+        .all()
     )
 
     # if we want more specific SLA reminders, we would need to add additional data model
