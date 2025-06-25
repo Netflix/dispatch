@@ -43,7 +43,11 @@ def get_email_template(db_session: DbSession, email_template_id: PrimaryKey):
     return email_template
 
 
-@router.post("", response_model=EmailTemplatesRead)
+@router.post(
+    "",
+    response_model=EmailTemplatesRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def create_email_template(
     db_session: DbSession,
     email_template_in: EmailTemplatesCreate,
