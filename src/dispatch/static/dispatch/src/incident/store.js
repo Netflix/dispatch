@@ -524,7 +524,10 @@ const actions = {
     })
   },
   removeParticipant({ commit, dispatch, state }) {
-    return IncidentApi.removeParticipant(state.selected.id, state.dialogs.participantToRemove.individual.email).then(function () {
+    return IncidentApi.removeParticipant(
+      state.selected.id,
+      state.dialogs.participantToRemove.individual.email
+    ).then(function () {
       dispatch("closeRemoveParticipantDialog")
       dispatch("get", state.selected.id)
       commit(
