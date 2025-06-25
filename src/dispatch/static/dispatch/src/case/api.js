@@ -55,6 +55,14 @@ export default {
     return API.post(`/${resource}/${caseId}/join`, payload)
   },
 
+  removeParticipant(caseId, email) {
+    return API.delete(`/${resource}/${caseId}/remove/${email}`)
+  },
+
+  addParticipant(caseId, email) {
+    return API.post(`/${resource}/${caseId}/add/${email}`)
+  },
+
   createAllResources(caseId, payload) {
     return API.post(`/${resource}/${caseId}/resources`, payload)
   },

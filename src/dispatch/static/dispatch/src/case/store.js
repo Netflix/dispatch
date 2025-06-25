@@ -103,6 +103,8 @@ const state = {
     showNewSheet: false,
     showEditEventDialog: false,
     showDeleteEventDialog: false,
+    showRemoveParticipantDialog: false,
+    participantToRemove: null,
   },
   report: {
     ...getDefaultReportState(),
@@ -262,6 +264,14 @@ const actions = {
     commit("incident/RESET_SELECTED", null, { root: true })
     // force page reload to pick up the change to status
     window.location.reload()
+  },
+  showRemoveParticipantDialog({ commit }, participant) {
+    commit("SET_DIALOG_SHOW_REMOVE_PARTICIPANT", true)
+    commit("SET_DIALOG_PARTICIPANT_TO_REMOVE", participant)
+  },
+  closeRemoveParticipantDialog({ commit }) {
+    commit("SET_DIALOG_SHOW_REMOVE_PARTICIPANT", false)
+    commit("SET_DIALOG_PARTICIPANT_TO_REMOVE", null)
   },
   showHandoffDialog({ commit }, value) {
     commit("SET_DIALOG_SHOW_HANDOFF", true)
@@ -469,6 +479,20 @@ const actions = {
       commit(
         "notification_backend/addBeNotification",
         { text: "Case deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
+  },
+  removeParticipant({ commit, dispatch, state }) {
+    return CaseApi.removeParticipant(
+      state.selected.id,
+      state.dialogs.participantToRemove.individual.email
+    ).then(function () {
+      dispatch("closeRemoveParticipantDialog")
+      dispatch("get", state.selected.id)
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Participant removed successfully.", type: "success" },
         { root: true }
       )
     })
@@ -720,6 +744,15 @@ const mutations = {
   },
   SET_DIALOG_ESCALATE(state, value) {
     state.dialogs.showEscalateDialog = value
+  },
+  SET_DIALOG_SHOW_REMOVE_PARTICIPANT(state, value) {
+    state.dialogs.showRemoveParticipantDialog = value
+  },
+  SET_DIALOG_PARTICIPANT_TO_REMOVE(state, participant) {
+    state.dialogs.participantToRemove = participant
+  },
+  SET_SELECTED_PARTICIPANTS(state, participants) {
+    state.selected.participants = participants
   },
   SET_FILTERS(state, payload) {
     state.table.options.filters = payload

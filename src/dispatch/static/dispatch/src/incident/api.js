@@ -56,6 +56,14 @@ export default {
     return API.post(`/${resource}/${incidentId}/subscribe`, payload)
   },
 
+  removeParticipant(incidentId, email) {
+    return API.delete(`/${resource}/${incidentId}/remove/${email}`)
+  },
+
+  addParticipant(incidentId, email) {
+    return API.post(`/${resource}/${incidentId}/add/${email}`)
+  },
+
   createReport(incidentId, type, payload) {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
