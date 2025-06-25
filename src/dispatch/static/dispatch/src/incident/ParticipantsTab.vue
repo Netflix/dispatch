@@ -86,7 +86,6 @@ export default {
     }
   },
 
-
   computed: {
     ...mapFields("incident", ["selected.participants", "selected.id", "selected.project"]),
 
@@ -95,24 +94,24 @@ export default {
 
       if (this.showInactive) {
         // Show only inactive participants (all roles renounced)
-        return this.participants.filter(participant => {
+        return this.participants.filter((participant) => {
           if (!participant.participant_roles || participant.participant_roles.length === 0) {
             return false
           }
           // Check if participant has NO active roles (all roles renounced)
-          return participant.participant_roles.every(role => role.renounced_at)
+          return participant.participant_roles.every((role) => role.renounced_at)
         })
       }
 
       // Show only active participants (at least one role not renounced)
-      return this.participants.filter(participant => {
+      return this.participants.filter((participant) => {
         if (!participant.participant_roles || participant.participant_roles.length === 0) {
           return false
         }
         // Check if participant has at least one active role (renounced_at is null)
-        return participant.participant_roles.some(role => !role.renounced_at)
+        return participant.participant_roles.some((role) => !role.renounced_at)
       })
-    }
+    },
   },
 
   methods: {
@@ -121,7 +120,11 @@ export default {
     },
 
     async addParticipants() {
-      if (!this.selectedParticipant || !Array.isArray(this.selectedParticipant) || this.selectedParticipant.length === 0) {
+      if (
+        !this.selectedParticipant ||
+        !Array.isArray(this.selectedParticipant) ||
+        this.selectedParticipant.length === 0
+      ) {
         console.log("No participants selected")
         return
       }
@@ -138,7 +141,7 @@ export default {
 
         // Refresh the incident data to update the participants list
         // Small delay to allow background task to complete
-        await new Promise(resolve => setTimeout(resolve, 1200))
+        await new Promise((resolve) => setTimeout(resolve, 1200))
         this.$store.dispatch("incident/get", this.id)
       } catch (error) {
         console.error("Error adding participants:", error)

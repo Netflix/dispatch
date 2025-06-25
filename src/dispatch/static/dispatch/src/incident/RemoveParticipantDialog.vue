@@ -7,13 +7,16 @@
       <v-card-text>
         <v-container>
           <div v-if="participantToRemove">
-            Are you sure you want to remove <strong>{{ participantToRemove.individual.name }}</strong> from this incident?
+            Are you sure you want to remove
+            <strong>{{ participantToRemove.individual.name }}</strong> from this incident?
           </div>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" variant="text" @click="closeRemoveParticipantDialog()"> Cancel </v-btn>
+        <v-btn color="blue en-1" variant="text" @click="closeRemoveParticipantDialog()">
+          Cancel
+        </v-btn>
         <v-btn color="red en-1" variant="text" @click="removeParticipant(selected)"> Remove </v-btn>
       </v-card-actions>
     </v-card>
@@ -28,7 +31,11 @@ export default {
   name: "IncidentRemoveParticipantDialog",
 
   computed: {
-    ...mapFields("incident", ["dialogs.showRemoveParticipantDialog", "dialogs.participantToRemove", "selected"]),
+    ...mapFields("incident", [
+      "dialogs.showRemoveParticipantDialog",
+      "dialogs.participantToRemove",
+      "selected",
+    ]),
   },
 
   methods: {
