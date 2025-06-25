@@ -24,9 +24,9 @@
                       <div class="d-flex align-center justify-space-between">
                         {{ item.title }}
                         <v-tooltip location="right">
-                          <template #activator="{ props }">
+                          <template #activator="{ props: tooltipProps }">
                             <v-icon
-                              v-bind="props"
+                              v-bind="tooltipProps"
                               icon="mdi-information"
                               size="small"
                               class="ml-2"
