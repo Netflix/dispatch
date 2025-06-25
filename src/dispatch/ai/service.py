@@ -441,6 +441,12 @@ def get_tag_recommendations(
 
     elif incident_id:
         incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+        if not incident:
+            raise ValueError(f"Incident with id {incident_id} not found")
+        if incident.visibility == Visibility.restricted:
+            message = "AI tag suggestions are not available for restricted incidents."
+            return TagRecommendationResponse(recommendations=[], error_message=message)
+
         resources += f"Incident: {incident.name}\n"
         resources += f"Description: {incident.description}\n"
         resources += f"Resolution: {incident.resolution}\n"

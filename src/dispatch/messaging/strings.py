@@ -323,7 +323,7 @@ You can use `{{command}}` in the <{{conversation_weblink}}|conversation> to clos
 ).strip()
 
 CASE_TRIAGE_REMINDER_DESCRIPTION = """The status of this case hasn't been updated recently.
-Please ensure you triage the case based on its priority.""".replace(
+Please ensure you triage the case based on its priority and update its title, priority, severity and tags.""".replace(
     "\n", " "
 ).strip()
 
@@ -558,6 +558,11 @@ The case priority has been changed from {{ case_priority_old }} to {{ case_prior
     "\n", " "
 ).strip()
 
+CASE_VISIBILITY_CHANGE_DESCRIPTION = """
+The case visibility has been changed from {{ case_visibility_old }} to {{ case_visibility_new }}.""".replace(
+    "\n", " "
+).strip()
+
 CASE_STATUS_CHANGE = {
     "title": "Status Change",
     "text": CASE_STATUS_CHANGE_DESCRIPTION,
@@ -573,6 +578,11 @@ CASE_SEVERITY_CHANGE = {
 CASE_PRIORITY_CHANGE = {
     "title": "Priority Change",
     "text": CASE_PRIORITY_CHANGE_DESCRIPTION,
+}
+
+CASE_VISIBILITY_CHANGE = {
+    "title": "Visibility Change",
+    "text": CASE_VISIBILITY_CHANGE_DESCRIPTION,
 }
 
 INCIDENT_NAME = {
