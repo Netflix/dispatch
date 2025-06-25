@@ -37,8 +37,13 @@
                 <div class="d-flex align-center justify-space-between">
                   {{ item.title }}
                   <v-tooltip location="right">
-                    <template #activator="{ props }">
-                      <v-icon v-bind="props" icon="mdi-information" size="small" class="ml-2" />
+                    <template #activator="{ props: tooltipProps }">
+                      <v-icon
+                        v-bind="tooltipProps"
+                        icon="mdi-information"
+                        size="small"
+                        class="ml-2"
+                      />
                     </template>
                     <span>{{ $store.state.case_management.resolutionTooltips[item.title] }}</span>
                   </v-tooltip>

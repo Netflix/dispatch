@@ -28,6 +28,7 @@ from dispatch.messaging.strings import (
     CASE_TYPE_CHANGE,
     CASE_SEVERITY_CHANGE,
     CASE_PRIORITY_CHANGE,
+    CASE_VISIBILITY_CHANGE,
     CASE_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     MessageType,
     generate_welcome_message,
@@ -219,6 +220,10 @@ def send_case_update_notifications(case: Case, previous_case: CaseRead, db_sessi
                 change = True
                 notification_template.append(CASE_PRIORITY_CHANGE)
 
+            if previous_case.visibility != case.visibility:
+                change = True
+                notification_template.append(CASE_VISIBILITY_CHANGE)
+
     if not change:
         # we don't need to send notifications
         log.debug("Case updated notifications not sent. No changes were made.")
@@ -251,6 +256,8 @@ def send_case_update_notifications(case: Case, previous_case: CaseRead, db_sessi
                 case_status_old=previous_case.status,
                 case_type_new=case.case_type.name,
                 case_type_old=previous_case.case_type.name,
+                case_visibility_new=case.visibility,
+                case_visibility_old=previous_case.visibility,
                 name=case.name,
                 ticket_weblink=case.ticket.weblink,
                 title=case.title,
@@ -286,6 +293,8 @@ def send_case_update_notifications(case: Case, previous_case: CaseRead, db_sessi
         "case_status_old": previous_case.status,
         "case_type_new": case.case_type.name,
         "case_type_old": previous_case.case_type.name,
+        "case_visibility_new": case.visibility,
+        "case_visibility_old": previous_case.visibility,
         "name": case.name,
         "organization_slug": case.project.organization.slug,
         "ticket_weblink": resolve_attr(case, "ticket.weblink"),
