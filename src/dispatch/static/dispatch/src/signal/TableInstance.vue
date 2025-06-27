@@ -183,12 +183,17 @@ export default {
 </script>
 
 <style>
+@import "@/styles/index.scss";
+
 .viewButton {
-  background-color: var(--v-background-base) !important;
-  border: 1px solid var(--v-primary-lighten3) !important;
+  background-color: rgb(var(--v-theme-background2));
+  color: rgb(var(--v-theme-anchor));
+  box-shadow: 0 0 0 0;
 }
 
 .selectedViewButton {
-  background-color: var(--v-primary-base) !important;
+  background-color: rgb(var(--v-theme-gray7));
+  color: rgb(var(--v-theme-gray0));
+  box-shadow: 0 0 0 0;
 }
 </style>
