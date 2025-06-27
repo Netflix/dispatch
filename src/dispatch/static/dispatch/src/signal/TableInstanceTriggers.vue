@@ -1,48 +1,75 @@
 <template>
-  <v-container fluid>
-    <v-row no-gutters>
-      <v-col>
-        <div class="text-h5">Signals</div>
-      </v-col>
-    </v-row>
-    <v-row no-gutters class="pb-3" align="center">
-      <v-col cols="auto" class="pr-4"><div class="text">Group by:</div></v-col>
-      <v-col cols="auto" class="pr-4">
-        <v-btn
-          :class="activeView === 'triggers' ? 'selectedViewButton' : 'viewButton'"
-          @click="setActiveView('triggers')"
-        >
-          <v-icon>mdi-broadcast</v-icon>
-          <div class="pl-1">Triggers</div>
-        </v-btn>
-      </v-col>
-      <!--      todo (amats) we should have routes to allow navigation to a certain tab via link-->
-      <v-col cols="auto" class="pr-4">
-        <v-btn
-          :class="activeView === 'entities' ? 'selectedViewButton' : 'viewButton'"
-          @click="setActiveView('entities')"
-        >
-          <v-icon>mdi-cube-outline</v-icon>
-          <div class="pl-1">Entities</div>
-        </v-btn>
-      </v-col>
-      <v-col cols="auto" class="pr-4">
-        <v-btn
-          :class="activeView === 'snoozes' ? 'selectedViewButton' : 'viewButton'"
-          @click="setActiveView('snoozes')"
-        >
-          <v-icon>mdi-bell-off</v-icon>
-          <div class="pl-1">Snoozes</div>
-        </v-btn>
-      </v-col>
-      <v-col class="text-right" style="padding-right: 4px">
-        <table-filter-dialog />
-      </v-col>
-    </v-row>
-    <table-instance-triggers v-if="activeView === 'triggers'" />
-    <table-instance-entities v-if="activeView === 'entities'" />
-    <table-instance-snoozes v-if="activeView === 'snoozes'" />
-  </v-container>
+  <v-data-table-server
+    :headers="headers"
+    :items="items"
+    :items-length="total || 0"
+    v-model:page="page"
+    v-model:items-per-page="itemsPerPage"
+    :footer-props="{
+      'items-per-page-options': [10, 25, 50, 100],
+    }"
+    v-model:sort-by="sortBy"
+    v-model:sort-desc="descending"
+    :loading="loading"
+    loading-text="Loading... Please wait"
+  >
+    <template #item.case="{ value }">
+      <case-popover v-if="value" :value="value" />
+    </template>
+    <template #item.signal="{ value }">
+      <signal-popover :value="value" />
+    </template>
+    <template #item.entities="{ value }">
+      <instance-entity-popover :value="value" />
+    </template>
+    <template #item.signal.filters="{ value }">
+      <span
+        v-if="
+          this.getSnoozes(value) === 0 && this.getSnoozes(value, (count_expired = true)) === 0
+        "
+      >
+        No Snoozes Created
+      </span>
+      <span v-else>
+        <v-chip>{{ this.getSnoozes(value) }} Active</v-chip>
+        <v-chip>{{ this.getSnoozes(value, (count_expired = true)) }} Expired</v-chip>
+      </span>
+    </template>
+    <template #item.signal.project.display_name="{ item, value }">
+      <v-chip size="small" :color="item.signal.project.color">
+        {{ value }}
+      </v-chip>
+    </template>
+    <template #item.filter_action="{ value }">
+      <v-chip
+        size="small"
+        :color="
+          {
+            snooze: 'blue-accent-4',
+            deduplicate: 'orange-darken-2',
+          }[value] || 'green-darken-1'
+        "
+      >
+        {{
+          {
+            snooze: "Snoozed",
+            deduplicate: "Duplicate",
+          }[value] || "Not Filtered"
+        }}
+      </v-chip>
+    </template>
+    <template #item.created_at="{ value }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
+        </template>
+        <span>{{ formatDate(value) }}</span>
+      </v-tooltip>
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <raw-signal-viewer :value="item.raw" />
+    </template>
+  </v-data-table-server>
 </template>
 
 <script>
@@ -50,27 +77,26 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
+import CasePopover from "@/case/CasePopover.vue"
+import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 import RouterUtils from "@/router/utils"
-import TableFilterDialog from "@/signal/TableFilterDialog.vue"
-import TableInstanceTriggers from "@/signal/TableInstanceTriggers.vue"
-import TableInstanceEntities from "@/signal/TableInstanceEntities.vue"
-import TableInstanceSnoozes from "@/signal/TableInstanceSnoozes.vue"
+import SignalPopover from "@/signal/SignalPopover.vue"
+import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
 
 export default {
-  name: "SignalInstanceTable",
+  name: "TableInstanceTriggers",
 
   components: {
-    TableFilterDialog,
-    TableInstanceTriggers,
-    TableInstanceEntities,
-    TableInstanceSnoozes,
+    CasePopover,
+    RawSignalViewer,
+    SignalPopover,
+    InstanceEntityPopover,
   },
 
   data() {
     return {
-      activeView: "triggers",
       headers: [
-        { title: "Case", value: "case", sortable: false },
+        { title: "This is the triggers view", value: "case", sortable: false },
         { title: "Status", value: "filter_action", sortable: true },
         { title: "Signal Definition", value: "signal", sortable: false },
         { title: "Entities", value: "entities", sortable: true },
@@ -115,14 +141,6 @@ export default {
 
   methods: {
     ...mapActions("signal", ["getAllInstances"]),
-
-    /**
-     * Set the active view and update the UI accordingly.
-     * @param view: The view to set as active ('triggers', 'entities', or 'snoozes').
-     */
-    setActiveView(view) {
-      this.activeView = view
-    },
 
     /**
      * Count the snooze filters for a given signal definition. Counts all
