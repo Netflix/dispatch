@@ -181,3 +181,14 @@ export default {
   },
 }
 </script>
+
+<style>
+.viewButton {
+  background-color: var(--v-background-base) !important;
+  border: 1px solid var(--v-primary-lighten3) !important;
+}
+
+.selectedViewButton {
+  background-color: var(--v-primary-base) !important;
+}
+</style>
