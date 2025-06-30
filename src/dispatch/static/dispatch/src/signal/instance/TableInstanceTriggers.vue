@@ -94,7 +94,7 @@ export default {
   data() {
     return {
       headers: [
-        { title: "This is the triggers view", value: "case", sortable: false },
+        { title: "Case", value: "case", sortable: false },
         { title: "Status", value: "filter_action", sortable: true },
         { title: "Signal Definition", value: "signal", sortable: false },
         { title: "Entities", value: "entities", sortable: true },

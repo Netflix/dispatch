@@ -96,9 +96,9 @@ export default {
       headers: [
         { title: "This is the entities view", value: "case", sortable: false },
         { title: "Status", value: "filter_action", sortable: true },
-        { title: "Signal Definition", value: "signal", sortable: false },
-        { title: "Entities", value: "entities", sortable: true },
-        { title: "Snoozes", value: "signal.filters", sortable: false },
+        { title: "Signal Triggers", value: "signal", sortable: false },
+        { title: "Snoozes", value: "entities", sortable: true },
+        { title: "In same signals", value: "signal.filters", sortable: false },
         { title: "Project", value: "signal.project.display_name", sortable: true },
         { title: "Created At", value: "created_at" },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
