@@ -42,6 +42,27 @@ const state = {
     },
     loading: false,
   },
+  signalEntityTable: {
+    rows: {
+      items: [],
+      total: null,
+    },
+    options: {
+      filters: {
+        created_at: {
+          start: null,
+          end: null,
+        },
+        signal: [],
+      },
+      q: "",
+      page: 1,
+      itemsPerPage: 25,
+      sortBy: ["created_at"],
+      descending: [true],
+    },
+    loading: false,
+  },
 }
 
 const getters = {
@@ -59,6 +80,22 @@ const actions = {
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
+      })
+  }, 500),
+  // todo(amats): what's the difference between this and above?
+  // todo(amats): can probably put back in signal directory store with new api hookups
+  getAllEntities: debounce(({ commit, state }) => {
+    commit("SET_SIGNAL_ENTITY_TABLE_LOADING", "primary")
+    let params = SearchUtils.createParametersFromTableOptions({
+      ...state.signalEntityTable.options,
+    })
+    return EntityApi.getAll(params)
+      .then((response) => {
+        commit("SET_SIGNAL_ENTITY_TABLE_LOADING", false)
+        commit("SET_SIGNAL_ENTITY_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_SIGNAL_ENTITY_TABLE_LOADING", false)
       })
   }, 500),
   createEditShow({ commit }, entity) {
@@ -149,6 +186,12 @@ const mutations = {
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
+  },
+  SET_SIGNAL_ENTITY_TABLE_LOADING(state, value) {
+    state.signalEntityTable.loading = value
+  },
+  SET_SIGNAL_ENTITY_TABLE_ROWS(state, value) {
+    state.signalEntityTable.rows = value
   },
   SET_DIALOG_CASE_VIEW(state, value) {
     state.dialogs.showCaseView = value

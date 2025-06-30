@@ -23,14 +23,12 @@
       <instance-entity-popover :value="value" />
     </template>
     <template #item.signal.filters="{ value }">
-      <span
-        v-if="this.getSnoozes(value) === 0 && this.getSnoozes(value, (count_expired = true)) === 0"
-      >
+      <span v-if="getSnoozes(value) === 0 && getSnoozes(value, true) === 0">
         No Snoozes Created
       </span>
       <span v-else>
-        <v-chip>{{ this.getSnoozes(value) }} Active</v-chip>
-        <v-chip>{{ this.getSnoozes(value, (count_expired = true)) }} Expired</v-chip>
+        <v-chip>{{ getSnoozes(value) }} Active</v-chip>
+        <v-chip>{{ getSnoozes(value, true) }} Expired</v-chip>
       </span>
     </template>
     <template #item.signal.project.display_name="{ item, value }">
@@ -38,22 +36,17 @@
         {{ value }}
       </v-chip>
     </template>
-    <template #item.filter_action="{ value }">
+    <template #item.status="{ value }">
       <v-chip
         size="small"
         :color="
           {
-            snooze: 'blue-accent-4',
-            deduplicate: 'orange-darken-2',
-          }[value] || 'green-darken-1'
+            active: 'green-darken-1',
+            inactive: 'gray',
+          }[value] || 'blue-accent-4'
         "
       >
-        {{
-          {
-            snooze: "Snoozed",
-            deduplicate: "Duplicate",
-          }[value] || "Not Filtered"
-        }}
+        {{ value || "Unknown" }}
       </v-chip>
     </template>
     <template #item.created_at="{ value }">
@@ -65,7 +58,9 @@
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
-      <raw-signal-viewer :value="item.raw" />
+      <v-btn icon variant="text" size="small" @click="viewEntity(item)">
+        <v-icon>mdi-eye</v-icon>
+      </v-btn>
     </template>
   </v-data-table-server>
 </template>
@@ -76,17 +71,15 @@ import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
 import CasePopover from "@/case/CasePopover.vue"
-import RawSignalViewer from "@/signal/RawSignalViewer.vue"
-import RouterUtils from "@/router/utils"
 import SignalPopover from "@/signal/SignalPopover.vue"
 import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
+import RouterUtils from "@/router/utils"
 
 export default {
-  name: "TableInstanceSnoozes",
+  name: "TableSignalEntities",
 
   components: {
     CasePopover,
-    RawSignalViewer,
     SignalPopover,
     InstanceEntityPopover,
   },
@@ -94,12 +87,12 @@ export default {
   data() {
     return {
       headers: [
-        { title: "Status", value: "case", sortable: false },
-        { title: "Title", value: "filter_action", sortable: true },
-        { title: "Signal Triggers", value: "signal", sortable: false },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Status", value: "status", sortable: true },
+        { title: "Description", value: "description", sortable: true },
+        { title: "Signal", value: "signal", sortable: false },
         { title: "Entities", value: "entities", sortable: true },
-        { title: "Expiration", value: "signal.filters", sortable: false },
-        { title: "Project", value: "signal.project.display_name", sortable: true },
+        { title: "Project", value: "signal.project", sortable: true },
         { title: "Created At", value: "created_at" },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
@@ -111,16 +104,15 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal", [
-      "instanceTable.loading",
-      "instanceTable.options.descending",
-      "instanceTable.options.filters",
-      "instanceTable.options.filters.signal",
-      "instanceTable.options.itemsPerPage",
-      "instanceTable.options.page",
-      "instanceTable.options.sortBy",
-      "instanceTable.rows.items",
-      "instanceTable.rows.total",
+    ...mapFields("entity", [
+      "signalEntityTable.loading",
+      "signalEntityTable.options.descending",
+      "signalEntityTable.options.filters",
+      "signalEntityTable.options.itemsPerPage",
+      "signalEntityTable.options.page",
+      "signalEntityTable.options.sortBy",
+      "signalEntityTable.rows.items",
+      "signalEntityTable.rows.total",
     ]),
     ...mapFields("auth", ["currentUser.projects"]),
 
@@ -128,7 +120,7 @@ export default {
       get() {
         let d = null
         if (this.projects) {
-          let d = this.projects.filter((v) => v.default === true)
+          d = this.projects.filter((v) => v.default === true)
           return d.map((v) => v.project)
         }
         return d
@@ -137,8 +129,9 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAllInstances"]),
+    ...mapActions("entity", ["getAllEntities"]),
 
+    // todo(amats) - unnecessary functions
     /**
      * Count the snooze filters for a given signal definition. Counts all
      * active snoozes by default, with the option to count expired snoozes instead.
@@ -146,6 +139,8 @@ export default {
      * @param count_expired: If true, count expired snoozes instead of active ones.
      */
     getSnoozes(signal_filters, count_expired = false) {
+      if (!signal_filters) return 0
+
       let snoozes = 0
       for (let filter of signal_filters) {
         if (filter.action === "snooze") {
@@ -159,38 +154,42 @@ export default {
       }
       return snoozes
     },
+
+    /**
+     * View entity details
+     * @param entity: The entity to view
+     */
+    viewEntity(entity) {
+      this.$router.push({ name: "EntityDetail", params: { id: entity.id } })
+    },
   },
 
   created() {
+    // Set up filters with default user projects
     this.filters = {
       ...this.filters,
       ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 
-    this.getAllInstances()
+    // Initial data fetch
+    this.getAllEntities()
 
+    // Watch for page changes
     this.$watch(
       (vm) => [vm.page],
       () => {
-        this.getAllInstances()
+        this.getAllEntities()
       }
     )
 
+    // Watch for filter changes
     this.$watch(
-      (vm) => [
-        // vm.q,
-        vm.sortBy,
-        vm.itemsPerPage,
-        vm.descending,
-        vm.created_at,
-        vm.project,
-        vm.signal,
-      ],
+      (vm) => [vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project],
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)
-        this.getAllInstances()
+        this.getAllEntities()
       }
     )
   },

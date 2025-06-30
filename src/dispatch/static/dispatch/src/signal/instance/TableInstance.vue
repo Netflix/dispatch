@@ -40,7 +40,7 @@
       </v-col>
     </v-row>
     <table-instance-triggers v-if="activeView === 'triggers'" />
-    <table-instance-entities v-if="activeView === 'entities'" />
+    <table-signal-entities v-if="activeView === 'entities'" />
     <table-filter-snoozes v-if="activeView === 'snoozes'" />
   </v-container>
 </template>
@@ -53,7 +53,7 @@ import { formatRelativeDate, formatDate } from "@/filters"
 import RouterUtils from "@/router/utils"
 import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 import TableInstanceTriggers from "@/signal/instance/TableInstanceTriggers.vue"
-import TableInstanceEntities from "@/signal/instance/TableInstanceEntities.vue"
+import TableSignalEntities from "@/entity/TableSignalEntities.vue"
 import TableFilterSnoozes from "@/signal/filter/TableFilterSnoozes.vue"
 
 export default {
@@ -62,7 +62,7 @@ export default {
   components: {
     TableFilterDialog,
     TableInstanceTriggers,
-    TableInstanceEntities,
+    TableSignalEntities,
     TableFilterSnoozes,
   },
 
