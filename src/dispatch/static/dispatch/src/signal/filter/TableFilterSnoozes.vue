@@ -1,0 +1,172 @@
+<template>
+  <v-data-table-server
+    :headers="headers"
+    :items="items"
+    :items-length="total || 0"
+    v-model:page="page"
+    v-model:items-per-page="itemsPerPage"
+    :footer-props="{
+      'items-per-page-options': [10, 25, 50, 100],
+    }"
+    v-model:sort-by="sortBy"
+    v-model:sort-desc="descending"
+    :loading="loading"
+    loading-text="Loading... Please wait"
+  >
+    <template #item.case="{ value }">
+      <case-popover v-if="value" :value="value" />
+    </template>
+    <template #item.signal="{ value }">
+      <signal-popover :value="value" />
+    </template>
+    <template #item.entities="{ value }">
+      <instance-entity-popover :value="value" />
+    </template>
+    <template #item.expiration="{ value }">
+      <span v-if="!value">Never</span>
+      <v-tooltip v-else location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
+        </template>
+        <span>{{ formatDate(value) }}</span>
+      </v-tooltip>
+    </template>
+    <template #item.status="{ item }">
+      <v-chip size="small" :color="isExpired(item.expiration) ? 'gray' : 'blue-accent-4'">
+        {{ isExpired(item.expiration) ? "Expired" : "Active" }}
+      </v-chip>
+    </template>
+    <template #item.signal.project.display_name="{ item, value }">
+      <v-chip size="small" :color="item.signal">
+        {{ value }}
+      </v-chip>
+    </template>
+    <template #item.created_at="{ value }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props }">
+          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
+        </template>
+        <span>{{ formatDate(value) }}</span>
+      </v-tooltip>
+    </template>
+    <template #item.data-table-actions="{ item }">
+      <v-btn icon variant="text" size="small" @click="editFilter(item)">
+        <v-icon>mdi-pencil</v-icon>
+      </v-btn>
+    </template>
+  </v-data-table-server>
+</template>
+
+<script>
+import { mapFields } from "vuex-map-fields"
+import { mapActions } from "vuex"
+import { formatRelativeDate, formatDate } from "@/filters"
+
+import CasePopover from "@/case/CasePopover.vue"
+import SignalPopover from "@/signal/SignalPopover.vue"
+import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
+import RouterUtils from "@/router/utils"
+
+export default {
+  name: "TableFilterSnoozes",
+
+  components: {
+    CasePopover,
+    SignalPopover,
+    InstanceEntityPopover,
+  },
+
+  data() {
+    return {
+      headers: [
+        { title: "Status", value: "status", sortable: false },
+        { title: "Name", value: "name", sortable: true },
+        { title: "Description", value: "description", sortable: true },
+        { title: "Signal", value: "signal", sortable: false },
+        { title: "Expiration", value: "expiration", sortable: true },
+        { title: "Project", value: "signal.project.display_name", sortable: true },
+        { title: "Created At", value: "created_at" },
+        { title: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
+    }
+  },
+
+  setup() {
+    return { formatRelativeDate, formatDate }
+  },
+
+  computed: {
+    ...mapFields("signalFilter", [
+      "snoozeTable.loading",
+      "snoozeTable.options.descending",
+      "snoozeTable.options.filters",
+      "snoozeTable.options.itemsPerPage",
+      "snoozeTable.options.page",
+      "snoozeTable.options.sortBy",
+      "snoozeTable.rows.items",
+      "snoozeTable.rows.total",
+    ]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+    },
+  },
+
+  methods: {
+    ...mapActions("signalFilter", ["getAllSnoozes"]),
+
+    /**
+     * Check if a filter is expired based on its expiration date
+     * @param expiration: The expiration date of the filter
+     */
+    isExpired(expiration) {
+      return expiration && new Date() >= new Date(expiration)
+    },
+
+    /**
+     * Open the edit dialog for a filter
+     * @param filter: The filter to edit
+     */
+    editFilter(filter) {
+      this.createEditShow(filter)
+    },
+  },
+
+  created() {
+    // Set up filters with default user projects and action=snooze
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.$route.query),
+      project: this.defaultUserProjects,
+    }
+
+    // Initial data fetch
+    this.getAllSnoozes()
+    // Watch for page changes
+    this.$watch(
+      (vm) => [vm.page],
+      () => {
+        this.getAllSnoozes()
+      }
+    )
+
+    // Watch for filter changes
+    this.$watch(
+      (vm) => [vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project, vm.action],
+      () => {
+        this.page = 1
+        RouterUtils.updateURLFilters(this.filters)
+        this.getAllSnoozes()
+      }
+    )
+  },
+}
+</script>

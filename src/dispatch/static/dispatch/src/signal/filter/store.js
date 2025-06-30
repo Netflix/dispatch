@@ -1,4 +1,6 @@
 import { getField, updateField } from "vuex-map-fields"
+import { debounce } from "lodash"
+import SearchUtils from "@/search/utils"
 import SignalFilterApi from "@/signal/filter/api"
 
 const getDefaultSelectedState = () => {
@@ -39,6 +41,27 @@ const state = {
     },
     loading: false,
   },
+  snoozeTable: {
+    rows: {
+      items: [],
+      total: null,
+    },
+    options: {
+      filters: {
+        created_at: {
+          start: null,
+          end: null,
+        },
+        signal: [],
+      },
+      q: "",
+      page: 1,
+      itemsPerPage: 25,
+      sortBy: ["created_at"],
+      descending: [true],
+    },
+    loading: false,
+  },
 }
 
 const getters = {
@@ -50,6 +73,18 @@ const getters = {
 }
 
 const actions = {
+  getAllSnoozes: debounce(({ commit, state }) => {
+    commit("SET_SNOOZE_TABLE_LOADING", "primary")
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.snoozeTable.options })
+    return SignalFilterApi.getAll(params)
+      .then((response) => {
+        commit("SET_SNOOZE_TABLE_LOADING", false)
+        commit("SET_SNOOZE_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_SNOOZE_TABLE_LOADING", false)
+      })
+  }, 500),
   save({ commit, state }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
@@ -125,6 +160,12 @@ const mutations = {
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value
+  },
+  SET_SNOOZE_TABLE_LOADING(state, value) {
+    state.snoozeTable.loading = value
+  },
+  SET_SNOOZE_TABLE_ROWS(state, value) {
+    state.snoozeTable.rows = value
   },
 
   RESET_SELECTED(state) {

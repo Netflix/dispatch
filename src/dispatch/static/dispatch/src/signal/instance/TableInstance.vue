@@ -41,7 +41,7 @@
     </v-row>
     <table-instance-triggers v-if="activeView === 'triggers'" />
     <table-instance-entities v-if="activeView === 'entities'" />
-    <table-instance-snoozes v-if="activeView === 'snoozes'" />
+    <table-filter-snoozes v-if="activeView === 'snoozes'" />
   </v-container>
 </template>
 
@@ -54,7 +54,7 @@ import RouterUtils from "@/router/utils"
 import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 import TableInstanceTriggers from "@/signal/instance/TableInstanceTriggers.vue"
 import TableInstanceEntities from "@/signal/instance/TableInstanceEntities.vue"
-import TableInstanceSnoozes from "@/signal/instance/TableInstanceSnoozes.vue"
+import TableFilterSnoozes from "@/signal/filter/TableFilterSnoozes.vue"
 
 export default {
   name: "SignalInstanceTable",
@@ -63,7 +63,7 @@ export default {
     TableFilterDialog,
     TableInstanceTriggers,
     TableInstanceEntities,
-    TableInstanceSnoozes,
+    TableFilterSnoozes,
   },
 
   data() {
