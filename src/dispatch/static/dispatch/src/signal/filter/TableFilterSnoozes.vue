@@ -127,7 +127,6 @@ export default {
   },
 
   created() {
-    // Set up filters with default user projects and action=snooze
     this.filters = {
       ...this.filters,
       ...RouterUtils.deserializeFilters(this.$route.query),

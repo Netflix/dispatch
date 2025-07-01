@@ -87,8 +87,10 @@ const actions = {
   getAllEntities: debounce(({ commit, state }) => {
     commit("SET_SIGNAL_ENTITY_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions({
-      ...state.signalEntityTable.options
-    }, "Entity")
+        ...state.signalEntityTable.options,
+      },
+      "Entity"
+    )
     return EntityApi.getAll(params)
       .then((response) => {
         commit("SET_SIGNAL_ENTITY_TABLE_LOADING", false)

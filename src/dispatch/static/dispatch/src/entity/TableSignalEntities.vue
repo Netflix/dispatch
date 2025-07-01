@@ -22,17 +22,8 @@
     <template #item.entities="{ value }">
       <instance-entity-popover :value="value" />
     </template>
-    <template #item.signal.filters="{ value }">
-      <span v-if="getSnoozes(value) === 0 && getSnoozes(value, true) === 0">
-        No Snoozes Created
-      </span>
-      <span v-else>
-        <v-chip>{{ getSnoozes(value) }} Active</v-chip>
-        <v-chip>{{ getSnoozes(value, true) }} Expired</v-chip>
-      </span>
-    </template>
-    <template #item.signal.project.display_name="{ item, value }">
-      <v-chip size="small" :color="item.signal.project.color">
+    <template #item.project.display_name="{ item, value }">
+      <v-chip size="small" :color="item.project.color">
         {{ value }}
       </v-chip>
     </template>
@@ -78,6 +69,7 @@ import RouterUtils from "@/router/utils"
 export default {
   name: "TableSignalEntities",
 
+  // todo(amats): perhaps not necessary
   components: {
     CasePopover,
     SignalPopover,
@@ -87,13 +79,12 @@ export default {
   data() {
     return {
       headers: [
-        { title: "Name", value: "name", sortable: true },
-        { title: "Status", value: "status", sortable: true },
-        { title: "Description", value: "description", sortable: true },
-        { title: "Signal", value: "signal", sortable: false },
+        { title: "Type", value: "entity_type.name", sortable: true },
+        { title: "Value", value: "value", sortable: true },
+        { title: "Description", value: "entity_type.description", sortable: false },
+        { title: "Signals", value: "signal", sortable: false },
         { title: "Entities", value: "entities", sortable: true },
-        { title: "Project", value: "signal.project", sortable: true },
-        { title: "Created At", value: "created_at" },
+        { title: "Project", value: "project.display_name", sortable: true },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
@@ -131,30 +122,6 @@ export default {
   methods: {
     ...mapActions("entity", ["getAllEntities"]),
 
-    // todo(amats) - unnecessary functions
-    /**
-     * Count the snooze filters for a given signal definition. Counts all
-     * active snoozes by default, with the option to count expired snoozes instead.
-     * @param signal_filters: The definition's filters.
-     * @param count_expired: If true, count expired snoozes instead of active ones.
-     */
-    getSnoozes(signal_filters, count_expired = false) {
-      if (!signal_filters) return 0
-
-      let snoozes = 0
-      for (let filter of signal_filters) {
-        if (filter.action === "snooze") {
-          let filter_is_expired = filter.expiration && new Date() >= new Date(filter.expiration)
-          if (!count_expired && !filter_is_expired) {
-            snoozes++
-          } else if (count_expired && filter_is_expired) {
-            snoozes++
-          }
-        }
-      }
-      return snoozes
-    },
-
     /**
      * View entity details
      * @param entity: The entity to view
@@ -165,7 +132,6 @@ export default {
   },
 
   created() {
-
     this.filters = {
       ...this.filters,
       ...RouterUtils.deserializeFilters(this.$route.query),
