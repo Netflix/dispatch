@@ -36,20 +36,8 @@
         {{ isExpired(item.expiration) ? "Expired" : "Active" }}
       </v-chip>
     </template>
-    <template #item.signal.project.display_name="{ item, value }">
-      <v-chip size="small" :color="item.signal">
-        {{ value }}
-      </v-chip>
-    </template>
-    <template #item.created_at="{ value }">
-      <v-tooltip location="bottom">
-        <template #activator="{ props }">
-          <span v-bind="props">{{ formatRelativeDate(value) }}</span>
-        </template>
-        <span>{{ formatDate(value) }}</span>
-      </v-tooltip>
-    </template>
     <template #item.data-table-actions="{ item }">
+      <!-- todo(amats): doesn't do anything currently. -->
       <v-btn icon variant="text" size="small" @click="editFilter(item)">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
@@ -84,8 +72,6 @@ export default {
         { title: "Description", value: "description", sortable: true },
         { title: "Signal", value: "signal", sortable: false },
         { title: "Expiration", value: "expiration", sortable: true },
-        { title: "Project", value: "signal.project.display_name", sortable: true },
-        { title: "Created At", value: "created_at" },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
@@ -148,9 +134,8 @@ export default {
       project: this.defaultUserProjects,
     }
 
-    // Initial data fetch
     this.getAllSnoozes()
-    // Watch for page changes
+
     this.$watch(
       (vm) => [vm.page],
       () => {
@@ -158,7 +143,6 @@ export default {
       }
     )
 
-    // Watch for filter changes
     this.$watch(
       (vm) => [vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project, vm.action],
       () => {

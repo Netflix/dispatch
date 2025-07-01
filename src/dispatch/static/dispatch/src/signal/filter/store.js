@@ -52,6 +52,7 @@ const state = {
           start: null,
           end: null,
         },
+        // todo(amats): doesn't work yet
         signal: [],
       },
       q: "",
@@ -77,6 +78,10 @@ const actions = {
   getAllSnoozes: debounce(({ commit, state }) => {
     commit("SET_SNOOZE_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions({ ...state.snoozeTable.options })
+    if (!params["filter"]) {
+      // set filter to include only snoozes
+      params["filter"] = {"and":[{"or":[{"model":"SignalFilter","field":"action","op":"==","value":"snooze"}]}]}
+    }
     return SignalFilterApi.getAll(params)
       .then((response) => {
         commit("SET_SNOOZE_TABLE_LOADING", false)
