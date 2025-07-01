@@ -165,17 +165,15 @@ export default {
   },
 
   created() {
-    // Set up filters with default user projects
+
     this.filters = {
       ...this.filters,
       ...RouterUtils.deserializeFilters(this.$route.query),
       project: this.defaultUserProjects,
     }
 
-    // Initial data fetch
     this.getAllEntities()
 
-    // Watch for page changes
     this.$watch(
       (vm) => [vm.page],
       () => {
@@ -183,7 +181,6 @@ export default {
       }
     )
 
-    // Watch for filter changes
     this.$watch(
       (vm) => [vm.sortBy, vm.itemsPerPage, vm.descending, vm.created_at, vm.project],
       () => {

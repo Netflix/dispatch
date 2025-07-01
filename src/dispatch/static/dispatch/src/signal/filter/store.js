@@ -73,7 +73,6 @@ const getters = {
 }
 
 const actions = {
-  // todo(amats): needs to be filtered for snoozes and not deduplications.
   getAllSnoozes: debounce(({ commit, state }) => {
     commit("SET_SNOOZE_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions({ ...state.snoozeTable.options })
