@@ -1,5 +1,5 @@
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
+import { debounce, values } from "lodash"
 import SearchUtils from "@/search/utils"
 import SignalFilterApi from "@/signal/filter/api"
 
@@ -52,8 +52,7 @@ const state = {
           start: null,
           end: null,
         },
-        // todo(amats): doesn't work yet
-        signal: [],
+        action: ["snooze"], // exclude deduplications
       },
       q: "",
       page: 1,
@@ -78,10 +77,6 @@ const actions = {
   getAllSnoozes: debounce(({ commit, state }) => {
     commit("SET_SNOOZE_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions({ ...state.snoozeTable.options })
-    if (!params["filter"]) {
-      // set filter to include only snoozes
-      params["filter"] = {"and":[{"or":[{"model":"SignalFilter","field":"action","op":"==","value":"snooze"}]}]}
-    }
     return SignalFilterApi.getAll(params)
       .then((response) => {
         commit("SET_SNOOZE_TABLE_LOADING", false)
