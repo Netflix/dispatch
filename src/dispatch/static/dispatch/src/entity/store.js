@@ -3,8 +3,6 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import EntityApi from "@/entity/api"
-import SignalApi from "@/signal/api"
-import API from "@/api"
 
 const getDefaultSelectedState = () => {
   return {
