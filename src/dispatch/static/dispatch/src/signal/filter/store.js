@@ -1,6 +1,4 @@
 import { getField, updateField } from "vuex-map-fields"
-import { debounce, values } from "lodash"
-import SearchUtils from "@/search/utils"
 import SignalFilterApi from "@/signal/filter/api"
 
 const getDefaultSelectedState = () => {
@@ -40,7 +38,7 @@ const state = {
       descending: [true],
     },
     loading: false,
-  }
+  },
 }
 
 const getters = {

@@ -65,8 +65,8 @@
       </v-tooltip>
     </template>
     <template #item.data-table-actions="{ item }">
-        <raw-signal-viewer :value="item.raw" />
-      </template>
+      <raw-signal-viewer :value="item.raw" />
+    </template>
   </v-data-table-server>
 </template>
 
