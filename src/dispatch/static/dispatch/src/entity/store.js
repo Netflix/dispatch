@@ -3,6 +3,8 @@ import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import EntityApi from "@/entity/api"
+import SignalApi from "@/signal/api"
+import API from "@/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -86,13 +88,49 @@ const actions = {
   // todo(amats): can probably put back in signal directory store with new api hookups
   getAllEntities: debounce(({ commit, state }) => {
     commit("SET_SIGNAL_ENTITY_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({
+    let params = SearchUtils.createParametersFromTableOptions(
+      {
         ...state.signalEntityTable.options,
       },
       "Entity"
     )
     return EntityApi.getAll(params)
-      .then((response) => {
+      .then(async (response) => {
+        // Fetch signal stats for each entity in parallel
+        const fetchSignalStats = async (entity) => {
+          try {
+            const url = `/signals/stats?entity_type_id=${entity.entity_type.id}&entity_value="${entity.value}"&num_days=1000`
+            return await API.get(url)
+          } catch (error) {
+            console.error(`Error fetching signal stats for entity ${entity.name}:`, error)
+            return null
+          }
+        }
+
+        // Use Promise.all for parallel execution
+        const statsPromises = response.data.items.map(fetchSignalStats)
+        const statsResults = await Promise.all(statsPromises)
+
+        // Append signal stats to each entity item so they can be accessed in the Vue file
+        // todo(amats) can this be added to the async function for performance?
+        statsResults.forEach((result, index) => {
+          if (result) {
+            const entity = response.data.items[index]
+            // Directly attach the stats data to the entity object
+            let instanceStats = {
+              num_signal_instances_alerted: result.data.num_signal_instances_alerted,
+              num_signal_instances_snoozed: result.data.num_signal_instances_snoozed,
+            }
+            let snoozeStats = {
+              num_snoozes_active: result.data.num_snoozes_active,
+              num_snoozes_expired: result.data.num_snoozes_expired,
+            }
+            entity.instanceStats = instanceStats
+            entity.snoozeStats = snoozeStats
+            console.log(entity)
+          }
+        })
+
         commit("SET_SIGNAL_ENTITY_TABLE_LOADING", false)
         commit("SET_SIGNAL_ENTITY_TABLE_ROWS", response.data)
       })

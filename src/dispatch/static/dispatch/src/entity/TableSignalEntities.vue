@@ -45,6 +45,23 @@
         <span>{{ formatDate(value) }}</span>
       </v-tooltip>
     </template>
+    <template #item.instanceStats="{ value }">
+      <span>
+        <v-chip color="red-darken-1" size="small">
+          {{ value.num_signal_instances_alerted }} events
+        </v-chip>
+        <v-chip color="blue-accent-4" size="small">
+          {{ value.num_signal_instances_snoozed }} filtered
+        </v-chip>
+      </span>
+    </template>
+    <!-- todo(amats): duplication issue here -->
+    <template #item.snoozeStats="{ value }">
+      <span>
+        <v-chip size="small">{{ value.num_snoozes_active }} Active</v-chip>
+        <v-chip size="small">{{ value.num_snoozes_expired }} Expired</v-chip>
+      </span>
+    </template>
     <template #item.data-table-actions="{ item }">
       <v-btn icon variant="text" size="small" @click="viewEntity(item)">
         <v-icon>mdi-eye</v-icon>
@@ -79,7 +96,8 @@ export default {
         { title: "Type", value: "entity_type.name", sortable: true },
         { title: "Value", value: "value", sortable: true },
         { title: "Description", value: "entity_type.description", sortable: false },
-        { title: "Signals", value: "signal", sortable: false },
+        { title: "Signal Triggers", value: "instanceStats", sortable: false },
+        { title: "Snooze Filters", value: "snoozeStats", sortable: false },
         { title: "Project", value: "project.display_name", sortable: true },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
