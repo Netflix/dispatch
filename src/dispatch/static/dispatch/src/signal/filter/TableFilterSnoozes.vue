@@ -16,7 +16,11 @@
     <template #item.case="{ value }">
       <case-popover v-if="value" :value="value" />
     </template>
-    <template #item.signals="{ value }"> {{value}} </template>
+    <template #item.signals="{ value }">
+      <signal-popover v-if="value && value.length === 1" :value="value[0]" />
+      <multi-signal-popover v-else-if="value && value.length > 1" :signals="value" />
+      <span v-else>No Signals</span>
+    </template>
     <template #item.entities="{ value }">
       <instance-entity-popover :value="value" />
     </template>
@@ -50,6 +54,7 @@ import { formatRelativeDate, formatDate } from "@/filters"
 
 import CasePopover from "@/case/CasePopover.vue"
 import SignalPopover from "@/signal/SignalPopover.vue"
+import MultiSignalPopover from "@/signal/MultiSignalPopover.vue"
 import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
 import RouterUtils from "@/router/utils"
 
@@ -59,6 +64,7 @@ export default {
   components: {
     CasePopover,
     SignalPopover,
+    MultiSignalPopover,
     InstanceEntityPopover,
   },
 
@@ -68,7 +74,7 @@ export default {
         { title: "Status", value: "status", sortable: false },
         { title: "Name", value: "name", sortable: true },
         { title: "Description", value: "description", sortable: true },
-        { title: "Signals", value: "signals", sortable: false },
+        { title: "Applies to", value: "signals", sortable: false },
         { title: "Expiration", value: "expiration", sortable: true },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

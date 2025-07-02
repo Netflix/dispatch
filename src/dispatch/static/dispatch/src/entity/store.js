@@ -116,7 +116,7 @@ const actions = {
         statsResults.forEach((result, index) => {
           if (result) {
             const entity = response.data.items[index]
-            // Directly attach the stats data to the entity object
+            // separate the stats to avoid duplicate column references when rendering
             let instanceStats = {
               num_signal_instances_alerted: result.data.num_signal_instances_alerted,
               num_signal_instances_snoozed: result.data.num_signal_instances_snoozed,
@@ -127,7 +127,6 @@ const actions = {
             }
             entity.instanceStats = instanceStats
             entity.snoozeStats = snoozeStats
-            console.log(entity)
           }
         })
 
