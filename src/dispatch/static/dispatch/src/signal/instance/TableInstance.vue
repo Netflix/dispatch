@@ -46,11 +46,6 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
-import { formatRelativeDate, formatDate } from "@/filters"
-
-import RouterUtils from "@/router/utils"
 import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 import TableInstanceTriggers from "@/signal/instance/TableInstanceTriggers.vue"
 import TableSignalEntities from "@/entity/TableSignalEntities.vue"
@@ -69,53 +64,12 @@ export default {
   data() {
     return {
       activeView: "triggers",
-      headers: [
-        { title: "Case", value: "case", sortable: false },
-        { title: "Status", value: "filter_action", sortable: true },
-        { title: "Signal Definition", value: "signal", sortable: false },
-        { title: "Entities", value: "entities", sortable: true },
-        { title: "Snoozes", value: "signal.filters", sortable: false },
-        { title: "Project", value: "signal.project.display_name", sortable: true },
-        { title: "Created At", value: "created_at" },
-        { title: "", value: "data-table-actions", sortable: false, align: "end" },
-      ],
     }
   },
 
-  setup() {
-    return { formatRelativeDate, formatDate }
-  },
-
-  computed: {
-    ...mapFields("signal", [
-      "instanceTable.loading",
-      "instanceTable.options.descending",
-      "instanceTable.options.filters",
-      "instanceTable.options.filters.signal",
-      "instanceTable.options.itemsPerPage",
-      "instanceTable.options.page",
-      // "instanceTable.options.q",
-      "instanceTable.options.sortBy",
-      "instanceTable.rows.items",
-      "instanceTable.rows.total",
-    ]),
-    ...mapFields("auth", ["currentUser.projects"]),
-
-    defaultUserProjects: {
-      get() {
-        let d = null
-        if (this.projects) {
-          let d = this.projects.filter((v) => v.default === true)
-          return d.map((v) => v.project)
-        }
-        return d
-      },
-    },
-  },
+  computed: {},
 
   methods: {
-    ...mapActions("signal", ["getAllInstances"]),
-
     /**
      * Set the active view and update the UI accordingly.
      * @param view: The view to set as active ('triggers', 'entities', or 'snoozes').
@@ -123,40 +77,6 @@ export default {
     setActiveView(view) {
       this.activeView = view
     },
-  },
-
-  created() {
-    this.filters = {
-      ...this.filters,
-      ...RouterUtils.deserializeFilters(this.$route.query),
-      project: this.defaultUserProjects,
-    }
-
-    this.getAllInstances()
-
-    this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAllInstances()
-      }
-    )
-
-    this.$watch(
-      (vm) => [
-        // vm.q,
-        vm.sortBy,
-        vm.itemsPerPage,
-        vm.descending,
-        vm.created_at,
-        vm.project,
-        vm.signal,
-      ],
-      () => {
-        this.page = 1
-        RouterUtils.updateURLFilters(this.filters)
-        this.getAllInstances()
-      }
-    )
   },
 }
 </script>
