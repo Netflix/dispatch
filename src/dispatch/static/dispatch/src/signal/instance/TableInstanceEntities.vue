@@ -36,7 +36,6 @@
         </v-chip>
       </span>
     </template>
-    <!-- todo(amats): duplication issue here -->
     <template #item.snoozeStats="{ value }">
       <span>
         <v-chip size="small">{{ value.num_snoozes_active }} Active</v-chip>
