@@ -43,7 +43,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal", ["instanceTable.options.filters.signal"]),
+    ...mapFields("signalInstance", ["instanceTable.options.filters.signal"]),
     numFilters: function () {
       return sum([this.signal.length])
     },

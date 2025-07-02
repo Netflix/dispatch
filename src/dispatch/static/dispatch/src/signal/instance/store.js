@@ -75,15 +75,12 @@ const state = {
 const getters = {
   getField,
   instanceTableOptions(state) {
-    // format our filters
     return state.instanceTable.options
   },
   entityTableOptions(state) {
-    // format our filters
     return state.entityTable.options
   },
   snoozeTableOptions(state) {
-    // format our filters
     return state.snoozeTable.options
   },
 }
