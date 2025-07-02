@@ -303,9 +303,9 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
 
         return summary
     except json.JSONDecodeError as e:
-        message = "Unable to generate GenAI signal analysis. Error decoding response from the artificial-intelligence plugin."
+        message = f"Unable to decode JSON response from the artificial-intelligence plugin, returning raw response, with error {e}."
         log.warning(message)
-        raise GenAIException(message) from e
+        return {"Summary": response}
 
 
 def generate_incident_summary(incident: Incident, db_session: Session) -> str:
