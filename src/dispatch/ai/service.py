@@ -305,7 +305,7 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
     except json.JSONDecodeError as e:
         message = f"Unable to decoding JSON response from the artificial-intelligence plugin, returning raw response, with error {e}."
         log.warning(message)
-        return response
+        return {"Summary": response}
 
 
 def generate_incident_summary(incident: Incident, db_session: Session) -> str:
