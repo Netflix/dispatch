@@ -74,15 +74,15 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal", [
-      "signalEntityTable.loading",
-      "signalEntityTable.options.descending",
-      "signalEntityTable.options.filters",
-      "signalEntityTable.options.itemsPerPage",
-      "signalEntityTable.options.page",
-      "signalEntityTable.options.sortBy",
-      "signalEntityTable.rows.items",
-      "signalEntityTable.rows.total",
+    ...mapFields("signalInstance", [
+      "entityTable.loading",
+      "entityTable.options.descending",
+      "entityTable.options.filters",
+      "entityTable.options.itemsPerPage",
+      "entityTable.options.page",
+      "entityTable.options.sortBy",
+      "entityTable.rows.items",
+      "entityTable.rows.total",
     ]),
     ...mapFields("auth", ["currentUser.projects"]),
 
@@ -99,7 +99,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAllEntities"]),
+    ...mapActions("signalInstance", ["getAllEntities"]),
   },
 
   created() {

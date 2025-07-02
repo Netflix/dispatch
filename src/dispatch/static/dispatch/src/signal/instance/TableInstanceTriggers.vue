@@ -111,7 +111,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal", [
+    ...mapFields("signalInstance", [
       "instanceTable.loading",
       "instanceTable.options.descending",
       "instanceTable.options.filters",
@@ -138,7 +138,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAllInstances"]),
+    ...mapActions("signalInstance", ["getAllInstances"]),
 
     /**
      * Count the snooze filters for a given signal definition. Counts all

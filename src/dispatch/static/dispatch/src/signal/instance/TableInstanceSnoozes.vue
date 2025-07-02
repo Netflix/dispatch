@@ -69,7 +69,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal", [
+    ...mapFields("signalInstance", [
       "snoozeTable.loading",
       "snoozeTable.options.descending",
       "snoozeTable.options.filters",
@@ -94,7 +94,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAllSnoozes"]),
+    ...mapActions("signalInstance", ["getAllSnoozes"]),
 
     /**
      * Check if a filter is expired based on its expiration date

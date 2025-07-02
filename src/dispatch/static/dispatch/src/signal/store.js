@@ -143,10 +143,6 @@ const state = {
 
 const getters = {
   getField,
-  tableOptions({ state }) {
-    // format our filters
-    return state.table.options
-  },
 }
 
 const actions = {
