@@ -13,16 +13,10 @@
     :loading="loading"
     loading-text="Loading... Please wait"
   >
-    <template #item.case="{ value }">
-      <case-popover v-if="value" :value="value" />
-    </template>
     <template #item.signals="{ value }">
       <signal-popover v-if="value && value.length === 1" :value="value[0]" />
       <multi-signal-popover v-else-if="value && value.length > 1" :signals="value" />
       <span v-else>No Signals</span>
-    </template>
-    <template #item.entities="{ value }">
-      <instance-entity-popover :value="value" />
     </template>
     <template #item.expiration="{ value }">
       <span v-if="!value">Never</span>
@@ -38,12 +32,6 @@
         {{ isExpired(item.expiration) ? "Expired" : "Active" }}
       </v-chip>
     </template>
-    <template #item.data-table-actions="{ item }">
-      <!-- todo(amats): doesn't do anything currently. -->
-      <v-btn icon variant="text" size="small" @click="editFilter(item)">
-        <v-icon>mdi-pencil</v-icon>
-      </v-btn>
-    </template>
   </v-data-table-server>
 </template>
 
@@ -52,20 +40,16 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
-import CasePopover from "@/case/CasePopover.vue"
 import SignalPopover from "@/signal/SignalPopover.vue"
 import MultiSignalPopover from "@/signal/MultiSignalPopover.vue"
-import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
 import RouterUtils from "@/router/utils"
 
 export default {
   name: "TableFilterSnoozes",
 
   components: {
-    CasePopover,
     SignalPopover,
     MultiSignalPopover,
-    InstanceEntityPopover,
   },
 
   data() {
@@ -76,7 +60,6 @@ export default {
         { title: "Description", value: "description", sortable: true },
         { title: "Applies to", value: "signals", sortable: false },
         { title: "Expiration", value: "expiration", sortable: true },
-        { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
@@ -119,14 +102,6 @@ export default {
      */
     isExpired(expiration) {
       return expiration && new Date() >= new Date(expiration)
-    },
-
-    /**
-     * Open the edit dialog for a filter
-     * @param filter: The filter to edit
-     */
-    editFilter(filter) {
-      this.createEditShow(filter)
     },
   },
 

@@ -13,28 +13,9 @@
     :loading="loading"
     loading-text="Loading... Please wait"
   >
-    <template #item.case="{ value }">
-      <case-popover v-if="value" :value="value" />
-    </template>
-    <template #item.signal="{ value }">
-      <signal-popover :value="value" />
-    </template>
     <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
         {{ value }}
-      </v-chip>
-    </template>
-    <template #item.status="{ value }">
-      <v-chip
-        size="small"
-        :color="
-          {
-            active: 'green-darken-1',
-            inactive: 'gray',
-          }[value] || 'blue-accent-4'
-        "
-      >
-        {{ value || "Unknown" }}
       </v-chip>
     </template>
     <template #item.created_at="{ value }">
@@ -62,11 +43,6 @@
         <v-chip size="small">{{ value.num_snoozes_expired }} Expired</v-chip>
       </span>
     </template>
-    <template #item.data-table-actions="{ item }">
-      <v-btn icon variant="text" size="small" @click="viewEntity(item)">
-        <v-icon>mdi-eye</v-icon>
-      </v-btn>
-    </template>
   </v-data-table-server>
 </template>
 
@@ -75,20 +51,10 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { formatRelativeDate, formatDate } from "@/filters"
 
-import CasePopover from "@/case/CasePopover.vue"
-import SignalPopover from "@/signal/SignalPopover.vue"
-import InstanceEntityPopover from "@/signal/InstanceEntityPopover.vue"
 import RouterUtils from "@/router/utils"
 
 export default {
   name: "TableSignalEntities",
-
-  // todo(amats): perhaps not necessary
-  components: {
-    CasePopover,
-    SignalPopover,
-    InstanceEntityPopover,
-  },
 
   data() {
     return {
@@ -99,7 +65,6 @@ export default {
         { title: "Signal Triggers", value: "instanceStats", sortable: false },
         { title: "Snooze Filters", value: "snoozeStats", sortable: false },
         { title: "Project", value: "project.display_name", sortable: true },
-        { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
@@ -135,14 +100,6 @@ export default {
 
   methods: {
     ...mapActions("entity", ["getAllEntities"]),
-
-    /**
-     * View entity details
-     * @param entity: The entity to view
-     */
-    viewEntity(entity) {
-      this.$router.push({ name: "EntityDetail", params: { id: entity.id } })
-    },
   },
 
   created() {
