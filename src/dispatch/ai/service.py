@@ -104,7 +104,7 @@ def truncate_prompt(
 
 def clean_json_markdown(json_string: str) -> str:
     """
-    Clean a JSON string by removing markdown formatting and newlines.
+    Clean a JSON string by removing markdown formatting.
 
     Args:
         json_string (str): The input JSON string to be cleaned.
@@ -112,16 +112,13 @@ def clean_json_markdown(json_string: str) -> str:
     Returns:
         str: The cleaned JSON string.
     """
-    # Remove markdown code block markers
+    # Remove markdown code block markers and optional word/language specifier
     cleaned = re.sub(
-        r"\A```[\s]*json[\s]*|[\s]*```\Z",
+        r"\A\s*```[\s\w]*\n?|\n?```[\s]*\Z",
         "",
         json_string.strip(),
-        flags=re.IGNORECASE | re.MULTILINE,
+        flags=re.IGNORECASE,
     )
-    # Replace escaped newlines with actual newlines, then clean whitespace
-    cleaned = cleaned.replace("\\n", "\n")
-    cleaned = " ".join(cleaned.split())
     return cleaned
 
 
