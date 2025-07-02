@@ -295,10 +295,10 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
 
     try:
         cleaned = re.sub(
-            r"^```[\s]*json[\s]*|[\s]*```$",
+            r"\A```[\s]*json[\s]*|[\s]*```\Z",
             "",
             response.strip(),
-            flags=re.IGNORECASE | re.MULTILINE,
+            flags=re.IGNORECASE,
         )
         summary = json.loads(cleaned)
 
