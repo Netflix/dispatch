@@ -1,14 +1,15 @@
 from fastapi import APIRouter, HTTPException, status
 
-from dispatch.database.core import DbSession, get_class_by_tablename
+from dispatch.ai import service as ai_service
+from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
-from dispatch.tag.recommender import get_recommendations
 
 from .models import (
     TagCreate,
     TagPagination,
     TagRead,
+    TagRecommendationResponse,
     TagUpdate,
 )
 from .service import create, delete, get, update
@@ -64,21 +65,21 @@ def delete_tag(db_session: DbSession, tag_id: PrimaryKey):
     delete(db_session=db_session, tag_id=tag_id)
 
 
-@router.get("/recommendations/{model_name}/{id}", response_model=TagPagination)
-def get_tag_recommendations(db_session: DbSession, model_name: str, id: int):
+@router.get(
+    "/recommendations/{project_id}/case/{case_id}", response_model=TagRecommendationResponse
+)
+def get_tag_recommendations_case(db_session: DbSession, project_id: int, case_id: int):
     """Retrieves a tag recommendation based on the model and model id."""
-    model_object = get_class_by_tablename(model_name)
-    model = db_session.query(model_object).filter(model_object.id == id).one_or_none()
-    project_slug = model.project.slug
-    organization_slug = model.project.organization.slug
-
-    if not model:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": f"No model with id {id} and name {model_name} found."}],
-        )
-
-    tags = get_recommendations(
-        db_session, [t.id for t in model.tags], organization_slug, project_slug, model_name
+    return ai_service.get_tag_recommendations(
+        db_session=db_session, project_id=project_id, case_id=case_id
     )
-    return {"items": tags, "total": len(tags)}
+
+
+@router.get(
+    "/recommendations/{project_id}/incident/{incident_id}", response_model=TagRecommendationResponse
+)
+def get_tag_recommendations_incident(db_session: DbSession, project_id: int, incident_id: int):
+    """Retrieves a tag recommendation based on the model and model id."""
+    return ai_service.get_tag_recommendations(
+        db_session=db_session, project_id=project_id, incident_id=incident_id
+    )

@@ -27,9 +27,31 @@
         <v-select
           v-model="resolution_reason"
           label="Resolution Reason"
-          :items="resolutionReasons"
+          :items="$store.state.case_management.resolutionReasons"
           hint="The general reason why a given case was resolved."
-        />
+          :menu-props="{ contentClass: 'resolution-menu' }"
+        >
+          <template #item="{ item, props }">
+            <v-list-item v-bind="props">
+              <template #title>
+                <div class="d-flex align-center justify-space-between">
+                  {{ item.title }}
+                  <v-tooltip location="right">
+                    <template #activator="{ props: tooltipProps }">
+                      <v-icon
+                        v-bind="tooltipProps"
+                        icon="mdi-information"
+                        size="small"
+                        class="ml-2"
+                      />
+                    </template>
+                    <span>{{ $store.state.case_management.resolutionTooltips[item.title] }}</span>
+                  </v-tooltip>
+                </div>
+              </template>
+            </v-list-item>
+          </template>
+        </v-select>
       </v-col>
       <v-col cols="12">
         <v-textarea
@@ -130,8 +152,15 @@
       <v-col cols="12">
         <v-row>
           <v-col cols="6">
+            <date-time-picker-menu label="Stable At" v-model="stable_at" />
+          </v-col>
+          <v-col cols="6">
             <date-time-picker-menu label="Escalated At" v-model="escalated_at" />
           </v-col>
+        </v-row>
+      </v-col>
+      <v-col cols="12">
+        <v-row>
           <v-col cols="6">
             <date-time-picker-menu label="Closed At" v-model="closed_at" />
           </v-col>
@@ -145,6 +174,8 @@
           :model-id="id"
           :project="project"
           show-copy
+          :showGenAISuggestions="true"
+          modelType="case"
         />
       </v-col>
       <v-col cols="12">
@@ -199,11 +230,11 @@ export default {
       statuses: [
         { title: "New", value: "New" },
         { title: "Triage", value: "Triage" },
+        { title: "Stable", value: "Stable" },
         { title: "Escalated", value: "Escalated" },
         { title: "Closed", value: "Closed" },
       ],
       visibilities: ["Open", "Restricted"],
-      resolutionReasons: ["False Positive", "User Acknowledged", "Mitigated", "Escalated"],
       only_one: (value) => {
         if (value && value.length > 1) {
           return "Only one is allowed"
@@ -233,6 +264,7 @@ export default {
       "selected.resolution_reason",
       "selected.resolution",
       "selected.signals",
+      "selected.stable_at",
       "selected.status",
       "selected.tags",
       "selected.title",
@@ -250,5 +282,33 @@ export default {
 .v-list-item--disabled {
   opacity: 0.6;
   pointer-events: none;
+}
+
+.resolution-item {
+  margin-left: 12px;
+  margin-bottom: 4px;
+  padding: 8px 0;
+}
+
+.resolution-menu {
+  max-width: 300px;
+}
+
+:deep(.v-list-item) {
+  padding: 8px 16px;
+}
+
+:deep(.v-select__content) {
+  max-width: 300px;
+}
+
+/* Lighten tooltip info icons */
+:deep(.v-tooltip .v-icon) {
+  color: #cccccc !important;
+}
+
+/* Alternative approach - target the icon directly */
+:deep(.mdi-information) {
+  color: #b0b0b0 !important;
 }
 </style>

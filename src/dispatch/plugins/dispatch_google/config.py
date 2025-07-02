@@ -38,3 +38,8 @@ class GoogleConfiguration(BaseConfigurationModel):
         title="Google Workspace Domain",
         description="Base domain for which this Google Cloud Platform (GCP) service account resides.",
     )
+    default_duration_minutes: int = Field(
+        default=1440,  # 1 day
+        title="Default Event Duration (Minutes)",
+        description="Default duration in minutes for conference events. Defaults to 1440 minutes (1 day).",
+    )

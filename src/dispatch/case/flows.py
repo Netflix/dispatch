@@ -42,7 +42,7 @@ from .messaging import (
     send_case_rating_feedback_message,
     send_case_update_notifications,
     send_event_paging_message,
-    send_event_update_prompt_reminder
+    send_event_update_prompt_reminder,
 )
 from .models import Case
 from .service import get
@@ -210,7 +210,7 @@ def case_auto_close_flow(case: Case, db_session: Session):
     "Runs the case auto close flow."
     # we mark the case as closed
     case.resolution = "Auto closed via case type auto close configuration."
-    case.resolution_reason = CaseResolutionReason.user_acknowledge
+    case.resolution_reason = CaseResolutionReason.user_acknowledged
     case.status = CaseStatus.closed
     db_session.add(case)
     db_session.commit()
@@ -318,6 +318,24 @@ def case_new_create_flow(
         # we transition the case to the closed state if its case type has auto close enabled
         case_auto_close_flow(case=case, db_session=db_session)
 
+    if case.assignee and case.assignee.individual:
+        group_flows.update_group(
+            subject=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.assignee.individual.email,
+            db_session=db_session,
+        )
+
+    if case.reporter and case.reporter.individual:
+        group_flows.update_group(
+            subject=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.reporter.individual.email,
+            db_session=db_session,
+        )
+
     return case
 
 
@@ -337,10 +355,8 @@ def case_triage_create_flow(*, case_id: int, organization_slug: OrganizationSlug
 
 
 @background_task
-def case_escalated_create_flow(
-    *, case_id: int, organization_slug: OrganizationSlug, db_session=None
-):
-    """Runs the case escalated creation flow."""
+def case_stable_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
+    """Runs the case stable create flow."""
     # we run the case new creation flow
     case_new_create_flow(
         case_id=case_id, organization_slug=organization_slug, db_session=db_session
@@ -352,9 +368,32 @@ def case_escalated_create_flow(
     # we transition the case to the triage state
     case_triage_status_flow(case=case, db_session=db_session)
 
-    # we transition the case to the escalated state
+    case_stable_status_flow(case=case, db_session=db_session)
+
+
+@background_task
+def case_escalated_create_flow(
+    *, case_id: int, organization_slug: OrganizationSlug, db_session=None
+):
+    """Runs the case escalated create flow."""
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
+
+    # then to the stable state
+    case_stable_status_flow(case=case, db_session=db_session)
+
     case_escalated_status_flow(
-        case=case, organization_slug=organization_slug, db_session=db_session
+        case=case,
+        organization_slug=organization_slug,
+        db_session=db_session,
     )
 
 
@@ -516,11 +555,18 @@ def case_escalated_status_flow(
     incident_type: IncidentType | None,
     incident_description: str | None,
 ):
-    """Runs the case escalated transition flow."""
-    # we set the escalated_at time
+    """Runs the case escalated status flow."""
+    # we set the escalated at time
     case.escalated_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Case escalated",
+        case_id=case.id,
+    )
 
     case_to_incident_escalate_flow(
         case=case,
@@ -530,6 +576,21 @@ def case_escalated_status_flow(
         incident_priority=incident_priority,
         incident_type=incident_type,
         incident_description=incident_description,
+    )
+
+
+def case_stable_status_flow(case: Case, db_session=None):
+    """Runs the case stable status flow."""
+    # we set the stable at time
+    case.stable_at = datetime.utcnow()
+    db_session.add(case)
+    db_session.commit()
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Case marked as stable",
+        case_id=case.id,
     )
 
 
@@ -723,6 +784,46 @@ def case_status_transition_flow_dispatcher(
                 db_session=db_session,
             )
 
+        case (CaseStatus.escalated, CaseStatus.stable):
+            # Escalated -> Stable
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.triage, CaseStatus.stable):
+            # Triage -> Stable
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.new, CaseStatus.stable):
+            # New -> Stable
+            case_triage_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.stable, CaseStatus.closed):
+            # Stable -> Closed
+            case_closed_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
+        case (CaseStatus.closed, CaseStatus.stable):
+            # Closed -> Stable
+            case_active_status_flow(case, db_session)
+            case_stable_status_flow(
+                case=case,
+                db_session=db_session,
+            )
+
         case (_, _):
             pass
 
@@ -768,6 +869,43 @@ def map_case_roles_to_incident_roles(
     return list(incident_roles) or None
 
 
+def copy_case_events_to_incident(
+    case: Case,
+    incident: Incident,
+    db_session: Session,
+):
+    """Copies all timeline events from a case to an incident."""
+    # Get all events from the case
+    case_events = event_service.get_by_case_id(db_session=db_session, case_id=case.id).all()
+
+    if not case_events:
+        log.info(f"No events to copy from case {case.id} to incident {incident.id}")
+        return
+
+    log.info(f"Copying {len(case_events)} events from case {case.id} to incident {incident.id}")
+
+    for case_event in case_events:
+        # Create a new event for the incident with the same data
+        copied_source = f"{case_event.source} (copied from {case.name})"
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=copied_source,
+            description=case_event.description,
+            incident_id=incident.id,
+            individual_id=case_event.individual_id,
+            started_at=case_event.started_at,
+            ended_at=case_event.ended_at,
+            details=case_event.details,
+            type=case_event.type,
+            owner=case_event.owner,
+            pinned=case_event.pinned,
+        )
+
+    log.info(
+        f"Successfully copied {len(case_events)} events from case {case.id} to incident {incident.id}"
+    )
+
+
 def common_escalate_flow(
     case: Case,
     incident: Incident,
@@ -792,6 +930,9 @@ def common_escalate_flow(
     case.incidents.append(incident)
     db_session.add(case)
     db_session.commit()
+
+    # Copy timeline events from case to incident
+    copy_case_events_to_incident(case=case, incident=incident, db_session=db_session)
 
     event_service.log_case_event(
         db_session=db_session,
@@ -862,7 +1003,10 @@ def common_escalate_flow(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
+            description=(
+                f"The members of the incident's tactical group {incident.tactical_group.email} "
+                f"have been given permission to access the case's storage folder"
+            ),
             case_id=case.id,
         )
 
