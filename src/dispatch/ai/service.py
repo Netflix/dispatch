@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 import tiktoken
 from sqlalchemy.orm import aliased, Session
@@ -293,7 +294,13 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
     response = genai_plugin.instance.chat_completion(prompt=prompt)
 
     try:
-        summary = json.loads(response.replace("```json", "").replace("```", "").strip())
+        cleaned = re.sub(
+            r"^```[\s]*json[\s]*|[\s]*```$",
+            "",
+            response.strip(),
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
+        summary = json.loads(cleaned)
 
         # we check if the summary is empty
         if not summary:
@@ -545,11 +552,12 @@ def get_tag_recommendations(
 
         # Clean the JSON string by removing markdown formatting and newlines
         # Remove markdown code block markers
-        cleaned_result = result.strip()
-        if cleaned_result.startswith("```json"):
-            cleaned_result = cleaned_result[7:]  # Remove ```json
-        if cleaned_result.endswith("```"):
-            cleaned_result = cleaned_result[:-3]  # Remove ```
+        cleaned_result = re.sub(
+            r"^```[\s]*json[\s]*|[\s]*```$",
+            "",
+            result.strip(),
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
 
         # Replace escaped newlines with actual newlines, then clean whitespace
         cleaned_result = cleaned_result.replace("\\n", "\n")
