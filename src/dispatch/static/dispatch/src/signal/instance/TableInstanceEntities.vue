@@ -54,7 +54,7 @@ import { formatRelativeDate, formatDate } from "@/filters"
 import RouterUtils from "@/router/utils"
 
 export default {
-  name: "TableSignalEntities",
+  name: "TableInstanceEntities",
 
   data() {
     return {
@@ -74,7 +74,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("entity", [
+    ...mapFields("signal", [
       "signalEntityTable.loading",
       "signalEntityTable.options.descending",
       "signalEntityTable.options.filters",
@@ -99,7 +99,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("entity", ["getAllEntities"]),
+    ...mapActions("signal", ["getAllEntities"]),
   },
 
   created() {

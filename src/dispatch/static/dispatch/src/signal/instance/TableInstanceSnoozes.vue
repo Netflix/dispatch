@@ -45,7 +45,7 @@ import MultiSignalPopover from "@/signal/MultiSignalPopover.vue"
 import RouterUtils from "@/router/utils"
 
 export default {
-  name: "TableFilterSnoozes",
+  name: "TableInstanceSnoozes",
 
   components: {
     SignalPopover,
@@ -69,7 +69,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("signalFilter", [
+    ...mapFields("signal", [
       "snoozeTable.loading",
       "snoozeTable.options.descending",
       "snoozeTable.options.filters",
@@ -94,7 +94,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signalFilter", ["getAllSnoozes"]),
+    ...mapActions("signal", ["getAllSnoozes"]),
 
     /**
      * Check if a filter is expired based on its expiration date
