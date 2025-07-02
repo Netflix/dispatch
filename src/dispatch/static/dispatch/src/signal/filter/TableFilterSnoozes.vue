@@ -16,9 +16,7 @@
     <template #item.case="{ value }">
       <case-popover v-if="value" :value="value" />
     </template>
-    <template #item.signal="{ value }">
-      <signal-popover :value="value" />
-    </template>
+    <template #item.signals="{ value }"> {{value}} </template>
     <template #item.entities="{ value }">
       <instance-entity-popover :value="value" />
     </template>
@@ -70,7 +68,7 @@ export default {
         { title: "Status", value: "status", sortable: false },
         { title: "Name", value: "name", sortable: true },
         { title: "Description", value: "description", sortable: true },
-        { title: "Signal", value: "signal", sortable: false },
+        { title: "Signals", value: "signals", sortable: false },
         { title: "Expiration", value: "expiration", sortable: true },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

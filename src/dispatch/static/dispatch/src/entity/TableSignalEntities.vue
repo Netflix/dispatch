@@ -19,9 +19,6 @@
     <template #item.signal="{ value }">
       <signal-popover :value="value" />
     </template>
-    <template #item.entities="{ value }">
-      <instance-entity-popover :value="value" />
-    </template>
     <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">
         {{ value }}
@@ -83,7 +80,6 @@ export default {
         { title: "Value", value: "value", sortable: true },
         { title: "Description", value: "entity_type.description", sortable: false },
         { title: "Signals", value: "signal", sortable: false },
-        { title: "Entities", value: "entities", sortable: true },
         { title: "Project", value: "project.display_name", sortable: true },
         { title: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
