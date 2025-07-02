@@ -5,8 +5,6 @@ import SearchUtils from "@/search/utils"
 import SignalApi from "@/signal/api"
 import SignalFilterApi from "@/signal/filter/api"
 import EntityApi from "@/entity/api"
-// todo(amats): not like this
-import API from "@/api"
 
 const state = {
   instanceTable: {
@@ -128,23 +126,18 @@ const actions = {
     )
     return EntityApi.getAll(params)
       .then(async (response) => {
-        // Fetch signal stats for each entity in parallel
         const fetchSignalStats = async (entity) => {
           try {
-            const url = `/signals/stats?entity_type_id=${entity.entity_type.id}&entity_value="${entity.value}"&num_days=1000`
-            return await API.get(url)
+            return await SignalApi.getStats(entity.entity_type.id, entity.value)
           } catch (error) {
             console.error(`Error fetching signal stats for entity ${entity.name}:`, error)
             return null
           }
         }
 
-        // Use Promise.all for parallel execution
         const statsPromises = response.data.items.map(fetchSignalStats)
         const statsResults = await Promise.all(statsPromises)
 
-        // Append signal stats to each entity item so they can be accessed in the Vue file
-        // todo(amats) can this be added to the async function for performance?
         statsResults.forEach((result, index) => {
           if (result) {
             const entity = response.data.items[index]
