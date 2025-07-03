@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 import tiktoken
 from sqlalchemy.orm import aliased, Session
@@ -99,6 +100,26 @@ def truncate_prompt(
     truncated_prompt = encoding.decode(truncated_tokenized_prompt)
     log.warning(f"GenAI prompt truncated to fit within {model_token_limit} tokens.")
     return truncated_prompt
+
+
+def clean_json_markdown(json_string: str) -> str:
+    """
+    Clean a JSON string by removing markdown formatting.
+
+    Args:
+        json_string (str): The input JSON string to be cleaned.
+
+    Returns:
+        str: The cleaned JSON string.
+    """
+    # Remove markdown code block markers and optional word/language specifier
+    cleaned = re.sub(
+        r"\A\s*```[\s\w]*\n?|\n?```[\s]*\Z",
+        "",
+        json_string.strip(),
+        flags=re.IGNORECASE,
+    )
+    return cleaned
 
 
 def generate_case_signal_historical_context(case: Case, db_session: Session) -> str:
@@ -293,7 +314,7 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
     response = genai_plugin.instance.chat_completion(prompt=prompt)
 
     try:
-        summary = json.loads(response.replace("```json", "").replace("```", "").strip())
+        summary = json.loads(clean_json_markdown(response))
 
         # we check if the summary is empty
         if not summary:
@@ -543,19 +564,7 @@ def get_tag_recommendations(
     try:
         result = genai_plugin.instance.chat_completion(prompt=prompt)
 
-        # Clean the JSON string by removing markdown formatting and newlines
-        # Remove markdown code block markers
-        cleaned_result = result.strip()
-        if cleaned_result.startswith("```json"):
-            cleaned_result = cleaned_result[7:]  # Remove ```json
-        if cleaned_result.endswith("```"):
-            cleaned_result = cleaned_result[:-3]  # Remove ```
-
-        # Replace escaped newlines with actual newlines, then clean whitespace
-        cleaned_result = cleaned_result.replace("\\n", "\n")
-        cleaned_result = " ".join(cleaned_result.split())
-
-        return TagRecommendationResponse.model_validate_json(cleaned_result)
+        return TagRecommendationResponse.model_validate_json(clean_json_markdown(result))
     except Exception as e:
         log.exception(f"Error generating tag recommendations: {e}")
         message = "AI tag suggestions encountered an error. Please try again later."
