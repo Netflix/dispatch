@@ -44,4 +44,16 @@ export default {
   getInstance(signalId, instanceId) {
     return API.get(`${resource}/${signalId}/${instanceId}`)
   },
+
+  getStats(entity_type_id, entity_value, num_days = null) {
+    let days_filter
+    if (num_days != null) {
+      days_filter = `&num_days=${num_days}`
+    } else {
+      days_filter = ""
+    }
+    return API.get(
+      `${resource}/stats?entity_type_id=${entity_type_id}&entity_value="${entity_value}"${days_filter}`
+    )
+  },
 }

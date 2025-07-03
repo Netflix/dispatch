@@ -309,6 +309,7 @@ class SignalFilterCreate(SignalFilterBase):
 
 class SignalFilterRead(SignalFilterBase):
     id: PrimaryKey
+    signals: list["SignalBase"] | None = []
 
 
 class SignalFilterPagination(Pagination):
@@ -411,3 +412,6 @@ class SignalInstanceRead(SignalInstanceBase):
 
 class SignalInstancePagination(Pagination):
     items: list[SignalInstanceRead]
+
+# Update forward references
+SignalFilterRead.model_rebuild()
