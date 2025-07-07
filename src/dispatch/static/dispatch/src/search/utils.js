@@ -12,6 +12,92 @@ const toPascalCase = (str) =>
     .replace(new RegExp(/\w/), (s) => s.toUpperCase())
 
 export default {
+  createFastAPIFilterParameters(options, model) {
+    let [sortBy, descending] = this.createSortExpression(options.sortBy, options.descending)
+    let params = this.createFastAPIFilterParams(options.filters)
+    
+    // Remove filters from options to avoid duplication
+    let cleanOptions = { ...options }
+    delete cleanOptions.filters
+    delete cleanOptions.sortBy
+    delete cleanOptions.descending
+    
+    // Add sorting parameters
+    if (sortBy && sortBy.length > 0) {
+      params.order_by = descending[0] ? `-${sortBy[0]}` : sortBy[0]
+    }
+    
+    return {
+      ...cleanOptions,
+      ...params
+    }
+  },
+  
+  createFastAPIFilterParams(filters) {
+    let params = {}
+    
+    forEach(filters, function (value, key) {
+      // Handle date ranges
+      if (has(value, "start") && value.start) {
+        params[`${key}__gte`] = value.start
+        if (value.end) {
+          params[`${key}__lte`] = value.end
+        }
+      } 
+      // Handle arrays of objects (like case types, priorities, etc.)
+      else if (Array.isArray(value) && value.length > 0) {
+        // Filter out null/undefined values
+        let validValues = value.filter(v => v !== null && v !== undefined)
+        
+        if (validValues.length > 0) {
+          if (key === "assignee" || key === "participant") {
+            // Handle participant/assignee specially - map to email
+            let emails = validValues.map(v => v.email || (v.individual && v.individual.email)).filter(Boolean)
+            if (emails.length > 0) {
+              params[`${key === "assignee" ? "assignee_email" : "reporter_email"}__in`] = emails
+            }
+          } else if (key === "case_type" || key === "case_priority" || key === "case_severity") {
+            // Map object arrays to ID arrays
+            let ids = validValues.map(v => v.id).filter(Boolean)
+            if (ids.length > 0) {
+              params[`${key}_id__in`] = ids
+            }
+          } else if (key === "project") {
+            // Map project objects to ID arrays
+            let ids = validValues.map(v => v.id).filter(Boolean)
+            if (ids.length > 0) {
+              params["project_id__in"] = ids
+            }
+          } else if (key === "tag") {
+            // Map tag objects to ID arrays
+            let ids = validValues.map(v => v.id).filter(Boolean)
+            if (ids.length > 0) {
+              params["tag_id__in"] = ids
+            }
+          } else if (key === "tag_type") {
+            // Map tag type objects to ID arrays
+            let ids = validValues.map(v => v.id).filter(Boolean)
+            if (ids.length > 0) {
+              params["tag_type_id__in"] = ids
+            }
+          } else if (key === "status") {
+            // Status is already an array of strings
+            params["status__in"] = validValues
+          } else {
+            // Default case - assume it's an array of values
+            params[`${key}__in`] = validValues
+          }
+        }
+      }
+      // Handle single values
+      else if (value !== null && value !== undefined && !Array.isArray(value) && !has(value, "start")) {
+        params[key] = value
+      }
+    })
+    
+    return params
+  },
+  
   mapQueryParamsToTableOptions(options, queryParams) {
     forEach(queryParams, function (values, key) {
       if (Array.isArray(values)) {

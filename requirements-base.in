@@ -15,6 +15,8 @@ duo-client
 email-validator
 emails
 fastapi==0.115.12
+fastapi-filter
+advanced-alchemy
 google-api-python-client
 google-auth-oauthlib
 h11
@@ -54,7 +56,7 @@ slowapi
 spacy==3.8.5
 sqlalchemy-filters
 sqlalchemy-utils
-sqlalchemy==2.0.8
+sqlalchemy
 statsmodels
 tabulate
 tenacity
