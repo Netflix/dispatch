@@ -1,6 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
 
 from dispatch.ai.service import generate_read_in_summary, READ_IN_SUMMARY_CACHE_DURATION
 from dispatch.ai.models import ReadInSummary, ReadInSummaryResponse
