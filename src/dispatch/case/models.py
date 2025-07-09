@@ -184,6 +184,13 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         order_by="CaseCost.created_at",
     )
 
+    case_notes = relationship(
+        "CaseNotes",
+        back_populates="case",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
     @observes("participants")
     def participant_observer(self, participants):
         """Update team and location fields based on the most common values among participants."""
@@ -232,6 +239,18 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         return total_cost
 
 
+class CaseNotes(Base, TimeStampMixin):
+    """SQLAlchemy model for case investigation notes."""
+
+    id = Column(Integer, primary_key=True)
+    content = Column(String)
+    last_updated_by = Column(String)
+
+    # Foreign key to case
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
+    case = relationship("Case", back_populates="case_notes")
+
+
 class SignalRead(DispatchBase):
     """Pydantic model for reading signal data."""
 
@@ -263,6 +282,34 @@ class ProjectRead(DispatchBase):
     display_name: str | None = None
     color: str | None = None
     allow_self_join: bool | None = Field(True, nullable=True)
+
+
+# CaseNotes Pydantic models
+class CaseNotesBase(DispatchBase):
+    """Base Pydantic model for case notes data."""
+
+    content: str | None = None
+    last_updated_by: str | None = None
+
+
+class CaseNotesCreate(CaseNotesBase):
+    """Pydantic model for creating case notes."""
+
+    pass
+
+
+class CaseNotesUpdate(CaseNotesBase):
+    """Pydantic model for updating case notes."""
+
+    pass
+
+
+class CaseNotesRead(CaseNotesBase):
+    """Pydantic model for reading case notes data."""
+
+    id: PrimaryKey
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 # Pydantic models...
@@ -407,6 +454,7 @@ class CaseRead(CaseBase):
     updated_at: datetime | None = None
     workflow_instances: list[WorkflowInstanceRead] | None = []
     event: bool | None = False
+    case_notes: CaseNotesRead | None = None
 
 
 class CaseUpdate(CaseBase):
@@ -427,6 +475,7 @@ class CaseUpdate(CaseBase):
     reported_at: datetime | None = None
     tags: list[TagRead] | None = []
     triage_at: datetime | None = None
+    case_notes: CaseNotesUpdate | None = None
 
     @field_validator("tags")
     @classmethod

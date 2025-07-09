@@ -23,6 +23,7 @@ from .enums import CaseStatus
 from .models import (
     Case,
     CaseCreate,
+    CaseNotes,
     CaseRead,
     CaseUpdate,
 )
@@ -425,6 +426,19 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
     for i in case_in.incidents:
         incidents.append(incident_service.get(db_session=db_session, incident_id=i.id))
     case.incidents = incidents
+
+    # Handle case notes update
+    if case_in.case_notes is not None:
+        if case.case_notes:
+            # Update existing notes
+            case.case_notes.content = case_in.case_notes.content
+            case.case_notes.last_updated_by = current_user.email
+        else:
+            # Create new notes
+            case.case_notes = CaseNotes(
+                content=case_in.case_notes.content,
+                last_updated_by=current_user.email,
+            )
 
     db_session.commit()
 

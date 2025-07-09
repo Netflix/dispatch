@@ -21,6 +21,15 @@
           <v-btn
             class="text-subtitle-2 unselected-button"
             height="24px"
+            value="notes"
+            variant="plain"
+            :ripple="false"
+          >
+            <span class="button-text">Notes</span>
+          </v-btn>
+          <v-btn
+            class="text-subtitle-2 unselected-button"
+            height="24px"
             value="signals"
             variant="plain"
             :ripple="false"
@@ -137,6 +146,9 @@
       <v-window-item value="main" class="tab">
         <case-timeline-tab v-model="events" />
       </v-window-item>
+      <v-window-item value="notes" class="tab">
+        <notes-tab />
+      </v-window-item>
       <v-window-item value="signals" class="tab">
         <case-signal-instance-tab
           :loading="loading"
@@ -158,6 +170,7 @@ import { useRoute, useRouter } from "vue-router"
 import GraphTab from "@/case/GraphTab.vue"
 import CaseSignalInstanceTab from "@/case/CaseSignalInstanceTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
+import NotesTab from "@/case/NotesTab.vue"
 
 const props = defineProps({
   modelValue: {
