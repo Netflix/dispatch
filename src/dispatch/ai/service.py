@@ -1,7 +1,6 @@
 import json
 import logging
 
-from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.plugins.dispatch_slack.models import IncidentSubjects
 import tiktoken
 from sqlalchemy.orm import aliased, Session
