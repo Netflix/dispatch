@@ -645,7 +645,7 @@ def generate_read_in_summary(
         return ReadInSummaryResponse(error_message=message)
 
     system_message = """You are a cybersecurity analyst tasked with creating structured read-in summaries.
-    Analyze the provided Slack channel messages and extract key information about a security event.
+    Analyze the provided channel messages and extract key information about a security event.
     Focus on identifying:
     1. Timeline: Chronological list of key events and decisions (skip channel join/remove messages)
        - For all timeline events, format timestamps as YYYY-MM-DD HH:MM (no seconds, no 'T').
@@ -655,9 +655,9 @@ def generate_read_in_summary(
 
     Only include the most relevant events and outcomes. Be clear and concise."""
 
-    prompt = f"""Analyze the following Slack channel messages regarding a security event and provide a structured summary.
+    prompt = f"""Analyze the following channel messages regarding a security event and provide a structured summary.
 
-    Slack messages: {conversation}
+    Channel messages: {conversation}
     """
 
     prompt = prepare_prompt_for_model(

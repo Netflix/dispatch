@@ -15,5 +15,8 @@ class ArtificialIntelligencePlugin(Plugin):
     def chat_completion(self, items, **kwargs):
         raise NotImplementedError
 
+    def chat_parse(self, items, **kwargs):
+        raise NotImplementedError
+
     def list_models(self, items, **kwargs):
         raise NotImplementedError
