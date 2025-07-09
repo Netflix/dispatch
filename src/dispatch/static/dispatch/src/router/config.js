@@ -260,7 +260,7 @@ export const protectedRoute = [
           path: "/:organization/signals",
           name: "SignalInstanceTable",
           meta: { title: "List" },
-          component: () => import("@/signal/TableInstance.vue"),
+          component: () => import("@/signal/instance/TableInstance.vue"),
         },
       ],
     },

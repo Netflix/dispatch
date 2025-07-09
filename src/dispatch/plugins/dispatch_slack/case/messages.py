@@ -388,10 +388,11 @@ def create_genai_signal_analysis_message(
     signal_metadata_blocks = []
     try:
         summary = ai_service.generate_case_signal_summary(case, db_session)
-    except GenAIException:
+    except GenAIException as e:
         summary = (
             "We encountered an error while generating the GenAI analysis summary for this case."
         )
+        log.warning(f"Error generating GenAI analysis summary for case {case.id}. Error: {e}")
     return summary, create_genai_signal_message_metadata_blocks(signal_metadata_blocks, summary)
 
 

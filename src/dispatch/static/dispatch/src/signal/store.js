@@ -72,35 +72,10 @@ const state = {
     loading: false,
     bulkEditLoading: false,
   },
-  instanceTable: {
-    rows: {
-      items: [],
-      total: null,
-    },
-    options: {
-      filters: {
-        created_at: {
-          start: null,
-          end: null,
-        },
-        signal: [],
-      },
-      q: "",
-      page: 1,
-      itemsPerPage: 25,
-      sortBy: ["created_at"],
-      descending: [true],
-    },
-    loading: false,
-  },
 }
 
 const getters = {
   getField,
-  tableOptions({ state }) {
-    // format our filters
-    return state.table.options
-  },
 }
 
 const actions = {
@@ -114,21 +89,6 @@ const actions = {
       })
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
-      })
-  }, 500),
-  getAllInstances: debounce(({ commit, state }) => {
-    commit("SET_INSTANCE_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions(
-      { ...state.instanceTable.options },
-      "signal"
-    )
-    return SignalApi.getAllInstances(params)
-      .then((response) => {
-        commit("SET_INSTANCE_TABLE_LOADING", false)
-        commit("SET_INSTANCE_TABLE_ROWS", response.data)
-      })
-      .catch(() => {
-        commit("SET_INSTANCE_TABLE_LOADING", false)
       })
   }, 500),
   get({ commit, state }) {
@@ -224,12 +184,6 @@ const mutations = {
   },
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
-  },
-  SET_INSTANCE_TABLE_LOADING(state, value) {
-    state.instanceTable.loading = value
-  },
-  SET_INSTANCE_TABLE_ROWS(state, value) {
-    state.instanceTable.rows = value
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value
