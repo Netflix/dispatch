@@ -18,7 +18,7 @@
                   </span>
                 </div>
               </div>
-              
+
               <RichEditor
                 v-model="notesContent"
                 :placeholder="'Add investigation notes, findings, and action items...'"
@@ -26,7 +26,7 @@
                 @update:model-value="debouncedSave"
                 class="notes-editor"
               />
-              
+
               <div v-if="saving" class="mt-2 text-caption text-primary">
                 <v-icon size="small" class="mr-1">mdi-content-save</v-icon>
                 Saving...
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { computed, ref, watch, onMounted } from "vue"
+import { computed, ref, watch } from "vue"
 import { useStore } from "vuex"
 import { debounce } from "lodash"
 import { formatRelativeDate } from "@/filters"
@@ -59,13 +59,13 @@ export default {
   },
   setup() {
     const store = useStore()
-    
+
     // Reactive data
     const loading = ref(false)
     const saving = ref(false)
     const lastSaved = ref(null)
     const notesContent = ref("")
-    
+
     // Computed values
     const selected = computed(() => store.state.case_management.selected)
     const notes = computed(() => selected.value?.case_notes)
@@ -73,7 +73,7 @@ export default {
       // Add your permission logic here
       return true // For now, allow all users to edit
     })
-    
+
     // Watchers
     watch(
       () => selected.value?.case_notes,
@@ -86,23 +86,23 @@ export default {
       },
       { immediate: true }
     )
-    
+
     // Methods
     const saveNotes = async () => {
       if (!selected.value || saving.value) return
-      
+
       try {
         saving.value = true
-        
+
         const updatedCase = {
           ...selected.value,
           case_notes: {
             content: notesContent.value,
-          }
+          },
         }
-        
+
         await CaseApi.update(selected.value.id, updatedCase)
-        
+
         // Update the store
         store.commit("case_management/SET_SELECTED", {
           ...selected.value,
@@ -110,9 +110,9 @@ export default {
             ...selected.value.case_notes,
             content: notesContent.value,
             updated_at: new Date().toISOString(),
-          }
+          },
         })
-        
+
         lastSaved.value = new Date()
       } catch (error) {
         console.error("Failed to save notes:", error)
@@ -124,14 +124,14 @@ export default {
         saving.value = false
       }
     }
-    
+
     const debouncedSave = debounce(saveNotes, 1000)
-    
+
     const formatDate = (date) => {
       if (!date) return ""
       return formatRelativeDate(date)
     }
-    
+
     return {
       loading,
       saving,
