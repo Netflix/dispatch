@@ -261,8 +261,22 @@ class IncidentJoinOrSubscribePermission(BasePermission):
         pk = PrimaryKeyModel(id=request.path_params["incident_id"])
         current_incident = incident_service.get(db_session=request.state.db, incident_id=pk.id)
 
+        if not current_incident:
+            return False
+
+        # Check if incident is restricted - only admins can join restricted incidents
         if current_incident.visibility == Visibility.restricted:
-            return OrganizationAdminPermission(request=request)
+            return any_permission(
+                permissions=[OrganizationAdminPermission],
+                request=request,
+            )
+
+        # Check project's allow_self_join setting - only admins can override
+        if not current_incident.project.allow_self_join:
+            return any_permission(
+                permissions=[OrganizationAdminPermission],
+                request=request,
+            )
 
         return True
 
@@ -431,6 +445,44 @@ class CaseViewPermission(BasePermission):
         return True
 
 
+class CaseReporterPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_user = get_current_user(request=request)
+        pk = PrimaryKeyModel(id=request.path_params["case_id"])
+        current_case = case_service.get(db_session=request.state.db, case_id=pk.id)
+
+        if not current_case:
+            return False
+
+        if current_case.reporter:
+            if current_case.reporter.individual.email == current_user.email:
+                return True
+
+        return False
+
+
+class CaseAssigneePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_user = get_current_user(request=request)
+        pk = PrimaryKeyModel(id=request.path_params["case_id"])
+        current_case = case_service.get(db_session=request.state.db, case_id=pk.id)
+
+        if not current_case:
+            return False
+
+        if current_case.assignee:
+            if current_case.assignee.individual.email == current_user.email:
+                return True
+
+        return False
+
+
 class CaseEditPermission(BasePermission):
     def has_required_permissions(
         self,
@@ -439,7 +491,8 @@ class CaseEditPermission(BasePermission):
         return any_permission(
             permissions=[
                 OrganizationAdminPermission,
-                CaseParticipantPermission,
+                CaseReporterPermission,
+                CaseAssigneePermission,
             ],
             request=request,
         )
@@ -467,8 +520,22 @@ class CaseJoinPermission(BasePermission):
         pk = PrimaryKeyModel(id=request.path_params["case_id"])
         current_case = case_service.get(db_session=request.state.db, case_id=pk.id)
 
+        if not current_case:
+            return False
+
+        # Check if case is restricted - only admins can join restricted cases
         if current_case.visibility == Visibility.restricted:
-            return OrganizationAdminPermission(request=request)
+            return any_permission(
+                permissions=[OrganizationAdminPermission],
+                request=request,
+            )
+
+        # Check project's allow_self_join setting - only admins can override
+        if not current_case.project.allow_self_join:
+            return any_permission(
+                permissions=[OrganizationAdminPermission],
+                request=request,
+            )
 
         return True
 
