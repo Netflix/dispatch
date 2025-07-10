@@ -23,6 +23,7 @@ const getDefaultSelectedState = () => {
     project: null,
     slug: null,
     visibility: null,
+    generate_read_in_summary: false,
   }
 }
 
