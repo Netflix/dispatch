@@ -836,3 +836,47 @@ def export_case_timeline(
         raise Exception("No data to export, please check filter selection")
 
     return True
+
+
+def get_recent_summary_event(
+    db_session,
+    case_id: int | None = None,
+    incident_id: int | None = None,
+    max_age_seconds: int = 300,
+):  # 5 minutes default
+    """Get the most recent AI read-in summary event for this subject."""
+    from datetime import datetime, timedelta
+    from dispatch.ai.enums import AIEventSource, AIEventDescription
+
+    cutoff_time = datetime.utcnow() - timedelta(seconds=max_age_seconds)
+
+    if incident_id:
+        # This is an incident
+        return (
+            db_session.query(Event)
+            .filter(Event.incident_id == incident_id)
+            .filter(Event.source == AIEventSource.dispatch_genai)
+            .filter(
+                Event.description.like(
+                    f"{AIEventDescription.read_in_summary_created.format(participant_email='')}%"
+                )
+            )
+            .filter(Event.started_at >= cutoff_time)
+            .order_by(Event.started_at.desc())
+            .first()
+        )
+    else:
+        # This is a case
+        return (
+            db_session.query(Event)
+            .filter(Event.case_id == case_id)
+            .filter(Event.source == AIEventSource.dispatch_genai)
+            .filter(
+                Event.description.like(
+                    f"{AIEventDescription.read_in_summary_created.format(participant_email='')}%"
+                )
+            )
+            .filter(Event.started_at >= cutoff_time)
+            .order_by(Event.started_at.desc())
+            .first()
+        )

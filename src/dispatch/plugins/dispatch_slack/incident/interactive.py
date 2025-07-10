@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 import uuid
 from functools import partial
 from datetime import datetime, timedelta
@@ -27,6 +28,8 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
+from dispatch.ai import service as ai_service
+from dispatch.ai.models import ReadInSummary
 from dispatch.auth.models import DispatchUser
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
@@ -780,6 +783,52 @@ def replace_slack_users_in_message(client: Any, message: str) -> str:
     return re.sub(r"<@([^>]+)>", lambda x: f"@{get_user_name_from_id(client, x.group(1))}", message)
 
 
+def create_read_in_summary_blocks(summary: ReadInSummary) -> list:
+    """Creates Slack blocks from a structured read-in summary."""
+    blocks = []
+
+    # Add AI disclaimer at the top
+    blocks.append(
+        Context(
+            elements=[
+                MarkdownText(
+                    text=":sparkles: *This entire block is AI-generated and may contain errors or inaccuracies. Please verify the information before relying on it.*"
+                )
+            ]
+        ).build()
+    )
+
+    # Add AI-generated summary if available
+    if summary.summary:
+        blocks.append(
+            Section(text=":magic_wand: *AI-Generated Summary*\n{0}".format(summary.summary)).build()
+        )
+
+    # Add timeline events if available
+    if summary.timeline:
+        timeline_text = "\n".join([f"• {event}" for event in summary.timeline])
+        blocks.append(
+            Section(
+                text=":alarm_clock: *Timeline* _(times in UTC)_\n{0}".format(timeline_text)
+            ).build()
+        )
+
+    # Add actions taken if available
+    if summary.actions_taken:
+        actions_text = "\n".join([f"• {action}" for action in summary.actions_taken])
+        blocks.append(
+            Section(text=":white_check_mark: *Actions Taken*\n{0}".format(actions_text)).build()
+        )
+
+    # Add current status if available
+    if summary.current_status:
+        blocks.append(
+            Section(text=":bar_chart: *Current Status*\n{0}".format(summary.current_status)).build()
+        )
+
+    return blocks
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
@@ -1122,6 +1171,13 @@ def handle_member_joined_channel(
             "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
         )
 
+    # sleep for a second to allow the participant to be added to the incident
+    time.sleep(1)
+
+    generate_read_in_summary = False
+    subject_type = "incident"
+    project = None
+
     if context["subject"].type == IncidentSubjects.incident:
         participant = incident_flows.incident_add_or_reactivate_participant_flow(
             user_email=user.email, incident_id=int(context["subject"].id), db_session=db_session
@@ -1136,6 +1192,12 @@ def handle_member_joined_channel(
         incident = incident_service.get(
             db_session=db_session, incident_id=int(context["subject"].id)
         )
+        project = incident.project
+        generate_read_in_summary = getattr(
+            incident.incident_type, "generate_read_in_summary", False
+        )
+        if incident.visibility == Visibility.restricted:
+            generate_read_in_summary = False
 
         # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
         # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
@@ -1176,6 +1238,7 @@ def handle_member_joined_channel(
         db_session.commit()
 
     if context["subject"].type == CaseSubjects.case:
+        subject_type = "case"
         case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
         if not case.dedicated_channel:
@@ -1190,6 +1253,11 @@ def handle_member_joined_channel(
         if not participant:
             # Participant is already in the case channel.
             return
+
+        project = case.project
+        generate_read_in_summary = getattr(case.case_type, "generate_read_in_summary", False)
+        if case.visibility == Visibility.restricted:
+            generate_read_in_summary = False
 
         participant.user_conversation_id = context["user_id"]
 
@@ -1227,6 +1295,41 @@ def handle_member_joined_channel(
 
         db_session.add(participant)
         db_session.commit()
+
+    if not generate_read_in_summary:
+        return
+
+    # Generate read-in summary for user
+    summary_response = ai_service.generate_read_in_summary(
+        db_session=db_session,
+        subject=context["subject"],
+        project=project,
+        channel_id=context["channel_id"],
+        important_reaction=context["config"].timeline_event_reaction,
+        participant_email=user.email,
+    )
+
+    if summary_response and summary_response.summary:
+        blocks = create_read_in_summary_blocks(summary_response.summary)
+        blocks.append(
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="NOTE: The block above was AI-generated and may contain errors or inaccuracies. Please verify the information before relying on it."
+                    )
+                ]
+            ).build()
+        )
+        dispatch_slack_service.send_ephemeral_message(
+            client=client,
+            conversation_id=context["channel_id"],
+            user_id=context["user_id"],
+            text=f"Here is a summary of what has happened so far in this {subject_type}",
+            blocks=blocks,
+        )
+    elif summary_response and summary_response.error_message:
+        # Log the error but don't show it to the user to avoid confusion
+        log.warning(f"Failed to generate read-in summary: {summary_response.error_message}")
 
 
 @app.event(
