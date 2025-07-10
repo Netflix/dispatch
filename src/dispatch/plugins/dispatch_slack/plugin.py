@@ -51,6 +51,7 @@ from .service import (
     create_slack_client,
     does_user_exist,
     emails_to_user_ids,
+    get_channel_activity,
     get_user_avatar_url,
     get_user_info_by_id,
     get_user_profile_by_email,
@@ -442,8 +443,33 @@ class SlackConversationPlugin(ConversationPlugin):
             activity = event_instance.fetch_activity(client, subject, oldest)
             return activity
         except Exception as e:
-            logger.exception("An error occurred while fetching incident or case events from the Slack plugin.", exc_info=e)
+            logger.exception(
+                "An error occurred while fetching incident or case events from the Slack plugin.",
+                exc_info=e,
+            )
             raise
+
+    def get_conversation(
+        self, conversation_id: str, oldest: str = "0", important_reaction: str | None = None
+    ) -> list:
+        """
+        Fetches the top-level posts from a Slack conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation.
+            oldest (str): The oldest timestamp to fetch messages from.
+
+        Returns:
+            list: A list of tuples containing the timestamp and user ID of each message.
+        """
+        client = create_slack_client(self.configuration)
+        return get_channel_activity(
+            client,
+            conversation_id,
+            oldest,
+            include_message_text=True,
+            important_reaction=important_reaction,
+        )
 
     def get_conversation_replies(self, conversation_id: str, thread_ts: str) -> list[str]:
         """

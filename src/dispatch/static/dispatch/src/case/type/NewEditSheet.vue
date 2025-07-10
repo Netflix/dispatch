@@ -140,6 +140,13 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-checkbox
+                  v-model="generate_read_in_summary"
+                  label="Enable AI-Generated Read-In Summaries"
+                  hint="If checked, AI-generated read-in summaries will be automatically generated for cases of this type."
+                />
+              </v-col>
+              <v-col cols="12">
                 <plugin-metadata-input v-model="plugin_metadata" :project="project" />
               </v-col>
             </v-row>
@@ -199,6 +206,7 @@ export default {
       "selected.description",
       "selected.enabled",
       "selected.exclude_from_metrics",
+      "selected.generate_read_in_summary",
       "selected.id",
       "selected.incident_type",
       "selected.loading",

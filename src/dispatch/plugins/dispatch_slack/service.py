@@ -3,7 +3,8 @@ import heapq
 import logging
 from datetime import datetime
 
-from blockkit import Message, Section
+from blockkit.surfaces import Block
+from blockkit import Divider, Message, Section
 from requests import Timeout
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
@@ -595,11 +596,27 @@ def get_thread_activity(
     return heapq.nsmallest(len(result), result)
 
 
-def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = "0") -> list:
+def has_important_reaction(message, important_reaction):
+    if not important_reaction:
+        return False
+    for reaction in message.get("reactions", []):
+        if reaction["name"] == important_reaction:
+            return True
+    return False
+
+
+def get_channel_activity(
+    client: WebClient,
+    conversation_id: str,
+    oldest: str = "0",
+    include_message_text: bool = False,
+    important_reaction: str | None = None,
+) -> list:
     """Gets all top-level messages for a given Slack channel.
 
     Returns:
-        A sorted list of tuples (utc_dt, user_id) of each message in the channel.
+        A sorted list of tuples (utc_dt, user_id) of each message in the channel,
+        or (utc_dt, user_id, message_text), depending on include_message_text.
     """
     result = []
     cursor = None
@@ -622,10 +639,59 @@ def get_channel_activity(client: WebClient, conversation_id: str, oldest: str = 
             # Resolves users for messages.
             if "user" in message:
                 user_id = resolve_user(client, message["user"])["id"]
-                heapq.heappush(result, (datetime.utcfromtimestamp(float(message["ts"])), user_id))
+                utc_dt = datetime.utcfromtimestamp(float(message["ts"]))
+                if include_message_text:
+                    message_text = message.get("text", "")
+                    if has_important_reaction(message, important_reaction):
+                        message_text = f"IMPORTANT!: {message_text}"
+                    heapq.heappush(result, (utc_dt, user_id, message_text))
+                else:
+                    heapq.heappush(result, (utc_dt, user_id))
 
         if not response["has_more"]:
             break
         cursor = response["response_metadata"]["next_cursor"]
 
     return heapq.nsmallest(len(result), result)
+
+
+def json_to_slack_format(json_message: dict[str, str]) -> str:
+    """
+    Converts a JSON dictionary to Slack markup format.
+
+    Args:
+        json_dict (dict): The JSON dictionary to convert.
+
+    Returns:
+        str: A string formatted with Slack markup.
+    """
+    slack_message = ""
+    for key, value in json_message.items():
+        slack_message += f"*{key}*\n{value}\n\n"
+    return slack_message.strip()
+
+
+def create_genai_message_metadata_blocks(
+    title: str, blocks: list[Block], message: str | dict[str, str]
+) -> list[Block]:
+    """
+    Appends a GenAI section to any existing metadata blocks.
+
+    Args:
+        blocks (list[Block]): The list of existing  metadata blocks.
+        message (str | dict[str, str]): The GenAI message, either as a string or a dictionary.
+
+    Returns:
+        list[Block]: The updated list of metadata blocks with the GenAI section appended.
+    """
+    if isinstance(message, dict):
+        message = json_to_slack_format(message)
+
+    # Truncate the text if it exceeds Block Kit's maximum length of 3000 characters
+    text = f":magic_wand: *{title}*\n\n{message}"
+    text = f"{text[:2997]}..." if len(text) > 3000 else text
+    blocks.append(
+        Section(text=text),
+    )
+    blocks.append(Divider())
+    return Message(blocks=blocks).build()["blocks"]
