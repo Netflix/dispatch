@@ -227,7 +227,15 @@ def configure(config):
     )
     app.command(config.slack_command_create_task, middleware=middleware)(handle_create_task_command)
 
-    app.command(config.slack_command_summary, middleware=middleware)(handle_summary_command)
+    app.command(
+        config.slack_command_summary,
+        middleware=[
+            message_context_middleware,
+            subject_middleware,
+            configuration_middleware,
+            user_middleware,
+        ],
+    )(handle_summary_command)
 
     app.event(
         event="reaction_added",
@@ -1259,6 +1267,8 @@ def handle_member_joined_channel(
         project = case.project
         generate_read_in_summary = getattr(case.case_type, "generate_read_in_summary", False)
         if case.visibility == Visibility.restricted:
+            generate_read_in_summary = False
+        if not case.dedicated_channel:
             generate_read_in_summary = False
 
         participant.user_conversation_id = context["user_id"]
@@ -3066,6 +3076,15 @@ def handle_summary_command(
                     conversation_id=context["channel_id"],
                     user_id=context["user_id"],
                     text=":x: Read-in summaries are not enabled for this case type.",
+                )
+                return
+
+            if not case.dedicated_channel:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are only available for cases with a dedicated channel.",
                 )
                 return
         else:
