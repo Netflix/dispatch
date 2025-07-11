@@ -219,9 +219,7 @@ const router = useRouter()
 watch(
   () => tab.value,
   (tabValue) => {
-    console.log("Emitting", tabValue)
     emit("update:activeTab", tabValue)
-    // ...
   }
 )
 
@@ -229,7 +227,11 @@ watch(
   () => tab.value,
   (tabValue) => {
     if (tabValue === "main") {
-      router.push({ name: "CasePage", params: { id: route.id } })
+      router.push({ name: "CasePage", params: route.params })
+    }
+
+    if (tabValue === "notes") {
+      router.push({ name: "CaseNotes", params: route.params })
     }
 
     if (tabValue === "signals") {
@@ -239,6 +241,20 @@ watch(
       })
     }
   }
+)
+
+watch(
+  () => route.name,
+  (routeName) => {
+    if (routeName === "CaseNotes") {
+      tab.value = "notes"
+    } else if (routeName === "SignalDetails") {
+      tab.value = "signals"
+    } else if (routeName === "CasePage") {
+      tab.value = "main"
+    }
+  },
+  { immediate: true }
 )
 
 watch(

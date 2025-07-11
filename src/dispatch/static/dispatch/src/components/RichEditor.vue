@@ -15,9 +15,17 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  modelValue: {
+    type: String,
+    default: "",
+  },
   placeholder: {
     type: String,
     default: "",
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -36,8 +44,27 @@ const handleBlur = () => {
   userIsTyping.value = false
 }
 
+// Watch for content prop changes (backward compatibility)
 watch(
   () => props.content,
+  (value) => {
+    if (userIsTyping.value) {
+      return
+    }
+
+    const isSame = editor.value?.getHTML() === value
+
+    if (isSame) {
+      return
+    }
+
+    editor.value?.chain().setContent(`${value}`, false).run()
+  }
+)
+
+// Watch for modelValue changes (v-model support)
+watch(
+  () => props.modelValue,
   (value) => {
     if (userIsTyping.value) {
       return
@@ -70,13 +97,14 @@ onMounted(() => {
         // },
       }),
     ],
-    content: props.content,
+    content: props.modelValue || props.content,
+    editable: !props.disabled,
     onUpdate: () => {
       let content = editor.value?.getHTML()
-      // remove the HTML tags
+      // Keep the HTML content instead of stripping tags
+      emit("update:modelValue", content)
+      // Also update plain text value for backward compatibility
       plainTextValue.value = content.replace(/<\/?[^>]+(>|$)/g, "")
-      // Emitting the updated plain text
-      emit("update:modelValue", plainTextValue.value)
     },
     keyboardShortcuts: {
       Enter: () => {}, // Override Enter key to do nothing

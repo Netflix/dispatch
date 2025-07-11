@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { computed, ref, watch } from "vue"
+import { computed, ref, watch, onMounted } from "vue"
 import { useStore } from "vuex"
 import { debounce } from "lodash"
 import { useSavingState } from "@/composables/useSavingState"
@@ -69,8 +69,8 @@ export default {
     watch(
       () => selected.value?.case_notes,
       (newNotes) => {
-        if (newNotes) {
-          notesContent.value = newNotes.content || ""
+        if (newNotes && newNotes.content) {
+          notesContent.value = newNotes.content
         } else {
           notesContent.value = ""
         }
@@ -113,6 +113,13 @@ export default {
       if (!date) return ""
       return formatRelativeDate(date)
     }
+
+    // Initialize content when component mounts
+    onMounted(() => {
+      if (selected.value?.case_notes?.content) {
+        notesContent.value = selected.value.case_notes.content
+      }
+    })
 
     return {
       loading,
