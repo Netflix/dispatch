@@ -1185,10 +1185,10 @@ def handle_member_joined_channel(
     time.sleep(1)
 
     generate_read_in_summary = False
-    subject_type = "incident"
+    subject_type = context["subject"].type
     project = None
 
-    if context["subject"].type == IncidentSubjects.incident:
+    if subject_type == IncidentSubjects.incident:
         participant = incident_flows.incident_add_or_reactivate_participant_flow(
             user_email=user.email, incident_id=int(context["subject"].id), db_session=db_session
         )
@@ -1247,7 +1247,7 @@ def handle_member_joined_channel(
         db_session.add(participant)
         db_session.commit()
 
-    if context["subject"].type == CaseSubjects.case:
+    if subject_type == CaseSubjects.case:
         subject_type = "case"
         case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
