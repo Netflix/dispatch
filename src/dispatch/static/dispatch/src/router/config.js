@@ -238,6 +238,12 @@ export const protectedRoute = [
               component: () => import("@/case/Page.vue"), // Use the same component to avoid re-render
               props: true,
             },
+            {
+              path: "notes",
+              name: "CaseNotes",
+              component: () => import("@/case/Page.vue"), // Use the same component to avoid re-render
+              props: true,
+            },
           ],
         },
       ],
