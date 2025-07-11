@@ -32,7 +32,7 @@
           {{ value.num_signal_instances_alerted }} events
         </v-chip>
         <v-chip color="blue-accent-4" size="small">
-          {{ value.num_signal_instances_snoozed }} filtered
+          {{ value.num_signal_instances_snoozed }} snoozed
         </v-chip>
       </span>
     </template>
