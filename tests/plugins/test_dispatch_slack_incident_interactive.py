@@ -1,4 +1,3 @@
-
 def test_configure():
     """Test that we can configure the plugin."""
     from dispatch.plugins.dispatch_slack.incident.interactive import (
@@ -32,6 +31,7 @@ def test_configure():
             "slack_command_list_workflow": "/dispatch-list-workflows",
             "slack_command_list_tasks": "/dispatch-list-tasks",
             "slack_command_create_task": "/dispatch-create-task",
+            "slack_command_summary": "/dispatch-summary",
         }
     )
 

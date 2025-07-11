@@ -165,3 +165,8 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Engage User Command String",
         description="Defines the string used to engage a user via MFA prompt. Must match what is defined in Slack.",
     )
+    slack_command_summary: str = Field(
+        "/dispatch-summary",
+        title="Generate Summary Command String",
+        description="Defines the string used to generate a summary. Must match what is defined in Slack.",
+    )
