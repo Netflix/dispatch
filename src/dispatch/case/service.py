@@ -395,8 +395,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             db_session=db_session,
             source="Dispatch Core App",
             description=(
-                f"Case visibility changed to {case_in.visibility.lower()} "
-                f"by {current_user.email}"
+                f"Case visibility changed to {case_in.visibility.lower()} by {current_user.email}"
             ),
             dispatch_user_id=current_user.id,
             case_id=case.id,
@@ -437,7 +436,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             email=current_user.email,
             project=case.project,
         )
-        
+
         if case.case_notes:
             # Update existing notes
             case.case_notes.content = case_in.case_notes.content
