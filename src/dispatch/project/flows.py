@@ -138,6 +138,7 @@ def project_init_flow(*, project_id: int, organization_slug: str, db_session=Non
             enabled=priority["enabled"],
             view_order=priority["view_order"],
             color=priority["color"],
+            disable_delayed_message_warning=priority["disable_delayed_message_warning"],
         )
         case_priority_service.create(db_session=db_session, case_priority_in=case_priority_in)
 
