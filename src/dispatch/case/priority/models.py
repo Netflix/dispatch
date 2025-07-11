@@ -21,6 +21,7 @@ class CasePriority(Base, ProjectMixin):
     color = Column(String)
     enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
+    disable_delayed_message_warning = Column(Boolean, default=False)
 
     # This column is used to control how priorities should be displayed
     # Lower numbers will be shown first.
@@ -48,6 +49,7 @@ class CasePriorityBase(DispatchBase):
     name: NameStr
     project: ProjectRead | None = None
     view_order: int | None = None
+    disable_delayed_message_warning: bool | None = None
 
 
 class CasePriorityCreate(CasePriorityBase):
