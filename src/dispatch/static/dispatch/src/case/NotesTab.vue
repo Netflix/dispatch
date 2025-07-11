@@ -12,9 +12,9 @@
               <div class="d-flex justify-space-between align-center mb-4">
                 <h3 class="text-h6">Investigation Notes</h3>
                 <div class="text-caption text-disabled">
-                  <span v-if="notes?.updated_at">
-                    Last updated {{ formatDate(notes.updated_at) }}
-                    <span v-if="notes?.last_updated_by">by {{ notes.last_updated_by }}</span>
+                  <span v-if="notes?.last_updated_by">
+                    Last updated {{ formatDate(notes.updated_at) }} by
+                    {{ notes.last_updated_by.name }}
                   </span>
                 </div>
               </div>
@@ -26,15 +26,6 @@
                 @update:model-value="debouncedSave"
                 class="notes-editor"
               />
-
-              <div v-if="saving" class="mt-2 text-caption text-primary">
-                <v-icon size="small" class="mr-1">mdi-content-save</v-icon>
-                Saving...
-              </div>
-              <div v-else-if="lastSaved" class="mt-2 text-caption text-success">
-                <v-icon size="small" class="mr-1">mdi-check</v-icon>
-                Saved {{ formatDate(lastSaved) }}
-              </div>
             </div>
           </v-card-text>
         </v-card>
@@ -47,6 +38,7 @@
 import { computed, ref, watch } from "vue"
 import { useStore } from "vuex"
 import { debounce } from "lodash"
+import { useSavingState } from "@/composables/useSavingState"
 import { formatRelativeDate } from "@/filters"
 
 import RichEditor from "@/components/RichEditor.vue"
@@ -59,11 +51,10 @@ export default {
   },
   setup() {
     const store = useStore()
+    const { setSaving } = useSavingState()
 
     // Reactive data
     const loading = ref(false)
-    const saving = ref(false)
-    const lastSaved = ref(null)
     const notesContent = ref("")
 
     // Computed values
@@ -89,10 +80,10 @@ export default {
 
     // Methods
     const saveNotes = async () => {
-      if (!selected.value || saving.value) return
+      if (!selected.value) return
 
       try {
-        saving.value = true
+        setSaving(true)
 
         const updatedCase = {
           ...selected.value,
@@ -101,19 +92,10 @@ export default {
           },
         }
 
-        await CaseApi.update(selected.value.id, updatedCase)
+        const response = await CaseApi.update(selected.value.id, updatedCase)
 
-        // Update the store
-        store.commit("case_management/SET_SELECTED", {
-          ...selected.value,
-          case_notes: {
-            ...selected.value.case_notes,
-            content: notesContent.value,
-            updated_at: new Date().toISOString(),
-          },
-        })
-
-        lastSaved.value = new Date()
+        // Update the store with the response data
+        store.commit("case_management/SET_SELECTED", response.data)
       } catch (error) {
         console.error("Failed to save notes:", error)
         store.dispatch("notification_backend/createNotification", {
@@ -121,7 +103,7 @@ export default {
           type: "error",
         })
       } finally {
-        saving.value = false
+        setSaving(false)
       }
     }
 
@@ -134,8 +116,6 @@ export default {
 
     return {
       loading,
-      saving,
-      lastSaved,
       notesContent,
       notes,
       canEdit,

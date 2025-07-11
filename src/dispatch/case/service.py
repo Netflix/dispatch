@@ -12,6 +12,7 @@ from dispatch.case.type import service as case_type_service
 from dispatch.case_cost import service as case_cost_service
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
+from dispatch.individual import service as individual_service
 from dispatch.participant.models import Participant
 from dispatch.participant import flows as participant_flows
 from dispatch.participant_role.models import ParticipantRoleType
@@ -283,6 +284,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
         exclude={
             "assignee",
             "case_costs",
+            "case_notes",
             "case_priority",
             "case_severity",
             "case_type",
@@ -429,16 +431,26 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
 
     # Handle case notes update
     if case_in.case_notes is not None:
+        # Get or create the individual contact
+        individual = individual_service.get_or_create(
+            db_session=db_session,
+            email=current_user.email,
+            project=case.project,
+        )
+        
         if case.case_notes:
             # Update existing notes
             case.case_notes.content = case_in.case_notes.content
-            case.case_notes.last_updated_by = current_user.email
+            case.case_notes.last_updated_by_id = individual.id
         else:
             # Create new notes
-            case.case_notes = CaseNotes(
+            notes = CaseNotes(
                 content=case_in.case_notes.content,
-                last_updated_by=current_user.email,
+                last_updated_by_id=individual.id,
+                case_id=case.id,
             )
+            db_session.add(notes)
+            case.case_notes = notes
 
     db_session.commit()
 
