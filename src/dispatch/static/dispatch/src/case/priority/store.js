@@ -16,6 +16,7 @@ const getDefaultSelectedState = () => {
     name: null,
     project: null,
     view_order: null,
+    disable_delayed_message_warning: null,
   }
 }
 
