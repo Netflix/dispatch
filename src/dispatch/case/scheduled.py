@@ -60,6 +60,7 @@ def case_triage_reminder(db_session: Session, project: Project):
     cases = (
         db_session.query(Case)
         .filter(Case.project_id == project.id)
+        .filter(Case.status != CaseStatus.closed)
         .filter(
             or_(
                 Case.title == "Security Event Triage",
