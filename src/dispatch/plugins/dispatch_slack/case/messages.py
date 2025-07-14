@@ -11,6 +11,7 @@ from blockkit import (
     Section,
 )
 from blockkit.surfaces import Block
+from dispatch.plugins.dispatch_slack.service import create_genai_message_metadata_blocks
 from sqlalchemy.orm import Session
 
 from dispatch.ai import service as ai_service
@@ -325,48 +326,6 @@ def create_action_buttons_message(
     return Message(blocks=signal_metadata_blocks).build()["blocks"]
 
 
-def json_to_slack_format(json_message: dict[str, str]) -> str:
-    """
-    Converts a JSON dictionary to Slack markup format.
-
-    Args:
-        json_dict (dict): The JSON dictionary to convert.
-
-    Returns:
-        str: A string formatted with Slack markup.
-    """
-    slack_message = ""
-    for key, value in json_message.items():
-        slack_message += f"*{key}*\n{value}\n\n"
-    return slack_message.strip()
-
-
-def create_genai_signal_message_metadata_blocks(
-    signal_metadata_blocks: list[Block], message: str | dict[str, str]
-) -> list[Block]:
-    """
-    Appends a GenAI signal analysis section to the signal metadata blocks.
-
-    Args:
-        signal_metadata_blocks (list[Block]): The list of existing signal metadata blocks.
-        message (str | dict[str, str]): The GenAI analysis message, either as a string or a dictionary.
-
-    Returns:
-        list[Block]: The updated list of signal metadata blocks with the GenAI analysis section appended.
-    """
-    if isinstance(message, dict):
-        message = json_to_slack_format(message)
-
-    # Truncate the text if it exceeds Block Kit's maximum length of 3000 characters
-    text = f":magic_wand: *GenAI Alert Analysis*\n\n{message}"
-    text = f"{text[:2997]}..." if len(text) > 3000 else text
-    signal_metadata_blocks.append(
-        Section(text=text),
-    )
-    signal_metadata_blocks.append(Divider())
-    return Message(blocks=signal_metadata_blocks).build()["blocks"]
-
-
 def create_genai_signal_analysis_message(
     case: Case,
     db_session: Session,
@@ -393,7 +352,9 @@ def create_genai_signal_analysis_message(
             "We encountered an error while generating the GenAI analysis summary for this case."
         )
         log.warning(f"Error generating GenAI analysis summary for case {case.id}. Error: {e}")
-    return summary, create_genai_signal_message_metadata_blocks(signal_metadata_blocks, summary)
+    return summary, create_genai_message_metadata_blocks(
+        title="GenAI Alert Analysis", blocks=signal_metadata_blocks, message=summary
+    )
 
 
 def create_signal_engagement_message(
