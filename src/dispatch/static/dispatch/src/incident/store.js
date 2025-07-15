@@ -537,10 +537,15 @@ const actions = {
       console.log(response)
       if (response && response.data && response.data.tactical_report) {
         const report = response.data.tactical_report
+
+        function formatBullets(list) {
+          return list.map((item) => `• ${item}`).join("\n")
+        }
+
         commit("SET_TACTICAL_REPORT", {
           conditions: report.conditions,
-          actions: report.actions,
-          needs: report.needs,
+          actions: formatBullets(report.actions),
+          needs: formatBullets(report.needs),
         })
       }
     })

@@ -114,7 +114,7 @@ export default {
   methods: {
     ...mapActions("incident", ["closeReportDialog", "createReport", "generateTacticalReport"]),
 
-    // TODO(amats): not familiar w every functionality here
+    // TODO(amats): not familiar w every functionality here, move to store if possible
     async autoFillReport() {
       this.loading = true
       try {
