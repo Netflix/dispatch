@@ -34,3 +34,36 @@ class ReadInSummaryResponse(DispatchBase):
 
     summary: ReadInSummary | None = None
     error_message: str | None = None
+
+
+class CaseSignalSummary(DispatchBase):
+    """
+    Model for structured case signal summary output from AI analysis.
+
+    This model represents the specific structure expected from the GenAI signal analysis prompt.
+    """
+
+    summary: str = Field(
+        description="4-5 sentence summary of the security event using precise, factual language",
+        default="",
+    )
+    historical_summary: str = Field(
+        description="2-3 sentence summary of historical cases for this signal", default=""
+    )
+    critical_analysis: str = Field(
+        description="Critical analysis considering false positive scenarios", default=""
+    )
+    recommendation: str = Field(
+        description="Recommended next steps based on the analysis", default=""
+    )
+
+
+class CaseSignalSummaryResponse(DispatchBase):
+    """
+    Response model for case signal summary generation.
+
+    Includes the structured summary and any error messages.
+    """
+
+    summary: CaseSignalSummary | None = None
+    error_message: str | None = None

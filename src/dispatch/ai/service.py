@@ -1,4 +1,3 @@
-import json
 import logging
 
 from dispatch.plugins.dispatch_slack.models import IncidentSubjects
@@ -21,7 +20,12 @@ from dispatch.event import service as event_service
 from dispatch.enums import EventType
 
 from .exceptions import GenAIException
-from .models import ReadInSummary, ReadInSummaryResponse
+from .models import (
+    ReadInSummary,
+    ReadInSummaryResponse,
+    CaseSignalSummary,
+    CaseSignalSummaryResponse,
+)
 from .enums import AIEventSource, AIEventDescription
 
 log = logging.getLogger(__name__)
@@ -215,7 +219,7 @@ def generate_case_signal_historical_context(case: Case, db_session: Session) -> 
     return "\n".join(historical_context)
 
 
-def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, str]:
+def generate_case_signal_summary(case: Case, db_session: Session) -> CaseSignalSummaryResponse:
     """
     Generate an analysis summary of a case stemming from a signal.
 
@@ -224,7 +228,7 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
         db_session (Session): The database session used for querying related data.
 
     Returns:
-        dict: A dictionary containing the analysis summary, or an error message if the summary generation fails.
+        CaseSignalSummaryResponse: A structured response containing the analysis summary or error message.
     """
     # we generate the historical context
     try:
@@ -305,22 +309,24 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
     )
 
     # we generate the analysis
-    response = genai_plugin.instance.chat_completion(prompt=prompt)
-
     try:
-        summary = json.loads(response.replace("```json", "").replace("```", "").strip())
+        # Use the system message from the signal if available
+        system_message = (
+            signal_instance.signal.genai_system_message
+            if signal_instance.signal.genai_system_message
+            else None
+        )
 
-        # we check if the summary is empty
-        if not summary:
-            message = "Unable to generate GenAI signal analysis. We received an empty response from the artificial-intelligence plugin."
-            log.warning(message)
-            raise GenAIException(message)
+        result = genai_plugin.instance.chat_parse(
+            prompt=prompt, response_model=CaseSignalSummary, system_message=system_message
+        )
 
-        return summary
-    except json.JSONDecodeError as e:
-        message = f"Unable to decode JSON response from the artificial-intelligence plugin, returning raw response, with error {e}."
-        log.warning(message)
-        return {"Summary": response}
+        return CaseSignalSummaryResponse(summary=result)
+
+    except Exception as e:
+        log.exception(f"Error generating case signal summary: {e}")
+        error_msg = f"Error generating case signal summary: {str(e)}"
+        return CaseSignalSummaryResponse(error_message=error_msg)
 
 
 def generate_incident_summary(incident: Incident, db_session: Session) -> str:
