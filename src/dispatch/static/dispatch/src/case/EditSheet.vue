@@ -135,6 +135,7 @@ export default {
       navigation: {
         width: parseInt(localStorage.getItem("case-drawer-width")) || 900,
         minWidth: 400,
+        maxWidth: 1200,
       },
       isResizing: false,
       handleHover: false,
@@ -197,7 +198,7 @@ export default {
       if (!this.isResizing) return
 
       const newWidth = window.innerWidth - e.clientX
-      if (newWidth >= this.navigation.minWidth && newWidth <= 1200) {
+      if (newWidth >= this.navigation.minWidth && newWidth <= this.navigation.maxWidth) {
         this.navigation.width = newWidth
       }
     },

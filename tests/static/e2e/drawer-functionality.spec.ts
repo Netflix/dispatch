@@ -22,7 +22,7 @@ test.describe("Drawer Functionality", () => {
     await viewEditOption.click()
 
     // Wait for the drawer to open and be visible
-    const drawer = page.locator("v-navigation-drawer").first()
+    const drawer = page.locator(".v-navigation-drawer").first()
     await expect(drawer).toBeVisible()
 
     // Test making a change in the drawer
@@ -30,11 +30,9 @@ test.describe("Drawer Functionality", () => {
     const detailsTab = page.getByRole("tab", { name: "Details" })
     await detailsTab.click()
 
-    // Find and update a field (let's try to find a description field)
-    const descriptionField = page
-      .locator("textarea, input[type='text']")
-      .filter({ hasText: "" })
-      .first()
+    // Find and update the description field using label
+    const descriptionField = page.getByLabel("Description", { exact: false })
+
     if (await descriptionField.isVisible()) {
       await descriptionField.click()
       await descriptionField.fill("Test description updated by Playwright")
@@ -71,7 +69,7 @@ test.describe("Drawer Functionality", () => {
     await editOption.click()
 
     // Wait for the drawer to open and be visible
-    const drawer = page.locator("v-navigation-drawer").first()
+    const drawer = page.locator(".v-navigation-drawer").first()
     await expect(drawer).toBeVisible()
 
     // Close the drawer
