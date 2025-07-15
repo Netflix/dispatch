@@ -1,6 +1,27 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <v-navigation-drawer location="right" width="900">
+    <v-navigation-drawer
+      location="right"
+      :width="navigation.width"
+      :style="{ transition: isResizing ? 'none' : 'width 0.2s ease' }"
+    >
+      <div
+        class="resize-handle"
+        @mousedown="startResize"
+        @mouseenter="handleHover = true"
+        @mouseleave="handleHover = false"
+        :style="{
+          position: 'absolute',
+          left: '0',
+          top: '0',
+          bottom: '0',
+          width: '4px',
+          cursor: 'ew-resize',
+          background: handleHover ? '#ff0000' : 'transparent',
+          zIndex: 1000,
+          transition: 'background 0.2s ease',
+        }"
+      />
       <template #prepend>
         <v-list-item lines="two">
           <v-list-item-title class="text-h6">
@@ -111,6 +132,12 @@ export default {
   data() {
     return {
       tab: null,
+      navigation: {
+        width: parseInt(localStorage.getItem("case-drawer-width")) || 900,
+        minWidth: 400,
+      },
+      isResizing: false,
+      handleHover: false,
     }
   },
 
@@ -137,9 +164,22 @@ export default {
     this.fetchDetails()
   },
 
+  mounted() {
+    document.addEventListener("mousemove", this.onMouseMove)
+    document.addEventListener("mouseup", this.onMouseUp)
+  },
+
+  beforeUnmount() {
+    document.removeEventListener("mousemove", this.onMouseMove)
+    document.removeEventListener("mouseup", this.onMouseUp)
+  },
+
   watch: {
     "$route.params.name": function () {
       this.fetchDetails()
+    },
+    "navigation.width": function (newWidth) {
+      localStorage.setItem("case-drawer-width", newWidth.toString())
     },
   },
 
@@ -148,6 +188,21 @@ export default {
       if (this.$route.params.name) {
         this.getDetails({ name: this.$route.params.name })
       }
+    },
+    startResize(e) {
+      this.isResizing = true
+      e.preventDefault()
+    },
+    onMouseMove(e) {
+      if (!this.isResizing) return
+
+      const newWidth = window.innerWidth - e.clientX
+      if (newWidth >= this.navigation.minWidth && newWidth <= 1200) {
+        this.navigation.width = newWidth
+      }
+    },
+    onMouseUp() {
+      this.isResizing = false
     },
     ...mapActions("case_management", [
       "save",
