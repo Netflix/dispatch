@@ -92,7 +92,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("plugin", ["save", "closeCreateEdit"]),
+    ...mapActions("plugin", ["save"]),
     ...mapMutations("plugin", ["addConfigurationItem", "removeConfigurationItem"]),
   },
 

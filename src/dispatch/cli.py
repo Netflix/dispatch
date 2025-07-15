@@ -1152,6 +1152,8 @@ def run_slack_websocket(organization: str, project: str):
         )
         return
 
+    print(instance.dict())
+
     session.close()
 
     click.secho("Slack websocket process started...", fg="blue")

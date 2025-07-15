@@ -528,6 +528,10 @@ const actions = {
       )
     })
   },
+  generateTacticalReport({ commit, dispatch}) {
+    const id = state.selected.id
+    return IncidentApi.generateTacticalReport(id)
+  },
   createAllResources({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     return IncidentApi.createAllResources(state.selected.id)

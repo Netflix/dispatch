@@ -4,6 +4,7 @@ import logging
 from datetime import date, datetime
 from typing import Annotated
 from dateutil.relativedelta import relativedelta
+from dispatch.ai.models import TacticalReportResponse
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request
@@ -312,6 +313,27 @@ def create_tactical_report(
         incident_id=current_incident.id,
         tactical_report_in=tactical_report_in,
         organization_slug=organization,
+    )
+
+@router.get(
+    '/{incident_id}/report/tactical/generate',
+    summary="Auto-generate a tactical report based on Slack conversation contents.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def generate_tactical_report(
+    db_session: DbSession,
+    current_incident: CurrentIncident,
+) -> TacticalReportResponse:
+    """
+    Auto-generate a tactical report. Requires an enabled Artificial Intelligence Plugin
+    """
+    print("hello")
+    if not current_incident.conversation.channel_id:
+        return TacticalReportResponse(error_message = f"No channel id found for incident {current_incident.id}")
+    return ai_service.generate_tactical_report(
+        db_session=db_session,
+        channel_id=current_incident.conversation.channel_id,
+        project=current_incident.project
     )
 
 

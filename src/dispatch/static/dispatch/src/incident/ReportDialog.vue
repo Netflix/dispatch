@@ -38,6 +38,9 @@
                 />
               </v-card-text>
             </v-card>
+            <v-btn color="primary" @click="autoFillReport" :loading="loading">
+              Auto-fill Report
+            </v-btn>
           </v-window-item>
           <v-window-item key="executive" value="executive">
             <v-card>
@@ -86,7 +89,7 @@ import { mapActions } from "vuex"
 export default {
   name: "IncidentReportDialog",
   data() {
-    return {}
+    return {loading: false}
   },
   computed: {
     ...mapFields("incident", [
@@ -102,7 +105,53 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["closeReportDialog", "createReport"]),
+    ...mapActions("incident", ["closeReportDialog", "createReport", "generateTacticalReport"]),
+
+    async autoFillReport() {
+      this.loading = true
+      try {
+        const response = await this.generateTacticalReport()
+        console.log("this is the response")
+        console.log(response)
+        if (response && response.data && response.data.tactical_report) {
+          const report = response.data.tactical_report
+
+          // Create a new tactical report object with the generated content
+          const tacticalReport = {
+            conditions: report.conditions,
+            actions: report.actions,
+            needs: report.needs,
+          }
+
+          // Update the report data in the parent component
+          this.$emit("update:report", {
+            type: "tactical",
+            tactical: tacticalReport,
+          })
+
+          this.$store.commit(
+            "notification_backend/addBeNotification",
+            { text: "Tactical report generated successfully.", type: "success" },
+            { root: true }
+          )
+        } else if (response && response.data && response.data.error_message) {
+          this.$store.commit(
+            "notification_backend/addBeNotification",
+            { text: response.data.error_message, type: "error" },
+            { root: true }
+          )
+        }
+      } catch (error) {
+        this.$store.commit(
+          "notification_backend/addBeNotification",
+          { text: "Failed to generate tactical report.", type: "error" },
+          { root: true }
+        )
+        console.error("Error generating tactical report:", error)
+      } finally {
+        this.loading = false
+      }
+    },
   },
 }
 </script>
