@@ -45,7 +45,10 @@
                 </v-btn>
               </v-col>
               <v-col cols="auto" class="d-flex align-center">
-                <span v-if="loading" class="ml-2">AI-generated reports may be unreliable. Be sure to review the output before saving.</span>
+                <span v-if="loading" class="ml-2"
+                  >AI-generated reports may be unreliable. Be sure to review the output before
+                  saving.</span
+                >
               </v-col>
             </v-row>
           </v-window-item>

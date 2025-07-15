@@ -327,14 +327,20 @@ def generate_tactical_report(
     """
     Auto-generate a tactical report. Requires an enabled Artificial Intelligence Plugin
     """
-    print("hello")
-    if not current_incident.conversation.channel_id:
+    if not current_incident.conversation or not current_incident.conversation.channel_id:
         return TacticalReportResponse(error_message = f"No channel id found for incident {current_incident.id}")
-    return ai_service.generate_tactical_report(
+    response = ai_service.generate_tactical_report(
         db_session=db_session,
-        channel_id=current_incident.conversation.channel_id,
+        incident=current_incident,
         project=current_incident.project
     )
+    if not response.tactical_report:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=[{"msg": (response.error_message if response.error_message else "Unknown error generating tactical report.")}],
+        )
+    return response
+
 
 
 @router.post(

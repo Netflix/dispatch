@@ -701,18 +701,13 @@ def generate_read_in_summary(
         error_msg = f"Error generating read-in summary: {str(e)}"
         return ReadInSummaryResponse(error_message=error_msg)
 
-# TODO(amats): caching time limit as an abuse prevention mechanism?
 
-
-# TODO(amats): channel retrieval overlap info?
 def generate_tactical_report(
     *,
     db_session,
-    # subject: Subject,  # todo(amats) likely not necessary, incidents only
+    incident: Incident,
     project: Project,
-    channel_id: str,
     important_reaction: str | None = None,
-    creator_email: str = ""
 ) -> TacticalReportResponse:
     """
     Generate a tactical report for a given subject.
@@ -750,29 +745,28 @@ def generate_tactical_report(
         return ReadInSummaryResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=channel_id, important_reaction=important_reaction
+        conversation_id=incident.conversation.channel_id, important_reaction=important_reaction
     )
     if not conversation:
-        message = f"Read-in summary not generated for {subject.name}. No conversation found."
+        message = f"Tactical report not generated for {incident.name}. No conversation found."
         log.warning(message)
         return ReadInSummaryResponse(error_message=message)
 
     system_message = """
     You are a cybersecurity analyst tasked with creating structured tactical reports. Analyze the
     provided channel messages and extract these 3 key types of information:
-    1. Conditions: the circumstances surrounding the event, including but not limited to initial identification, event description,
+    1. Conditions: the circumstances surrounding the event. For example, initial identification, event description,
     affected parties and systems, the nature of the security flaw or security type, and the observable impact both inside and outside
     the organization.
-    2. Actions: the actions performed in response to the event, including but not limited to containment/mitigation steps, investigation or log analysis, internal
+    2. Actions: the actions performed in response to the event. For example, containment/mitigation steps, investigation or log analysis, internal
     and external communications or notifications, remediation steps (such as policy or configuration changes), and
-    vendor or partner engagements. Prioritize impactful, executed actions over plans and include an individual or team if reasonable.
-    3. Needs: unfulfilled requests associated with the event's resolution, including but not limited to information to gather,
+    vendor or partner engagements. Prioritize executed actions over plans. Include relevant team or individual names.
+    3. Needs: unfulfilled requests associated with the event's resolution. For example, information to gather,
     technical remediation steps, process improvements and preventative actions, or alignment/decision making. Include individuals
     or teams as assignees where possible. If the incident is at its resolution with no unresolved needs, this section
     can instead be populated with a note to that effect.
 
-    Only include the most relevant events and outcomes. Use paragraphs for the conditions section, and either paragraphs or bullet points for actions and needs.
-    When using bullet points, use professional language and complete sentences with subjects.
+    Only include the most impactful events and outcomes. Be clear, professional, and concise. Use complete sentences with clear subjects, including when writing in bullet points.
     """
 
     raw_prompt = f"""Analyze the following channel messages regarding a security event and provide a structured tactical report.
@@ -789,14 +783,16 @@ def generate_tactical_report(
             prompt=prompt, response_model=TacticalReport, system_message=system_message
         )
 
-        # log the event
-        # todo(amats): separate logging fn allowing params for both of them?
-        # todo(amats): can reports r gna be incident only
-
-        # if subject.type == IncidentSubjects.incident:
-        #     log_function = event_service.log_incident_event
-        # else:  # case
-        #     log_function = event_service.log_case_event
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=AIEventSource.dispatch_genai,
+            description=AIEventDescription.tactical_report_created.format(
+                incident_name=incident.name
+            ),
+            incident_id=incident.id,
+            details=result.dict(),
+            type=EventType.other
+        )
 
         return TacticalReportResponse(tactical_report=result)
 

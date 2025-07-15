@@ -59,6 +59,7 @@ const getDefaultReportState = () => {
       actions: null,
       needs: null,
     },
+    tactical_generation_error: null,
     executive: {
       current_status: null,
       overview: null,
@@ -528,16 +529,13 @@ const actions = {
       )
     })
   },
-  generateTacticalReport({ commit, dispatch }) {
-    // commit("SET_SELECTED", state.selected.id)
+  generateTacticalReport({ commit }) {
     const id = state.selected.id
-    // set a loading state
     return IncidentApi.generateTacticalReport(id).then((response) => {
-      console.log("it me")
-      console.log(response)
       if (response && response.data && response.data.tactical_report) {
         const report = response.data.tactical_report
 
+        // eslint-disable-next-line no-inner-declarations
         function formatBullets(list) {
           return list.map((item) => `• ${item}`).join("\n")
         }
@@ -547,6 +545,19 @@ const actions = {
           actions: formatBullets(report.actions),
           needs: formatBullets(report.needs),
         })
+      }
+      else {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text:
+              response.data.error_message != null
+                ? response.data.error_message
+                : "Unknown error generating tactical report.",
+            type: "error",
+          },
+          { root: true }
+        )
       }
     })
   },
