@@ -38,9 +38,16 @@
                 />
               </v-card-text>
             </v-card>
-            <v-btn color="primary" @click="autoFillReport" :loading="loading">
-              Auto-fill Report
-            </v-btn>
+            <v-row class="mt-4 px-3">
+              <v-col cols="auto">
+                <v-btn color="primary" @click="autoFillReport" :loading="loading">
+                  Draft with GenAI
+                </v-btn>
+              </v-col>
+              <v-col cols="auto" class="d-flex align-center">
+                <span v-if="loading" class="ml-2">AI-generated reports may be unreliable. Be sure to review the output before saving.</span>
+              </v-col>
+            </v-row>
           </v-window-item>
           <v-window-item key="executive" value="executive">
             <v-card>
@@ -89,7 +96,7 @@ import { mapActions } from "vuex"
 export default {
   name: "IncidentReportDialog",
   data() {
-    return {loading: false}
+    return { loading: false }
   },
   computed: {
     ...mapFields("incident", [
@@ -107,40 +114,11 @@ export default {
   methods: {
     ...mapActions("incident", ["closeReportDialog", "createReport", "generateTacticalReport"]),
 
+    // TODO(amats): not familiar w every functionality here
     async autoFillReport() {
       this.loading = true
       try {
-        const response = await this.generateTacticalReport()
-        console.log("this is the response")
-        console.log(response)
-        if (response && response.data && response.data.tactical_report) {
-          const report = response.data.tactical_report
-
-          // Create a new tactical report object with the generated content
-          const tacticalReport = {
-            conditions: report.conditions,
-            actions: report.actions,
-            needs: report.needs,
-          }
-
-          // Update the report data in the parent component
-          this.$emit("update:report", {
-            type: "tactical",
-            tactical: tacticalReport,
-          })
-
-          this.$store.commit(
-            "notification_backend/addBeNotification",
-            { text: "Tactical report generated successfully.", type: "success" },
-            { root: true }
-          )
-        } else if (response && response.data && response.data.error_message) {
-          this.$store.commit(
-            "notification_backend/addBeNotification",
-            { text: response.data.error_message, type: "error" },
-            { root: true }
-          )
-        }
+        await this.generateTacticalReport()
       } catch (error) {
         this.$store.commit(
           "notification_backend/addBeNotification",

@@ -1,5 +1,5 @@
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
+import { constant, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
@@ -528,9 +528,22 @@ const actions = {
       )
     })
   },
-  generateTacticalReport({ commit, dispatch}) {
+  generateTacticalReport({ commit, dispatch }) {
+    // commit("SET_SELECTED", state.selected.id)
     const id = state.selected.id
-    return IncidentApi.generateTacticalReport(id)
+    // set a loading state
+    return IncidentApi.generateTacticalReport(id).then((response) => {
+      console.log("it me")
+      console.log(response)
+      if (response && response.data && response.data.tactical_report) {
+        const report = response.data.tactical_report
+        commit("SET_TACTICAL_REPORT", {
+          conditions: report.conditions,
+          actions: report.actions,
+          needs: report.needs,
+        })
+      }
+    })
   },
   createAllResources({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -681,6 +694,11 @@ const mutations = {
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value
+  },
+  SET_TACTICAL_REPORT(state, { conditions, actions, needs }) {
+    state.report.tactical.conditions = conditions
+    state.report.tactical.actions = actions
+    state.report.tactical.needs = needs
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
