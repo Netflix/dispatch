@@ -282,8 +282,16 @@ const actions = {
     return tags
   },
 
-  async fetchTags({ commit }, { project, model }) {
-    if (!project) return
+  async fetchTags({ commit, dispatch }, { project, model }) {
+    // Handle both single project object and array of projects
+    const projects = Array.isArray(project) ? project : [project]
+    const validProjects = projects.filter((p) => p && p.name)
+
+    if (!validProjects.length) {
+      commit("SET_TABLE_ROWS", { items: [], total: 0 })
+      commit("SET_GROUPS", {})
+      return []
+    }
 
     commit("SET_LOADING", true)
 
@@ -313,50 +321,67 @@ const actions = {
         }
       }
 
-      // Build the tag filter options using the same direct approach as tagTypeFilterOptions
-      let baseFilters = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
-
-      // Add project filter if project is defined
-      if (project && project.name) {
-        baseFilters.unshift({ model: "Project", field: "name", op: "==", value: project.name })
-      }
-
-      let tagFilterOptions = {
-        filter: JSON.stringify([
-          {
-            and: baseFilters,
-          },
-        ]),
-        itemsPerPage: 500,
-        sortBy: ["tag_type.name"],
-        sortDesc: [false],
-      }
-
-      // If we have relevant tag type IDs, add the filter
-      if (model && relevantTagTypeIds.length > 0) {
-        baseFilters.push({
-          model: "Tag",
-          field: "tag_type_id",
-          op: "in",
-          value: relevantTagTypeIds,
+      // Fetch tags for each project and combine them
+      const allTags = []
+      for (const singleProject of validProjects) {
+        const projectTags = await dispatch("fetchTagsForSingleProject", {
+          project: singleProject,
+          relevantTagTypeIds,
+          model,
         })
-        tagFilterOptions.filter = JSON.stringify([
-          {
-            and: baseFilters,
-          },
-        ])
+        if (projectTags) {
+          allTags.push(...projectTags)
+        }
       }
-
-      const response = await TagApi.getAll(tagFilterOptions)
-      commit("SET_TABLE_ROWS", response.data)
-      commit("SET_GROUPS", convertData(response.data.items))
+      // Update the store with combined results
+      commit("SET_TABLE_ROWS", { items: allTags, total: allTags.length })
+      commit("SET_GROUPS", convertData(allTags))
       commit("SET_LOADING", false)
-      return response.data.items
+      return allTags
     } catch (error) {
       console.error("Error fetching tags:", error)
       commit("SET_LOADING", false)
       throw error
     }
+  },
+
+  async fetchTagsForSingleProject(_, { project, relevantTagTypeIds, model }) {
+    // Build the tag filter options using the same direct approach as tagTypeFilterOptions
+    let baseFilters = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
+
+    // Add project filter if project is defined
+    if (project && project.name) {
+      baseFilters.unshift({ model: "Project", field: "name", op: "==", value: project.name })
+    }
+
+    let tagFilterOptions = {
+      filter: JSON.stringify([
+        {
+          and: baseFilters,
+        },
+      ]),
+      itemsPerPage: 500,
+      sortBy: ["tag_type.name"],
+      sortDesc: [false],
+    }
+
+    // If we have relevant tag type IDs, add the filter
+    if (model && relevantTagTypeIds.length > 0) {
+      baseFilters.push({
+        model: "Tag",
+        field: "tag_type_id",
+        op: "in",
+        value: relevantTagTypeIds,
+      })
+      tagFilterOptions.filter = JSON.stringify([
+        {
+          and: baseFilters,
+        },
+      ])
+    }
+
+    const response = await TagApi.getAll(tagFilterOptions)
+    return response.data.items
   },
 
   async fetchTagTypes({ commit }) {
@@ -432,6 +457,10 @@ const actions = {
 
   getTagType({ state }, tagTypeId) {
     return state.tagTypes[tagTypeId] || {}
+  },
+
+  convertDataAndSetGroups({ commit }, data) {
+    commit("SET_GROUPS", convertData(data))
   },
 }
 
