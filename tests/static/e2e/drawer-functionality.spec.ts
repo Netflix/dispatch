@@ -39,6 +39,12 @@ test.describe("Drawer Functionality", () => {
       await descriptionField.fill("Test description updated by Playwright")
     }
 
+    // Wait for form validation to complete and save button to become enabled
+    await page.waitForSelector(
+      '//button[.//i[contains(@class, "mdi-content-save")]][not(@disabled)]',
+      { timeout: 10000 }
+    )
+
     // Save the changes
     await page.locator('//button[.//i[contains(@class, "mdi-content-save")]]').click()
 
