@@ -40,7 +40,7 @@ test.describe("Drawer Functionality", () => {
     }
 
     // Save the changes
-    const saveButton = page.getByRole("button").filter({ hasText: "save" }).first()
+    const saveButton = page.locator("v-btn").filter({ has: page.locator("i.mdi-content-save") })
     await saveButton.click()
 
     // Wait for save to complete (look for loading state to disappear)
