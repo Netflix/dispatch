@@ -40,8 +40,7 @@ test.describe("Drawer Functionality", () => {
     }
 
     // Save the changes
-    const saveButton = page.locator("v-btn").filter({ has: page.locator("i.mdi-content-save") })
-    await saveButton.click()
+    await page.locator("button.v-btn--icon:has(i.mdi-content-save)").click()
 
     // Wait for save to complete (look for loading state to disappear)
     await page.waitForTimeout(1000)
