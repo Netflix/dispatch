@@ -53,7 +53,7 @@ export default {
       days_filter = ""
     }
     return API.get(
-      `${resource}/stats?entity_type_id=${entity_type_id}&entity_value="${entity_value}"${days_filter}`
+      `${resource}/stats?entity_type_id=${entity_type_id}&entity_value=${entity_value}${days_filter}`
     )
   },
 }

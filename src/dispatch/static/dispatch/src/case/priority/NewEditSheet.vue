@@ -84,6 +84,13 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
+                  v-model="disable_delayed_message_warning"
+                  label="Disable delayed message warning"
+                  hint="Would you like to disable Dispatch from notifying users when they send a message in Slack outside of the Case Assignee's 9a-5p working schedule?"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
                   v-model="enabled"
                   label="Enabled"
                   hint="Determines whether this case priority is available for new cases."
@@ -134,6 +141,7 @@ export default {
       "selected.page_assignee",
       "selected.project",
       "selected.view_order",
+      "selected.disable_delayed_message_warning",
     ]),
     ...mapFields("case_priority", {
       default_case_priority: "selected.default",
