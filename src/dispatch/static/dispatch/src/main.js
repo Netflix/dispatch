@@ -10,7 +10,6 @@ import "@formkit/themes/genesis"
 //   : null
 
 import { plugin, defaultConfig } from "@formkit/vue"
-import VResizeDrawer from "@wdns/vuetify-resize-drawer"
 
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"
@@ -44,7 +43,6 @@ if (SENTRY_ENABLED) {
 app.use(vuetifyPlugin)
 app.use(router)
 app.use(store)
-app.component("VResizeDrawer", VResizeDrawer)
 // if (FORMKIT_PRO_PROJECT_KEY) {
 //   const proModule = import.meta.env.VITE_FORMKIT_PRO_PROJECT_KEY
 //     ? await import(/* @vite-ignore */ "@formkit/pro")
