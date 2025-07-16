@@ -357,7 +357,7 @@ function validateTags(value) {
   const project_id = project?.id || 0
   var all_tags_in_project = false
   if (project_id) {
-    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
+    all_tags_in_project = value.every((tag) => tag.project?.id === project_id)
   } else {
     const project_name = project?.name
     if (!project_name) {
