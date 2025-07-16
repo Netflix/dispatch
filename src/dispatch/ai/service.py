@@ -724,7 +724,7 @@ def generate_tactical_report(
         db_session=db_session, plugin_type="artificial-intelligence", project_id=project.id
     )
     if not genai_plugin:
-        message = f"Tactical report not generated. No artificial-intelligence plugin enabled."
+        message = f"Tactical report not generated for {incident.name}. No artificial-intelligence plugin enabled."
         log.warning(message)
         return TacticalReportResponse(error_message=message)
 
