@@ -636,7 +636,7 @@ def generate_read_in_summary(
         return ReadInSummaryResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=channel_id, important_reaction=important_reaction
+        conversation_id=channel_id, include_user_details=True, important_reaction=important_reaction
     )
     if not conversation:
         message = f"Read-in summary not generated for {subject.name}. No conversation found."
@@ -739,7 +739,7 @@ def generate_tactical_report(
         return TacticalReportResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=incident.conversation.channel_id, important_reaction=important_reaction
+        conversation_id=incident.conversation.channel_id, include_user_details=True, important_reaction=important_reaction
     )
     if not conversation:
         message = f"Tactical report not generated for {incident.name}. No conversation found."

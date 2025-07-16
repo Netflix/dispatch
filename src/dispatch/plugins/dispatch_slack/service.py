@@ -610,9 +610,18 @@ def get_channel_activity(
     conversation_id: str,
     oldest: str = "0",
     include_message_text: bool = False,
+    include_user_details: bool = False,
     important_reaction: str | None = None,
 ) -> list:
     """Gets all top-level messages for a given Slack channel.
+
+    Args:
+        client (WebClient): Slack client responsible for API calls
+        conversation_id (str): Channel ID to reference
+        oldest (int): oldest message to retrieve
+        include_message_text (bool): Include message text (in addition to datetime and user id)
+        include_user_details (bool): Include user name and email information
+        important_reaction (str): Optional emoji reaction designating important messages
 
     Returns:
         A sorted list of tuples (utc_dt, user_id) of each message in the channel,
@@ -640,13 +649,23 @@ def get_channel_activity(
             if "user" in message:
                 user_id = resolve_user(client, message["user"])["id"]
                 utc_dt = datetime.utcfromtimestamp(float(message["ts"]))
+
+                message_result = [utc_dt, user_id]
+
                 if include_message_text:
                     message_text = message.get("text", "")
                     if has_important_reaction(message, important_reaction):
                         message_text = f"IMPORTANT!: {message_text}"
-                    heapq.heappush(result, (utc_dt, user_id, message_text))
-                else:
-                    heapq.heappush(result, (utc_dt, user_id))
+                    message_result.append(message_text)
+
+                if include_user_details:
+                    user_details = get_user_info_by_id(client, user_id)
+                    user_name = user_details.get('real_name', "Name not found")
+                    user_display_name = user_details.get('display_name_normalized', "DisplayName not found")
+                    user_email = user_details.get('email', "Email not found")
+                    message_result.extend([user_name, user_display_name, user_email])
+
+                heapq.heappush(result, tuple(message_result))
 
         if not response["has_more"]:
             break
