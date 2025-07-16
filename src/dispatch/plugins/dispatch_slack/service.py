@@ -618,7 +618,7 @@ def get_channel_activity(
     Args:
         client (WebClient): Slack client responsible for API calls
         conversation_id (str): Channel ID to reference
-        oldest (int): oldest message to retrieve
+        oldest (int): Oldest timestamp to fetch messages from
         include_message_text (bool): Include message text (in addition to datetime and user id)
         include_user_details (bool): Include user name and email information
         important_reaction (str): Optional emoji reaction designating important messages
