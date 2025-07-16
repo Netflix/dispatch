@@ -733,7 +733,7 @@ def generate_tactical_report(
     )
     if not conversation_plugin:
         message = (
-            f"Tactical report not generated. No conversation plugin enabled."
+            f"Tactical report not generated for {incident.name}. No conversation plugin enabled."
         )
         log.warning(message)
         return TacticalReportResponse(error_message=message)
