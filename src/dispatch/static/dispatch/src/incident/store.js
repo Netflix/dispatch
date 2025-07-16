@@ -59,7 +59,6 @@ const getDefaultReportState = () => {
       actions: null,
       needs: null,
     },
-    tactical_generation_error: null,
     executive: {
       current_status: null,
       overview: null,
