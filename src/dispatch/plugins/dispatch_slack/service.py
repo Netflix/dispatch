@@ -661,8 +661,9 @@ def get_channel_activity(
                 if include_user_details:
                     user_details = get_user_info_by_id(client, user_id)
                     user_name = user_details.get('real_name', "Name not found")
-                    user_display_name = user_details.get('display_name_normalized', "DisplayName not found")
-                    user_email = user_details.get('email', "Email not found")
+                    user_profile = user_details.get('profile', {})
+                    user_display_name = user_profile.get('display_name_normalized', "DisplayName not found")
+                    user_email = user_profile.get('email', "Email not found")
                     message_result.extend([user_name, user_display_name, user_email])
 
                 heapq.heappush(result, tuple(message_result))
