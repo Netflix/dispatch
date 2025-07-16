@@ -287,27 +287,67 @@ const actions = {
 
     commit("SET_LOADING", true)
 
-    let filterOptions = {
-      q: null,
-      itemsPerPage: 500,
-      sortBy: ["tag_type.name"],
-      descending: [false],
-      filters: {
-        project: [{ model: "Project", field: "name", op: "==", value: project.name }],
-        tagFilter: [{ model: "Tag", field: "discoverable", op: "==", value: "true" }],
-      },
-    }
-
-    if (model) {
-      filterOptions.filters.tagTypeFilter = [
-        { model: "TagType", field: "discoverable_" + model, op: "==", value: "true" },
-      ]
-    }
-
-    filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
-
     try {
-      const response = await TagApi.getAll(filterOptions)
+      let relevantTagTypeIds = []
+
+      // If model is specified, first fetch the relevant TagType IDs
+      if (model) {
+        const tagTypeFilterOptions = {
+          filter: JSON.stringify([
+            {
+              and: [{ model: "TagType", field: "discoverable_" + model, op: "==", value: "true" }],
+            },
+          ]),
+          itemsPerPage: -1,
+          fields: JSON.stringify(["id"]),
+        }
+
+        const tagTypeResponse = await TagTypeApi.getAll(tagTypeFilterOptions)
+        relevantTagTypeIds = tagTypeResponse.data.items.map((tt) => tt.id)
+
+        if (!relevantTagTypeIds.length) {
+          commit("SET_TABLE_ROWS", { items: [], total: 0 })
+          commit("SET_GROUPS", {})
+          commit("SET_LOADING", false)
+          return []
+        }
+      }
+
+      // Build the tag filter options using the same direct approach as tagTypeFilterOptions
+      let baseFilters = [{ model: "Tag", field: "discoverable", op: "==", value: "true" }]
+
+      // Add project filter if project is defined
+      if (project && project.name) {
+        baseFilters.unshift({ model: "Project", field: "name", op: "==", value: project.name })
+      }
+
+      let tagFilterOptions = {
+        filter: JSON.stringify([
+          {
+            and: baseFilters,
+          },
+        ]),
+        itemsPerPage: 500,
+        sortBy: ["tag_type.name"],
+        sortDesc: [false],
+      }
+
+      // If we have relevant tag type IDs, add the filter
+      if (model && relevantTagTypeIds.length > 0) {
+        baseFilters.push({
+          model: "Tag",
+          field: "tag_type_id",
+          op: "in",
+          value: relevantTagTypeIds,
+        })
+        tagFilterOptions.filter = JSON.stringify([
+          {
+            and: baseFilters,
+          },
+        ])
+      }
+
+      const response = await TagApi.getAll(tagFilterOptions)
       commit("SET_TABLE_ROWS", response.data)
       commit("SET_GROUPS", convertData(response.data.items))
       commit("SET_LOADING", false)
@@ -476,17 +516,6 @@ const mutations = {
 // Helper function for converting data
 function convertData(data) {
   return data.reduce((r, a) => {
-    const tagType = a.tag_type
-    const hasAnyDiscoverability =
-      tagType.discoverable_incident ||
-      tagType.discoverable_case ||
-      tagType.discoverable_signal ||
-      tagType.discoverable_query ||
-      tagType.discoverable_source ||
-      tagType.discoverable_document
-
-    if (!hasAnyDiscoverability) return r
-
     if (!r[a.tag_type.id]) {
       r[a.tag_type.id] = {
         id: a.tag_type.id,

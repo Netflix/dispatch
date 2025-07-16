@@ -352,12 +352,14 @@ function validateTags(value) {
     return
   }
 
-  const project_id = props.project?.id || 0
+  // Handle both single project object and array of projects
+  const project = Array.isArray(props.project) ? props.project[0] : props.project
+  const project_id = project?.id || 0
   var all_tags_in_project = false
   if (project_id) {
     all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
   } else {
-    const project_name = props.project?.name
+    const project_name = project?.name
     if (!project_name) {
       error.value = true
       dummyText.value += " "
@@ -387,11 +389,13 @@ function validateTags(value) {
 
 // Methods
 const fetchData = async () => {
-  if (!props.project) {
+  // Handle both single project object and array of projects
+  const project = Array.isArray(props.project) ? props.project[0] : props.project
+  if (!project) {
     return
   }
   await store.dispatch("tag/fetchTags", {
-    project: props.project,
+    project: project,
     model: props.model,
   })
 }
@@ -401,9 +405,11 @@ const fetchTagTypes = async () => {
 }
 
 const generateSuggestions = async () => {
-  if (!props.project?.id) return
+  // Handle both single project object and array of projects
+  const project = Array.isArray(props.project) ? props.project[0] : props.project
+  if (!project?.id) return
   await store.dispatch("tag/generateSuggestions", {
-    projectId: props.project.id,
+    projectId: project.id,
     modelId: props.modelId,
     modelType: props.modelType,
   })
