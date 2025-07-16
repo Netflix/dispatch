@@ -29,6 +29,7 @@ from dispatch.case import flows as case_flows
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseResolutionReason, CaseStatus, CaseResolutionReasonDescription
 from dispatch.case.models import Case, CaseCreate, CaseRead, CaseUpdate
+from dispatch.case.priority import service as case_priority_service
 from dispatch.case.type import service as case_type_service
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation import flows as conversation_flows
@@ -1323,6 +1324,16 @@ def handle_case_after_hours_message(
     participant = participant_service.get_by_case_id_and_email(
         db_session=db_session, case_id=int(context["subject"].id), email=user.email
     )
+
+    # get case priority settings and if delayed message warning is disabled, log and return
+    case_priority_data = case_priority_service.get(
+        db_session=db_session, case_priority_id=case.case_priority_id
+    )
+
+    if case_priority_data.disable_delayed_message_warning:
+        log.debug("delayed messaging is disabled, not sending a warning")
+        return
+
     # handle no participant found
     if not participant:
         log.warning(

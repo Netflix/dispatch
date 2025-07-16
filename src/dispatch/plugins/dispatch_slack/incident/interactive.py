@@ -227,6 +227,16 @@ def configure(config):
     )
     app.command(config.slack_command_create_task, middleware=middleware)(handle_create_task_command)
 
+    app.command(
+        config.slack_command_summary,
+        middleware=[
+            message_context_middleware,
+            subject_middleware,
+            configuration_middleware,
+            user_middleware,
+        ],
+    )(handle_summary_command)
+
     app.event(
         event="reaction_added",
         matchers=[is_target_reaction(config.timeline_event_reaction)],
@@ -1175,10 +1185,10 @@ def handle_member_joined_channel(
     time.sleep(1)
 
     generate_read_in_summary = False
-    subject_type = "incident"
+    subject_type = context["subject"].type
     project = None
 
-    if context["subject"].type == IncidentSubjects.incident:
+    if subject_type == IncidentSubjects.incident:
         participant = incident_flows.incident_add_or_reactivate_participant_flow(
             user_email=user.email, incident_id=int(context["subject"].id), db_session=db_session
         )
@@ -1237,7 +1247,7 @@ def handle_member_joined_channel(
         db_session.add(participant)
         db_session.commit()
 
-    if context["subject"].type == CaseSubjects.case:
+    if subject_type == CaseSubjects.case:
         subject_type = "case"
         case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
@@ -1257,6 +1267,8 @@ def handle_member_joined_channel(
         project = case.project
         generate_read_in_summary = getattr(case.case_type, "generate_read_in_summary", False)
         if case.visibility == Visibility.restricted:
+            generate_read_in_summary = False
+        if not case.dedicated_channel:
             generate_read_in_summary = False
 
         participant.user_conversation_id = context["user_id"]
@@ -3004,4 +3016,146 @@ def handle_remind_again_select_action(
         message = build_unexpected_error_message(guid)
         respond(
             text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )
+
+
+def handle_summary_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    user: DispatchUser,
+) -> None:
+    """Handles the summary command to generate a read-in summary."""
+    ack()
+
+    try:
+        if context["subject"].type == IncidentSubjects.incident:
+            incident = incident_service.get(
+                db_session=db_session, incident_id=int(context["subject"].id)
+            )
+            project = incident.project
+            subject_type = "incident"
+
+            if incident.visibility == Visibility.restricted:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Cannot generate summary for restricted incidents.",
+                )
+                return
+
+            if not incident.incident_type.generate_read_in_summary:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are not enabled for this incident type.",
+                )
+                return
+
+        elif context["subject"].type == CaseSubjects.case:
+            case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
+            project = case.project
+            subject_type = "case"
+
+            if case.visibility == Visibility.restricted:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Cannot generate summary for restricted cases.",
+                )
+                return
+
+            if not case.case_type.generate_read_in_summary:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are not enabled for this case type.",
+                )
+                return
+
+            if not case.dedicated_channel:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are only available for cases with a dedicated channel.",
+                )
+                return
+        else:
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=":x: Error: Unable to determine subject type for summary generation.",
+            )
+            return
+
+        # All validations passed
+        dispatch_slack_service.send_ephemeral_message(
+            client=client,
+            conversation_id=context["channel_id"],
+            user_id=context["user_id"],
+            text=":hourglass_flowing_sand: Generating read-in summary... This may take a moment.",
+        )
+
+        summary_response = ai_service.generate_read_in_summary(
+            db_session=db_session,
+            subject=context["subject"],
+            project=project,
+            channel_id=context["channel_id"],
+            important_reaction=context["config"].timeline_event_reaction,
+            participant_email=user.email,
+        )
+
+        if summary_response and summary_response.summary:
+            blocks = create_read_in_summary_blocks(summary_response.summary)
+            blocks.append(
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="NOTE: The block above was AI-generated and may contain errors or inaccuracies. Please verify the information before relying on it."
+                        )
+                    ]
+                ).build()
+            )
+
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=f"Here is a summary of what has happened so far in this {subject_type}",
+                blocks=blocks,
+            )
+        elif summary_response and summary_response.error_message:
+            log.warning(f"Failed to generate read-in summary: {summary_response.error_message}")
+
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=":x: Unable to generate summary at this time. Please try again later.",
+            )
+        else:
+            # No summary generated
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=":x: No summary could be generated. There may not be enough information available.",
+            )
+
+    except Exception as e:
+        log.error(f"Error generating summary: {e}")
+
+        dispatch_slack_service.send_ephemeral_message(
+            client=client,
+            conversation_id=context["channel_id"],
+            user_id=context["user_id"],
+            text=":x: An error occurred while generating the summary. Please try again later.",
         )
