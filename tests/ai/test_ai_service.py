@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from dispatch.ai.service import generate_read_in_summary, READ_IN_SUMMARY_CACHE_DURATION
-from dispatch.ai.models import ReadInSummary, ReadInSummaryResponse
+from dispatch.ai.service import generate_read_in_summary, READ_IN_SUMMARY_CACHE_DURATION, generate_tactical_report
+from dispatch.ai.models import ReadInSummary, ReadInSummaryResponse, TacticalReport, TacticalReportResponse
 from dispatch.ai.enums import AIEventSource, AIEventDescription
 from dispatch.plugins.dispatch_slack.models import IncidentSubjects, CaseSubjects
 from dispatch.enums import EventType
@@ -472,3 +472,219 @@ class TestGenerateReadInSummary:
             mock_get_event.assert_called_once_with(
                 session, case_id=mock_subject.id, max_age_seconds=READ_IN_SUMMARY_CACHE_DURATION
             )
+
+
+
+class TestGenerateTacticalReport:
+    """Test suite for generate_tactical_report function."""
+
+    @pytest.fixture
+    def mock_incident(self):
+        incident = Mock()
+        incident.id = 321
+        incident.name = "Tactical Incident"
+        incident.conversation = Mock()
+        incident.conversation.channel_id = "tactical-channel"
+        return incident
+
+    @pytest.fixture
+    def mock_project(self):
+        project = Mock()
+        project.id = 654
+        return project
+
+    @pytest.fixture
+    def mock_conversation(self):
+        return [
+            {"user": "user1", "text": "Initial event", "timestamp": "2024-02-01 10:00"},
+            {"user": "user2", "text": "Mitigation step", "timestamp": "2024-02-01 10:15"},
+        ]
+
+    @pytest.fixture
+    def mock_tactical_report(self):
+        return TacticalReport(
+            conditions="These are the conditions",
+            actions=["Action 1", "Action 2"],
+            needs=["Need 1"]
+        )
+
+    def test_generate_tactical_report_success(
+        self, session, mock_incident, mock_project, mock_conversation, mock_tactical_report
+    ):
+        """Test successful tactical report generation."""
+        with (
+            patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
+            patch("dispatch.ai.service.event_service.log_incident_event") as mock_log_event,
+        ):
+            # Mock AI plugin
+            mock_ai_plugin = Mock()
+            mock_ai_plugin.instance.configuration.chat_completion_model = "gpt-4"
+            mock_ai_plugin.instance.chat_parse.return_value = mock_tactical_report
+
+            # Mock conversation plugin
+            mock_conv_plugin = Mock()
+            mock_conv_plugin.instance.get_conversation.return_value = mock_conversation
+
+            # Configure plugin service to return our mocks
+            def get_plugin_side_effect(db_session, plugin_type, project_id):
+                if plugin_type == "artificial-intelligence":
+                    return mock_ai_plugin
+                elif plugin_type == "conversation":
+                    return mock_conv_plugin
+                return None
+
+            mock_get_plugin.side_effect = get_plugin_side_effect
+
+            # Call the function
+            result = generate_tactical_report(
+                db_session=session,
+                incident=mock_incident,
+                project=mock_project,
+                important_reaction=":fire:",
+            )
+
+            # Assertions
+            assert isinstance(result, TacticalReportResponse)
+            assert result.tactical_report is not None
+            assert result.error_message is None
+            assert result.tactical_report.conditions == mock_tactical_report.conditions
+            assert result.tactical_report.actions == mock_tactical_report.actions
+            assert result.tactical_report.needs == mock_tactical_report.needs
+
+            # Verify event logging
+            mock_log_event.assert_called_once_with(
+                db_session=session,
+                source=AIEventSource.dispatch_genai,
+                description=AIEventDescription.tactical_report_created.format(
+                    incident_name=mock_incident.name
+                ),
+                incident_id=mock_incident.id,
+                details=mock_tactical_report.dict(),
+                type=EventType.other,
+            )
+
+    def test_generate_tactical_report_no_ai_plugin(self, session, mock_incident, mock_project):
+        """Test tactical report generation when no AI plugin is available."""
+        with (
+            patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
+            patch("dispatch.ai.service.log") as mock_log,
+        ):
+            # No AI plugin
+            mock_get_plugin.side_effect = lambda db_session, plugin_type, project_id: (
+                None if plugin_type == "artificial-intelligence" else Mock()
+            )
+
+            result = generate_tactical_report(
+                db_session=session,
+                incident=mock_incident,
+                project=mock_project,
+                important_reaction=":fire:",
+            )
+            print(type(result))
+            assert isinstance(result, TacticalReportResponse)
+            assert result.tactical_report is None
+            assert result.error_message is not None
+            assert "No artificial-intelligence plugin enabled" in result.error_message
+            mock_log.warning.assert_called()
+
+    def test_generate_tactical_report_no_conversation_plugin(
+        self, session, mock_incident, mock_project
+    ):
+        """Test tactical report generation when no conversation plugin is available."""
+        with (
+            patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
+            patch("dispatch.ai.service.log") as mock_log,
+        ):
+            # AI plugin present, no conversation plugin
+            mock_ai_plugin = Mock()
+            mock_get_plugin.side_effect = lambda db_session, plugin_type, project_id: (
+                mock_ai_plugin if plugin_type == "artificial-intelligence" else None
+            )
+
+            result = generate_tactical_report(
+                db_session=session,
+                incident=mock_incident,
+                project=mock_project,
+                important_reaction=":fire:",
+            )
+
+            assert isinstance(result, TacticalReportResponse)
+            assert result.tactical_report is None
+            assert result.error_message is not None
+            assert "No conversation plugin enabled" in result.error_message
+            mock_log.warning.assert_called()
+
+    def test_generate_tactical_report_no_conversation(
+        self, session, mock_incident, mock_project
+    ):
+        """Test tactical report generation when no conversation is found."""
+        with (
+            patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
+            patch("dispatch.ai.service.log") as mock_log,
+        ):
+            # Mock AI plugin
+            mock_ai_plugin = Mock()
+            # Mock conversation plugin that returns no conversation
+            mock_conv_plugin = Mock()
+            mock_conv_plugin.instance.get_conversation.return_value = None
+
+            def get_plugin_side_effect(db_session, plugin_type, project_id):
+                if plugin_type == "artificial-intelligence":
+                    return mock_ai_plugin
+                elif plugin_type == "conversation":
+                    return mock_conv_plugin
+                return None
+
+            mock_get_plugin.side_effect = get_plugin_side_effect
+
+            result = generate_tactical_report(
+                db_session=session,
+                incident=mock_incident,
+                project=mock_project,
+                important_reaction=":fire:",
+            )
+
+            assert isinstance(result, TacticalReportResponse)
+            assert result.tactical_report is None
+            assert result.error_message is not None
+            assert "No conversation found" in result.error_message
+            mock_log.warning.assert_called()
+
+    def test_generate_tactical_report_ai_error(
+        self, session, mock_incident, mock_project, mock_conversation
+    ):
+        """Test tactical report generation when AI plugin throws an error."""
+        with (
+            patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
+            patch("dispatch.ai.service.log") as mock_log,
+        ):
+            # Mock AI plugin with error
+            mock_ai_plugin = Mock()
+            mock_ai_plugin.instance.configuration.chat_completion_model = "gpt-4"
+            mock_ai_plugin.instance.chat_parse.side_effect = Exception("AI error")
+
+            # Mock conversation plugin
+            mock_conv_plugin = Mock()
+            mock_conv_plugin.instance.get_conversation.return_value = mock_conversation
+
+            def get_plugin_side_effect(db_session, plugin_type, project_id):
+                if plugin_type == "artificial-intelligence":
+                    return mock_ai_plugin
+                elif plugin_type == "conversation":
+                    return mock_conv_plugin
+                return None
+
+            mock_get_plugin.side_effect = get_plugin_side_effect
+
+            result = generate_tactical_report(
+                db_session=session,
+                incident=mock_incident,
+                project=mock_project,
+                important_reaction=":fire:",
+            )
+
+            assert isinstance(result, TacticalReportResponse)
+            assert result.tactical_report is None
+            assert result.error_message is not None
+            assert "Error generating tactical report" in result.error_message
+            mock_log.exception.assert_called()
