@@ -529,7 +529,7 @@ const actions = {
       )
     })
   },
-  generateTacticalReport: debounce(({ commit }) => {
+  generateTacticalReport: debounce(({ commit, state }) => {
     const id = state.selected.id
     commit("SET_TACTICAL_REPORT_LOADING", true)
     return IncidentApi.generateTacticalReport(id).then((response) => {

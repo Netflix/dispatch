@@ -103,7 +103,7 @@ import { mapActions } from "vuex"
 export default {
   name: "IncidentReportDialog",
   data() {
-    return { loading: false }
+    return {}
   },
   computed: {
     ...mapFields("incident", [
