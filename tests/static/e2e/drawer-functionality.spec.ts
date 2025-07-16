@@ -30,11 +30,12 @@ test.describe("Drawer Functionality", () => {
     const detailsTab = page.getByRole("tab", { name: "Details" })
     await detailsTab.click()
 
-    // Find and update the description field using label - get the first one (textarea)
-    const descriptionField = page.getByLabel("Description", { exact: false }).first()
+    // Find and update the description field by finding the textarea with specific content
+    const descriptionField = page
+      .locator("textarea")
+      .filter({ hasText: "Those backups are good right?" })
 
     if (await descriptionField.isVisible()) {
-      await descriptionField.click()
       await descriptionField.fill("Test description updated by Playwright")
     }
 
