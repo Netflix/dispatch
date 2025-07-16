@@ -726,7 +726,7 @@ def generate_tactical_report(
     if not genai_plugin:
         message = f"Tactical report not generated. No artificial-intelligence plugin enabled."
         log.warning(message)
-        return ReadInSummaryResponse(error_message=message)
+        return TacticalReportResponse(error_message=message)
 
     conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="conversation", project_id=project.id
@@ -736,7 +736,7 @@ def generate_tactical_report(
             f"Tactical report not generated. No conversation plugin enabled."
         )
         log.warning(message)
-        return ReadInSummaryResponse(error_message=message)
+        return TacticalReportResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
         conversation_id=incident.conversation.channel_id, important_reaction=important_reaction
@@ -744,7 +744,7 @@ def generate_tactical_report(
     if not conversation:
         message = f"Tactical report not generated for {incident.name}. No conversation found."
         log.warning(message)
-        return ReadInSummaryResponse(error_message=message)
+        return TacticalReportResponse(error_message=message)
 
     system_message = """
     You are a cybersecurity analyst tasked with creating structured tactical reports. Analyze the
