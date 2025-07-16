@@ -40,12 +40,12 @@
             </v-card>
             <v-row class="mt-4 px-3">
               <v-col cols="auto">
-                <v-btn color="primary" @click="autoFillReport" :loading="loading">
+                <v-btn color="primary" @click="autoFillReport" :loading="tactical_report_loading">
                   Draft with GenAI
                 </v-btn>
               </v-col>
               <v-col cols="auto" class="d-flex align-center">
-                <span v-if="loading" class="ml-2"
+                <span v-if="tactical_report_loading" class="ml-2"
                   >AI-generated reports may be unreliable. Be sure to review the output before
                   saving.</span
                 >
@@ -108,6 +108,7 @@ export default {
       "report.tactical.conditions",
       "report.tactical.actions",
       "report.tactical.needs",
+      "report.tactical_report_loading",
       "report.executive.current_status",
       "report.executive.overview",
       "report.executive.next_steps",
@@ -118,9 +119,7 @@ export default {
     ...mapActions("incident", ["closeReportDialog", "createReport", "generateTacticalReport"]),
 
     async autoFillReport() {
-      this.loading = true
       await this.generateTacticalReport()
-      this.loading = false
     },
   },
 }
