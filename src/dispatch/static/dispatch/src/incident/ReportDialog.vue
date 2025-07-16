@@ -40,7 +40,11 @@
             </v-card>
             <v-row class="mt-4 px-3">
               <v-col cols="auto">
-                <v-btn color="primary" @click="autoFillReport" :loading="tactical_report_loading">
+                <v-btn
+                  color="primary"
+                  @click="generateTacticalReport"
+                  :loading="tactical_report_loading"
+                >
                   Draft with GenAI
                 </v-btn>
               </v-col>
@@ -117,10 +121,6 @@ export default {
 
   methods: {
     ...mapActions("incident", ["closeReportDialog", "createReport", "generateTacticalReport"]),
-
-    async autoFillReport() {
-      await this.generateTacticalReport()
-    },
   },
 }
 </script>
