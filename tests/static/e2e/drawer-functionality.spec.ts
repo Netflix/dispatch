@@ -41,12 +41,12 @@ test.describe("Drawer Functionality", () => {
 
     // Wait for form validation to complete and save button to become enabled
     await page.waitForSelector(
-      '//button[.//i[contains(@class, "mdi-content-save")]][not(@disabled)]',
+      ".v-navigation-drawer .v-btn--icon:has(.mdi-content-save):not(.v-btn--disabled)",
       { timeout: 10000 }
     )
 
-    // Save the changes
-    await page.locator('//button[.//i[contains(@class, "mdi-content-save")]]').click()
+    // Save the changes - target only the save button within the drawer
+    await page.locator(".v-navigation-drawer .v-btn--icon:has(.mdi-content-save)").click()
 
     // Wait for save to complete (look for loading state to disappear)
     await page.waitForTimeout(1000)
