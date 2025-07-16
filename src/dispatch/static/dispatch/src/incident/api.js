@@ -60,6 +60,10 @@ export default {
     return API.post(`/${resource}/${incidentId}/report/${type}`, payload)
   },
 
+  generateTacticalReport(incidentId) {
+    return API.get(`/${resource}/${incidentId}/report/tactical/generate`)
+  },
+
   createNewEvent(incidentId, payload) {
     return API.post(`/${resource}/${incidentId}/event`, payload)
   },

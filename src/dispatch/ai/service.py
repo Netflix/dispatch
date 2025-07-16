@@ -25,6 +25,8 @@ from .models import (
     ReadInSummaryResponse,
     CaseSignalSummary,
     CaseSignalSummaryResponse,
+    TacticalReport,
+    TacticalReportResponse,
 )
 from .enums import AIEventSource, AIEventDescription
 
@@ -706,3 +708,97 @@ def generate_read_in_summary(
         log.exception(f"Error generating read-in summary: {e}")
         error_msg = f"Error generating read-in summary: {str(e)}"
         return ReadInSummaryResponse(error_message=error_msg)
+
+
+def generate_tactical_report(
+    *,
+    db_session,
+    incident: Incident,
+    project: Project,
+    important_reaction: str | None = None,
+) -> TacticalReportResponse:
+    """
+    Generate a tactical report for a given subject.
+
+    Args:
+        channel_id (str): The channel ID to target when fetching conversation history
+        important_reaction (str): The emoji reaction denoting important messages
+
+    Returns:
+        TacticalReportResponse: A structured response containing the tactical report or error message.
+    """
+
+    genai_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="artificial-intelligence", project_id=project.id
+    )
+    if not genai_plugin:
+        message = f"Tactical report not generated for {incident.name}. No artificial-intelligence plugin enabled."
+        log.warning(message)
+        return TacticalReportResponse(error_message=message)
+
+    conversation_plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="conversation", project_id=project.id
+    )
+    if not conversation_plugin:
+        message = (
+            f"Tactical report not generated for {incident.name}. No conversation plugin enabled."
+        )
+        log.warning(message)
+        return TacticalReportResponse(error_message=message)
+
+    conversation = conversation_plugin.instance.get_conversation(
+        conversation_id=incident.conversation.channel_id, important_reaction=important_reaction
+    )
+    if not conversation:
+        message = f"Tactical report not generated for {incident.name}. No conversation found."
+        log.warning(message)
+        return TacticalReportResponse(error_message=message)
+
+    system_message = """
+    You are a cybersecurity analyst tasked with creating structured tactical reports. Analyze the
+    provided channel messages and extract these 3 key types of information:
+    1. Conditions: the circumstances surrounding the event. For example, initial identification, event description,
+    affected parties and systems, the nature of the security flaw or security type, and the observable impact both inside and outside
+    the organization.
+    2. Actions: the actions performed in response to the event. For example, containment/mitigation steps, investigation or log analysis, internal
+    and external communications or notifications, remediation steps (such as policy or configuration changes), and
+    vendor or partner engagements. Prioritize executed actions over plans. Include relevant team or individual names.
+    3. Needs: unfulfilled requests associated with the event's resolution. For example, information to gather,
+    technical remediation steps, process improvements and preventative actions, or alignment/decision making. Include individuals
+    or teams as assignees where possible. If the incident is at its resolution with no unresolved needs, this section
+    can instead be populated with a note to that effect.
+
+    Only include the most impactful events and outcomes. Be clear, professional, and concise. Use complete sentences with clear subjects, including when writing in bullet points.
+    """
+
+    raw_prompt = f"""Analyze the following channel messages regarding a security event and provide a structured tactical report.
+
+    Channel messages: {conversation}
+    """
+
+    prompt = prepare_prompt_for_model(
+        raw_prompt, genai_plugin.instance.configuration.chat_completion_model
+    )
+
+    try:
+        result = genai_plugin.instance.chat_parse(
+            prompt=prompt, response_model=TacticalReport, system_message=system_message
+        )
+
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=AIEventSource.dispatch_genai,
+            description=AIEventDescription.tactical_report_created.format(
+                incident_name=incident.name
+            ),
+            incident_id=incident.id,
+            details=result.dict(),
+            type=EventType.other,
+        )
+
+        return TacticalReportResponse(tactical_report=result)
+
+    except Exception as e:
+        error_message = f"Error generating tactical report: {str(e)}"
+        log.exception(error_message)
+        return TacticalReportResponse(error_message=error_message)

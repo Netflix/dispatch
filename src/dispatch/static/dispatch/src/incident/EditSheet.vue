@@ -1,13 +1,29 @@
 <template>
   <v-form @submit.prevent v-slot="{ isValid }">
-    <VResizeDrawer
+    <v-navigation-drawer
       location="right"
-      handle-position="border"
-      handle-border-width="2"
       :width="navigation.width"
       ref="drawer"
       :permanent="$vuetify.display.mdAndDown"
+      :style="{ transition: isResizing ? 'none' : 'width 0.2s ease' }"
     >
+      <div
+        class="resize-handle"
+        @mousedown="startResize"
+        @mouseenter="handleHover = true"
+        @mouseleave="handleHover = false"
+        :style="{
+          position: 'absolute',
+          left: '0',
+          top: '0',
+          bottom: '0',
+          width: '4px',
+          cursor: 'ew-resize',
+          background: handleHover ? '#ff0000' : 'transparent',
+          zIndex: 1000,
+          transition: 'background 0.2s ease',
+        }"
+      />
       <template #prepend>
         <v-list-item lines="two">
           <v-list-item-title class="text-h6">
@@ -74,7 +90,7 @@
           <workflow-instance-tab v-model="workflow_instances" />
         </v-window-item>
       </v-window>
-    </VResizeDrawer>
+    </v-navigation-drawer>
   </v-form>
 </template>
 
@@ -112,10 +128,12 @@ export default {
     return {
       tab: null,
       navigation: {
-        width: 800,
-        borderSize: 3,
+        width: parseInt(localStorage.getItem("incident-drawer-width")) || 800,
         minWidth: 400,
+        maxWidth: 1200,
       },
+      isResizing: false,
+      handleHover: false,
     }
   },
 
@@ -139,6 +157,16 @@ export default {
     this.fetchDetails()
   },
 
+  mounted() {
+    document.addEventListener("mousemove", this.onMouseMove)
+    document.addEventListener("mouseup", this.onMouseUp)
+  },
+
+  beforeUnmount() {
+    document.removeEventListener("mousemove", this.onMouseMove)
+    document.removeEventListener("mouseup", this.onMouseUp)
+  },
+
   watch: {
     "$route.params.name": function () {
       this.fetchDetails()
@@ -154,6 +182,9 @@ export default {
         }
       },
     },
+    "navigation.width": function (newWidth) {
+      localStorage.setItem("incident-drawer-width", newWidth.toString())
+    },
   },
 
   methods: {
@@ -161,6 +192,21 @@ export default {
       if (this.$route.params.name) {
         this.getDetails({ name: this.$route.params.name })
       }
+    },
+    startResize(e) {
+      this.isResizing = true
+      e.preventDefault()
+    },
+    onMouseMove(e) {
+      if (!this.isResizing) return
+
+      const newWidth = window.innerWidth - e.clientX
+      if (newWidth >= this.navigation.minWidth && newWidth <= this.navigation.maxWidth) {
+        this.navigation.width = newWidth
+      }
+    },
+    onMouseUp() {
+      this.isResizing = false
     },
     ...mapActions("incident", ["save", "getDetails", "closeEditSheet"]),
   },
