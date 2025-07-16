@@ -40,14 +40,13 @@ test.describe("Drawer Functionality", () => {
     }
 
     // Save the changes
-    await page.locator("button.v-btn--icon:has(i.mdi-content-save)").click()
+    await page.locator('//button[.//i[contains(@class, "mdi-content-save")]]').click()
 
     // Wait for save to complete (look for loading state to disappear)
     await page.waitForTimeout(1000)
 
     // Close the drawer
-    const closeButton = page.getByRole("button").filter({ hasText: "close" }).first()
-    await closeButton.click()
+    await page.locator('//button[.//i[contains(@class, "mdi-close")]]').click()
 
     // Wait for drawer to close
     await expect(drawer).not.toBeVisible()
