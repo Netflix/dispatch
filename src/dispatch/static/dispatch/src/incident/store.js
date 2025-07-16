@@ -1,5 +1,5 @@
 import { getField, updateField } from "vuex-map-fields"
-import { constant, debounce } from "lodash"
+import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
@@ -545,8 +545,15 @@ const actions = {
           actions: formatBullets(report.actions),
           needs: formatBullets(report.needs),
         })
-      }
-      else {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text: "Tactical report generated successfully.",
+            type: "success",
+          },
+          { root: true }
+        )
+      } else {
         commit(
           "notification_backend/addBeNotification",
           {

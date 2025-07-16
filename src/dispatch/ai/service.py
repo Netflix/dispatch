@@ -720,10 +720,6 @@ def generate_tactical_report(
         TacticalReportResponse: A structured response containing the tactical report or error message.
     """
 
-    # todo(amats): check_for_cached_generation function?
-    # otherwise, port over "recent event" logic from david's version?
-
-    # todo(amats): check_necessary_plugin function?
     genai_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="artificial-intelligence", project_id=project.id
     )
@@ -731,8 +727,6 @@ def generate_tactical_report(
         message = f"Tactical report not generated. No artificial-intelligence plugin enabled."
         log.warning(message)
         return ReadInSummaryResponse(error_message=message)
-
-    print(type(genai_plugin.instance))
 
     conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="conversation", project_id=project.id

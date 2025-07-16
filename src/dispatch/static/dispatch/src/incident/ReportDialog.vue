@@ -117,21 +117,10 @@ export default {
   methods: {
     ...mapActions("incident", ["closeReportDialog", "createReport", "generateTacticalReport"]),
 
-    // TODO(amats): not familiar w every functionality here, move to store if possible
     async autoFillReport() {
       this.loading = true
-      try {
-        await this.generateTacticalReport()
-      } catch (error) {
-        this.$store.commit(
-          "notification_backend/addBeNotification",
-          { text: "Failed to generate tactical report.", type: "error" },
-          { root: true }
-        )
-        console.error("Error generating tactical report:", error)
-      } finally {
-        this.loading = false
-      }
+      await this.generateTacticalReport()
+      this.loading = false
     },
   },
 }
