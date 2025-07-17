@@ -450,7 +450,7 @@ class SlackConversationPlugin(ConversationPlugin):
             raise
 
     def get_conversation(
-        self, conversation_id: str, oldest: str = "0", important_reaction: str | None = None
+        self, conversation_id: str, oldest: str = "0", include_user_details = False, important_reaction: str | None = None
     ) -> list:
         """
         Fetches the top-level posts from a Slack conversation.
@@ -458,6 +458,8 @@ class SlackConversationPlugin(ConversationPlugin):
         Args:
             conversation_id (str): The ID of the Slack conversation.
             oldest (str): The oldest timestamp to fetch messages from.
+            include_user_details (bool): Whether to resolve user name and email information.
+            important_reaction (str): Emoji reaction indicating important messages.
 
         Returns:
             list: A list of tuples containing the timestamp and user ID of each message.
@@ -468,6 +470,7 @@ class SlackConversationPlugin(ConversationPlugin):
             conversation_id,
             oldest,
             include_message_text=True,
+            include_user_details=include_user_details,
             important_reaction=important_reaction,
         )
 
