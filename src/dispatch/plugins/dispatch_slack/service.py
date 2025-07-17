@@ -1,6 +1,7 @@
 import functools
 import heapq
 import logging
+import re
 from datetime import datetime
 
 from blockkit.surfaces import Block
@@ -629,6 +630,20 @@ def get_channel_activity(
     """
     result = []
     cursor = None
+
+    def mention_resolver(user_match):
+        """
+        Helper function to extract user informations from @ mentions in messages.
+        """
+        user_id = user_match.group(1)
+        try:
+            user_info = get_user_info_by_id(client, user_id)
+            return user_info.get('real_name', f"{user_id} (name not found)")
+        except SlackApiError as e:
+            log.warning(f"Error resolving mentioned Slack user: {e}")
+            # fall back on id
+            return user_id
+
     while True:
         response = make_call(
             client,
@@ -656,6 +671,10 @@ def get_channel_activity(
                     message_text = message.get("text", "")
                     if has_important_reaction(message, important_reaction):
                         message_text = f"IMPORTANT!: {message_text}"
+
+                    if include_user_details:  # attempt to resolve mentioned users
+                        message_text = re.sub(r'<@(\w+)>', mention_resolver, message_text)
+
                     message_result.append(message_text)
 
                 if include_user_details:
