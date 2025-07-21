@@ -352,12 +352,12 @@ def add_conversation_bookmark(
 def remove_member_from_channel(client: WebClient, conversation_id: str, user_id: str) -> None:
     """Removes a user from a channel."""
     log.info(f"Attempting to remove user {user_id} from channel {conversation_id}")
-    
+
     # Check if user is actually in the channel before attempting removal
     if not is_member_in_channel(client, conversation_id, user_id):
         log.info(f"User {user_id} is not in channel {conversation_id}, skipping removal")
         return
-    
+
     return make_call(
         client, SlackAPIPostEndpoints.conversations_kick, channel=conversation_id, user=user_id
     )
