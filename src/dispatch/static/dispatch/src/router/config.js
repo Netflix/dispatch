@@ -619,6 +619,12 @@ export const protectedRoute = [
             meta: { title: "Terms", subMenu: "project", group: "knowledge" },
             component: () => import("@/term/Table.vue"),
           },
+          {
+            path: "prompts",
+            name: "PromptTable",
+            meta: { title: "AI Prompts", subMenu: "project", group: "knowledge" },
+            component: () => import("@/prompt/Table.vue"),
+          },
         ]),
       ],
     },
