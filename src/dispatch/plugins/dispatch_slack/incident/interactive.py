@@ -1,7 +1,6 @@
 import logging
 import re
 import time
-import json
 import uuid
 from functools import partial
 from datetime import datetime, timedelta
@@ -2243,7 +2242,6 @@ def handle_tactical_report_draft_with_genai(
     if not tactical_report:
         error_message = draft_report.error_message if draft_report.error_message else "Unexpected error encountered generating tactical report."
         log.error(error_message)
-        
         client.views_update(
             view_id=body['view']['id'],
             view=Modal(
