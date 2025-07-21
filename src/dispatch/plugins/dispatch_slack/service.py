@@ -351,6 +351,13 @@ def add_conversation_bookmark(
 
 def remove_member_from_channel(client: WebClient, conversation_id: str, user_id: str) -> None:
     """Removes a user from a channel."""
+    log.info(f"Attempting to remove user {user_id} from channel {conversation_id}")
+    
+    # Check if user is actually in the channel before attempting removal
+    if not is_member_in_channel(client, conversation_id, user_id):
+        log.info(f"User {user_id} is not in channel {conversation_id}, skipping removal")
+        return
+    
     return make_call(
         client, SlackAPIPostEndpoints.conversations_kick, channel=conversation_id, user=user_id
     )
@@ -734,3 +741,41 @@ def create_genai_message_metadata_blocks(
     )
     blocks.append(Divider())
     return Message(blocks=blocks).build()["blocks"]
+
+
+def is_member_in_channel(client: WebClient, conversation_id: str, user_id: str) -> bool:
+    """
+    Check if a user is a member of a specific Slack channel.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        conversation_id (str): The ID of the Slack channel/conversation to check.
+        user_id (str): The ID of the user to check for membership.
+
+    Returns:
+        bool: True if the user is a member of the channel, False otherwise.
+
+    Raises:
+        SlackApiError: If there's an error from the Slack API (e.g., channel not found).
+    """
+    try:
+        response = make_call(
+            client,
+            SlackAPIGetEndpoints.conversations_members,
+            channel=conversation_id,
+        )
+
+        # Check if the user_id is in the list of members
+        return user_id in response.get("members", [])
+
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
+            log.warning(f"Channel {conversation_id} not found when checking membership for user {user_id}")
+            return False
+        elif e.response["error"] == SlackAPIErrorCode.USER_NOT_IN_CHANNEL:
+            # The bot itself is not in the channel, so it can't check membership
+            log.warning(f"Bot not in channel {conversation_id}, cannot check membership for user {user_id}")
+            return False
+        else:
+            log.exception(f"Error checking channel membership for user {user_id} in channel {conversation_id}: {e}")
+            raise
