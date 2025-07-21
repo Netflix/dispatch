@@ -1,6 +1,7 @@
 import json
 import logging
 
+from dispatch.ai.constants import READ_IN_SUMMARY_CACHE_DURATION
 from dispatch.plugins.dispatch_slack.models import IncidentSubjects
 import tiktoken
 from sqlalchemy.orm import aliased, Session
@@ -25,10 +26,6 @@ from .models import ReadInSummary, ReadInSummaryResponse, TacticalReport, Tactic
 from .enums import AIEventSource, AIEventDescription
 
 log = logging.getLogger(__name__)
-
-# Cache duration for AI-generated read-in summaries (in seconds)
-READ_IN_SUMMARY_CACHE_DURATION = 120  # 2 minutes
-
 
 def get_model_token_limit(model_name: str, buffer_percentage: float = 0.05) -> int:
     """

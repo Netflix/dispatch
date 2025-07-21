@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+import json
 import uuid
 from functools import partial
 from datetime import datetime, timedelta
@@ -23,6 +24,7 @@ from blockkit import (
     Section,
     UsersSelect,
 )
+from dispatch.ai.constants import TACTICAL_REPORT_SLACK_ACTION
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
@@ -2052,46 +2054,16 @@ def handle_engage_oncall_submission_event(
     )
 
 
-def handle_report_tactical_command(
-    ack: Ack,
-    body: dict,
-    client: WebClient,
+def tactical_report_modal(
     context: BoltContext,
-    db_session: Session,
-) -> None:
-    """Handles the report tactical command."""
-    ack()
-
-    if context["subject"].type == CaseSubjects.case:
-        raise CommandError("Command is not available outside of incident channels.")
-
-    # we load the most recent tactical report
-    tactical_report = report_service.get_most_recent_by_incident_id_and_type(
-        db_session=db_session,
-        incident_id=int(context["subject"].id),
-        report_type=ReportTypes.tactical_report,
-    )
-
-    conditions = actions = needs = None
-    if tactical_report:
-        conditions = tactical_report.details.get("conditions")
-        actions = tactical_report.details.get("actions")
-        needs = tactical_report.details.get("needs")
-
-    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
-    outstanding_actions = "" if actions is None else actions
-    if incident.tasks:
-        outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
-            [
-                "-" + task.description
-                for task in incident.tasks
-                if task.status != TaskStatus.resolved
-            ]
-        )
-
-    if len(outstanding_actions):
-        actions = outstanding_actions
-
+    conditions: str,
+    actions: str,
+    needs: str,
+    genai_loading: bool = False,
+):
+    """
+    Reusable skeleton for auto-populating the fields of the tactical report modal.
+    """
     blocks = [
         Input(
             label="Conditions",
@@ -2116,6 +2088,25 @@ def handle_report_tactical_command(
         ),
     ]
 
+    if genai_loading:
+        blocks.append(
+        Section(
+            text=MarkdownText(text=":hourglass_flowing_sand: This may take a moment. Be sure to verify all information before relying on it!")
+        )
+    )
+    else:
+        blocks.append(
+        Actions(
+            elements=[
+                Button(
+                    text=":sparkles: Draft with GenAI",
+                    action_id=TACTICAL_REPORT_SLACK_ACTION,
+                    style="primary",
+                    value=context["subject"].json()
+                )
+            ]
+        ))
+
     modal = Modal(
         title="Tactical Report",
         blocks=blocks,
@@ -2125,7 +2116,168 @@ def handle_report_tactical_command(
         private_metadata=context["subject"].json(),
     ).build()
 
+    return modal
+
+
+def handle_report_tactical_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Handles the report tactical command."""
+    ack()
+
+    if context["subject"].type == CaseSubjects.case:
+        raise CommandError("Command is not available outside of incident channels.")
+
+    # we load the most recent tactical report
+    tactical_report = report_service.get_most_recent_by_incident_id_and_type(
+        db_session=db_session,
+        incident_id=int(context["subject"].id),
+        report_type=ReportTypes.tactical_report,
+    )
+
+    conditions = actions = needs = ""
+    if tactical_report:
+        conditions = tactical_report.details.get("conditions")
+        actions = tactical_report.details.get("actions")
+        needs = tactical_report.details.get("needs")
+
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
+    outstanding_actions = "" if actions == "" else actions
+    if incident.tasks:
+        outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
+            [
+                "-" + task.description
+                for task in incident.tasks
+                if task.status != TaskStatus.resolved
+            ]
+        )
+
+    if len(outstanding_actions):
+        actions = outstanding_actions
+
+
+    modal = tactical_report_modal(
+        context,
+        conditions,
+        actions,
+        needs,
+        genai_loading=False
+    )
+
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+
+@app.action(TACTICAL_REPORT_SLACK_ACTION,
+            middleware=[button_context_middleware, configuration_middleware, db_middleware, user_middleware]
+            )
+def handle_tactical_report_draft_with_genai(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    user: DispatchUser
+):
+    ack()
+
+    client.views_update(
+        view_id=body['view']['id'],
+        view=tactical_report_modal(
+            context,
+            conditions="Drafting...",
+            actions="Drafting...",
+            needs="Drafting...",
+            genai_loading=True,
+        )
+    )
+
+    db_session = context['db_session']
+    incident_id = context['subject'].id
+
+    incident = incident_service.get(
+        db_session=db_session,
+        incident_id=incident_id
+    )
+
+    if not incident:
+        log.error(f"Unable to retrieve incident with id {incident_id} to generate tactical report via Slack")
+
+        client.views_update(
+            view_id=body['view']['id'],
+            view=Modal(
+                    title="Tactical Report",
+        blocks=[
+            Section(
+                text=MarkdownText(text=f":exclamation: Unable to retrieve incident with id {incident_id}. Please contact your Dispatch admin.")
+            )
+        ],
+        close="Close",
+        private_metadata=context["subject"].json(),
+            ).build()
+        )
+
+        client.views_update(
+        view_id=body['view']['id'],
+        view=tactical_report_modal(
+            context=context,
+            conditions='',
+            actions='',
+            needs='',
+            genai_loading=False,
+            error_message=f"Unable to locate incident with id {id}. Please contact your Dispatch admins"
+        ))
+        return
+
+    draft_report = ai_service.generate_tactical_report(
+        db_session=db_session,
+        project=incident.project,
+        incident=incident,
+        important_reaction=context['config'].timeline_event_reaction
+    )
+
+    tactical_report = draft_report.tactical_report
+    if not tactical_report:
+        error_message = draft_report.error_message if draft_report.error_message else "Unexpected error encountered generating tactical report."
+        log.error(error_message)
+        
+        client.views_update(
+            view_id=body['view']['id'],
+            view=Modal(
+                    title="Tactical Report",
+        blocks=[
+            Section(
+                text=MarkdownText(text=f":exclamation: {error_message}")
+            )
+        ],
+        close="Close",
+        private_metadata=context["subject"].json(),
+            ).build()
+        )
+        return
+
+    conditions, actions, needs = tactical_report.conditions, tactical_report.actions, tactical_report.needs
+    if isinstance(actions, list):
+        actions = '- ' + '\n- '.join(actions)
+    if isinstance(needs, list):
+        needs = '- ' + '\n-'.join(needs)
+
+    client.views_update(
+        view_id=body['view']['id'],
+        view=tactical_report_modal(
+            context=context,
+            conditions=conditions,
+            actions=actions,
+            needs=needs + '\n\nThis report was generated with AI. Please verify all information before relying on it!',
+            genai_loading=False
+        )
+
+    )
+
+
 
 
 def ack_report_tactical_submission_event(ack: Ack) -> None:
