@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 import uuid
 from functools import partial
 from datetime import datetime, timedelta
@@ -22,11 +23,14 @@ from blockkit import (
     Section,
     UsersSelect,
 )
+from dispatch.ai.constants import TACTICAL_REPORT_SLACK_ACTION
 from slack_bolt import Ack, BoltContext, BoltRequest, Respond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
 
+from dispatch.ai import service as ai_service
+from dispatch.ai.models import ReadInSummary
 from dispatch.auth.models import DispatchUser
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
@@ -223,6 +227,16 @@ def configure(config):
         handle_add_timeline_event_command
     )
     app.command(config.slack_command_create_task, middleware=middleware)(handle_create_task_command)
+
+    app.command(
+        config.slack_command_summary,
+        middleware=[
+            message_context_middleware,
+            subject_middleware,
+            configuration_middleware,
+            user_middleware,
+        ],
+    )(handle_summary_command)
 
     app.event(
         event="reaction_added",
@@ -780,6 +794,52 @@ def replace_slack_users_in_message(client: Any, message: str) -> str:
     return re.sub(r"<@([^>]+)>", lambda x: f"@{get_user_name_from_id(client, x.group(1))}", message)
 
 
+def create_read_in_summary_blocks(summary: ReadInSummary) -> list:
+    """Creates Slack blocks from a structured read-in summary."""
+    blocks = []
+
+    # Add AI disclaimer at the top
+    blocks.append(
+        Context(
+            elements=[
+                MarkdownText(
+                    text=":sparkles: *This entire block is AI-generated and may contain errors or inaccuracies. Please verify the information before relying on it.*"
+                )
+            ]
+        ).build()
+    )
+
+    # Add AI-generated summary if available
+    if summary.summary:
+        blocks.append(
+            Section(text=":magic_wand: *AI-Generated Summary*\n{0}".format(summary.summary)).build()
+        )
+
+    # Add timeline events if available
+    if summary.timeline:
+        timeline_text = "\n".join([f"• {event}" for event in summary.timeline])
+        blocks.append(
+            Section(
+                text=":alarm_clock: *Timeline* _(times in UTC)_\n{0}".format(timeline_text)
+            ).build()
+        )
+
+    # Add actions taken if available
+    if summary.actions_taken:
+        actions_text = "\n".join([f"• {action}" for action in summary.actions_taken])
+        blocks.append(
+            Section(text=":white_check_mark: *Actions Taken*\n{0}".format(actions_text)).build()
+        )
+
+    # Add current status if available
+    if summary.current_status:
+        blocks.append(
+            Section(text=":bar_chart: *Current Status*\n{0}".format(summary.current_status)).build()
+        )
+
+    return blocks
+
+
 def handle_timeline_added_event(
     ack: Ack, client: Any, context: BoltContext, payload: Any, db_session: Session
 ) -> None:
@@ -1122,7 +1182,14 @@ def handle_member_joined_channel(
             "Unable to handle member_joined_channel Slack event. Dispatch user unknown."
         )
 
-    if context["subject"].type == IncidentSubjects.incident:
+    # sleep for a second to allow the participant to be added to the incident
+    time.sleep(1)
+
+    generate_read_in_summary = False
+    subject_type = context["subject"].type
+    project = None
+
+    if subject_type == IncidentSubjects.incident:
         participant = incident_flows.incident_add_or_reactivate_participant_flow(
             user_email=user.email, incident_id=int(context["subject"].id), db_session=db_session
         )
@@ -1136,6 +1203,12 @@ def handle_member_joined_channel(
         incident = incident_service.get(
             db_session=db_session, incident_id=int(context["subject"].id)
         )
+        project = incident.project
+        generate_read_in_summary = getattr(
+            incident.incident_type, "generate_read_in_summary", False
+        )
+        if incident.visibility == Visibility.restricted:
+            generate_read_in_summary = False
 
         # If the user was invited, the message will include an inviter property containing the user ID of the inviting user.
         # The property will be absent when a user manually joins a channel, or a user is added by default (e.g. #general channel).
@@ -1175,7 +1248,8 @@ def handle_member_joined_channel(
         db_session.add(participant)
         db_session.commit()
 
-    if context["subject"].type == CaseSubjects.case:
+    if subject_type == CaseSubjects.case:
+        subject_type = "case"
         case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
         if not case.dedicated_channel:
@@ -1190,6 +1264,13 @@ def handle_member_joined_channel(
         if not participant:
             # Participant is already in the case channel.
             return
+
+        project = case.project
+        generate_read_in_summary = getattr(case.case_type, "generate_read_in_summary", False)
+        if case.visibility == Visibility.restricted:
+            generate_read_in_summary = False
+        if not case.dedicated_channel:
+            generate_read_in_summary = False
 
         participant.user_conversation_id = context["user_id"]
 
@@ -1227,6 +1308,41 @@ def handle_member_joined_channel(
 
         db_session.add(participant)
         db_session.commit()
+
+    if not generate_read_in_summary:
+        return
+
+    # Generate read-in summary for user
+    summary_response = ai_service.generate_read_in_summary(
+        db_session=db_session,
+        subject=context["subject"],
+        project=project,
+        channel_id=context["channel_id"],
+        important_reaction=context["config"].timeline_event_reaction,
+        participant_email=user.email,
+    )
+
+    if summary_response and summary_response.summary:
+        blocks = create_read_in_summary_blocks(summary_response.summary)
+        blocks.append(
+            Context(
+                elements=[
+                    MarkdownText(
+                        text="NOTE: The block above was AI-generated and may contain errors or inaccuracies. Please verify the information before relying on it."
+                    )
+                ]
+            ).build()
+        )
+        dispatch_slack_service.send_ephemeral_message(
+            client=client,
+            conversation_id=context["channel_id"],
+            user_id=context["user_id"],
+            text=f"Here is a summary of what has happened so far in this {subject_type}",
+            blocks=blocks,
+        )
+    elif summary_response and summary_response.error_message:
+        # Log the error but don't show it to the user to avoid confusion
+        log.warning(f"Failed to generate read-in summary: {summary_response.error_message}")
 
 
 @app.event(
@@ -1937,46 +2053,16 @@ def handle_engage_oncall_submission_event(
     )
 
 
-def handle_report_tactical_command(
-    ack: Ack,
-    body: dict,
-    client: WebClient,
+def tactical_report_modal(
     context: BoltContext,
-    db_session: Session,
-) -> None:
-    """Handles the report tactical command."""
-    ack()
-
-    if context["subject"].type == CaseSubjects.case:
-        raise CommandError("Command is not available outside of incident channels.")
-
-    # we load the most recent tactical report
-    tactical_report = report_service.get_most_recent_by_incident_id_and_type(
-        db_session=db_session,
-        incident_id=int(context["subject"].id),
-        report_type=ReportTypes.tactical_report,
-    )
-
-    conditions = actions = needs = None
-    if tactical_report:
-        conditions = tactical_report.details.get("conditions")
-        actions = tactical_report.details.get("actions")
-        needs = tactical_report.details.get("needs")
-
-    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
-    outstanding_actions = "" if actions is None else actions
-    if incident.tasks:
-        outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
-            [
-                "-" + task.description
-                for task in incident.tasks
-                if task.status != TaskStatus.resolved
-            ]
-        )
-
-    if len(outstanding_actions):
-        actions = outstanding_actions
-
+    conditions: str,
+    actions: str,
+    needs: str,
+    genai_loading: bool = False,
+):
+    """
+    Reusable skeleton for auto-populating the fields of the tactical report modal.
+    """
     blocks = [
         Input(
             label="Conditions",
@@ -2001,6 +2087,25 @@ def handle_report_tactical_command(
         ),
     ]
 
+    if genai_loading:
+        blocks.append(
+        Section(
+            text=MarkdownText(text=":hourglass_flowing_sand: This may take a moment. Be sure to verify all information before relying on it!")
+        )
+    )
+    else:
+        blocks.append(
+        Actions(
+            elements=[
+                Button(
+                    text=":sparkles: Draft with GenAI",
+                    action_id=TACTICAL_REPORT_SLACK_ACTION,
+                    style="primary",
+                    value=context["subject"].json()
+                )
+            ]
+        ))
+
     modal = Modal(
         title="Tactical Report",
         blocks=blocks,
@@ -2010,7 +2115,167 @@ def handle_report_tactical_command(
         private_metadata=context["subject"].json(),
     ).build()
 
+    return modal
+
+
+def handle_report_tactical_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+) -> None:
+    """Handles the report tactical command."""
+    ack()
+
+    if context["subject"].type == CaseSubjects.case:
+        raise CommandError("Command is not available outside of incident channels.")
+
+    # we load the most recent tactical report
+    tactical_report = report_service.get_most_recent_by_incident_id_and_type(
+        db_session=db_session,
+        incident_id=int(context["subject"].id),
+        report_type=ReportTypes.tactical_report,
+    )
+
+    conditions = actions = needs = ""
+    if tactical_report:
+        conditions = tactical_report.details.get("conditions")
+        actions = tactical_report.details.get("actions")
+        needs = tactical_report.details.get("needs")
+
+    incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
+    outstanding_actions = "" if actions == "" else actions
+    if incident.tasks:
+        outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
+            [
+                "-" + task.description
+                for task in incident.tasks
+                if task.status != TaskStatus.resolved
+            ]
+        )
+
+    if len(outstanding_actions):
+        actions = outstanding_actions
+
+
+    modal = tactical_report_modal(
+        context,
+        conditions,
+        actions,
+        needs,
+        genai_loading=False
+    )
+
     client.views_open(trigger_id=body["trigger_id"], view=modal)
+
+
+
+@app.action(TACTICAL_REPORT_SLACK_ACTION,
+            middleware=[button_context_middleware, configuration_middleware, db_middleware, user_middleware]
+            )
+def handle_tactical_report_draft_with_genai(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    user: DispatchUser
+):
+    ack()
+
+    client.views_update(
+        view_id=body['view']['id'],
+        view=tactical_report_modal(
+            context,
+            conditions="Drafting...",
+            actions="Drafting...",
+            needs="Drafting...",
+            genai_loading=True,
+        )
+    )
+
+    db_session = context['db_session']
+    incident_id = context['subject'].id
+
+    incident = incident_service.get(
+        db_session=db_session,
+        incident_id=incident_id
+    )
+
+    if not incident:
+        log.error(f"Unable to retrieve incident with id {incident_id} to generate tactical report via Slack")
+
+        client.views_update(
+            view_id=body['view']['id'],
+            view=Modal(
+                    title="Tactical Report",
+        blocks=[
+            Section(
+                text=MarkdownText(text=f":exclamation: Unable to retrieve incident with id {incident_id}. Please contact your Dispatch admin.")
+            )
+        ],
+        close="Close",
+        private_metadata=context["subject"].json(),
+            ).build()
+        )
+
+        client.views_update(
+        view_id=body['view']['id'],
+        view=tactical_report_modal(
+            context=context,
+            conditions='',
+            actions='',
+            needs='',
+            genai_loading=False,
+            error_message=f"Unable to locate incident with id {id}. Please contact your Dispatch admins"
+        ))
+        return
+
+    draft_report = ai_service.generate_tactical_report(
+        db_session=db_session,
+        project=incident.project,
+        incident=incident,
+        important_reaction=context['config'].timeline_event_reaction
+    )
+
+    tactical_report = draft_report.tactical_report
+    if not tactical_report:
+        error_message = draft_report.error_message if draft_report.error_message else "Unexpected error encountered generating tactical report."
+        log.error(error_message)
+        client.views_update(
+            view_id=body['view']['id'],
+            view=Modal(
+                    title="Tactical Report",
+        blocks=[
+            Section(
+                text=MarkdownText(text=f":exclamation: {error_message}")
+            )
+        ],
+        close="Close",
+        private_metadata=context["subject"].json(),
+            ).build()
+        )
+        return
+
+    conditions, actions, needs = tactical_report.conditions, tactical_report.actions, tactical_report.needs
+    if isinstance(actions, list):
+        actions = '- ' + '\n- '.join(actions)
+    if isinstance(needs, list):
+        needs = '- ' + '\n-'.join(needs)
+
+    client.views_update(
+        view_id=body['view']['id'],
+        view=tactical_report_modal(
+            context=context,
+            conditions=conditions,
+            actions=actions,
+            needs=needs + '\n\nThis report was generated with AI. Please verify all information before relying on it!',
+            genai_loading=False
+        )
+
+    )
+
+
 
 
 def ack_report_tactical_submission_event(ack: Ack) -> None:
@@ -2901,4 +3166,146 @@ def handle_remind_again_select_action(
         message = build_unexpected_error_message(guid)
         respond(
             text=message, response_type="ephemeral", replace_original=False, delete_original=False
+        )
+
+
+def handle_summary_command(
+    ack: Ack,
+    body: dict,
+    client: WebClient,
+    context: BoltContext,
+    db_session: Session,
+    user: DispatchUser,
+) -> None:
+    """Handles the summary command to generate a read-in summary."""
+    ack()
+
+    try:
+        if context["subject"].type == IncidentSubjects.incident:
+            incident = incident_service.get(
+                db_session=db_session, incident_id=int(context["subject"].id)
+            )
+            project = incident.project
+            subject_type = "incident"
+
+            if incident.visibility == Visibility.restricted:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Cannot generate summary for restricted incidents.",
+                )
+                return
+
+            if not incident.incident_type.generate_read_in_summary:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are not enabled for this incident type.",
+                )
+                return
+
+        elif context["subject"].type == CaseSubjects.case:
+            case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
+            project = case.project
+            subject_type = "case"
+
+            if case.visibility == Visibility.restricted:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Cannot generate summary for restricted cases.",
+                )
+                return
+
+            if not case.case_type.generate_read_in_summary:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are not enabled for this case type.",
+                )
+                return
+
+            if not case.dedicated_channel:
+                dispatch_slack_service.send_ephemeral_message(
+                    client=client,
+                    conversation_id=context["channel_id"],
+                    user_id=context["user_id"],
+                    text=":x: Read-in summaries are only available for cases with a dedicated channel.",
+                )
+                return
+        else:
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=":x: Error: Unable to determine subject type for summary generation.",
+            )
+            return
+
+        # All validations passed
+        dispatch_slack_service.send_ephemeral_message(
+            client=client,
+            conversation_id=context["channel_id"],
+            user_id=context["user_id"],
+            text=":hourglass_flowing_sand: Generating read-in summary... This may take a moment.",
+        )
+
+        summary_response = ai_service.generate_read_in_summary(
+            db_session=db_session,
+            subject=context["subject"],
+            project=project,
+            channel_id=context["channel_id"],
+            important_reaction=context["config"].timeline_event_reaction,
+            participant_email=user.email,
+        )
+
+        if summary_response and summary_response.summary:
+            blocks = create_read_in_summary_blocks(summary_response.summary)
+            blocks.append(
+                Context(
+                    elements=[
+                        MarkdownText(
+                            text="NOTE: The block above was AI-generated and may contain errors or inaccuracies. Please verify the information before relying on it."
+                        )
+                    ]
+                ).build()
+            )
+
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=f"Here is a summary of what has happened so far in this {subject_type}",
+                blocks=blocks,
+            )
+        elif summary_response and summary_response.error_message:
+            log.warning(f"Failed to generate read-in summary: {summary_response.error_message}")
+
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=":x: Unable to generate summary at this time. Please try again later.",
+            )
+        else:
+            # No summary generated
+            dispatch_slack_service.send_ephemeral_message(
+                client=client,
+                conversation_id=context["channel_id"],
+                user_id=context["user_id"],
+                text=":x: No summary could be generated. There may not be enough information available.",
+            )
+
+    except Exception as e:
+        log.error(f"Error generating summary: {e}")
+
+        dispatch_slack_service.send_ephemeral_message(
+            client=client,
+            conversation_id=context["channel_id"],
+            user_id=context["user_id"],
+            text=":x: An error occurred while generating the summary. Please try again later.",
         )

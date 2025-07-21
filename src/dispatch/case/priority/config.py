@@ -7,6 +7,7 @@ default_case_priorities = [
         "page_assignee": False,
         "default": True,
         "enabled": True,
+        "disable_delayed_message_warning": False,
     },
     {
         "name": "Medium",
@@ -16,6 +17,7 @@ default_case_priorities = [
         "page_assignee": False,
         "default": False,
         "enabled": True,
+        "disable_delayed_message_warning": False,
     },
     {
         "name": "High",
@@ -25,6 +27,7 @@ default_case_priorities = [
         "page_assignee": False,
         "default": False,
         "enabled": True,
+        "disable_delayed_message_warning": False,
     },
     {
         "name": "Critical",
@@ -34,6 +37,7 @@ default_case_priorities = [
         "page_assignee": True,
         "default": False,
         "enabled": True,
+        "disable_delayed_message_warning": True,
     },
     {
         "name": "Optional",
@@ -43,5 +47,6 @@ default_case_priorities = [
         "page_assignee": False,
         "default": False,
         "enabled": True,
+        "disable_delayed_message_warning": False,
     },
 ]

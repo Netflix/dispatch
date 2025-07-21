@@ -24,6 +24,7 @@ const getDefaultSelectedState = () => {
     default: false,
     project: null,
     cost_model: null,
+    generate_read_in_summary: false,
   }
 }
 

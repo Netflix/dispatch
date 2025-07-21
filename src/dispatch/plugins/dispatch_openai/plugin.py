@@ -9,6 +9,7 @@
 import logging
 
 from openai import OpenAI
+from typing import TypeVar, Type
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_openai as openai_plugin
@@ -16,6 +17,7 @@ from dispatch.plugins.bases import ArtificialIntelligencePlugin
 from dispatch.plugins.dispatch_openai.config import (
     OpenAIConfiguration,
 )
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -56,3 +58,29 @@ class OpenAIPlugin(ArtificialIntelligencePlugin):
             raise
 
         return completion.choices[0].message
+
+    T = TypeVar("T", bound=BaseModel)
+
+    def chat_parse(self, prompt: str, response_model: Type[T]) -> T:
+        client = OpenAI(api_key=self.api_key)
+
+        try:
+            completion = client.chat.completions.parse(
+                model=self.model,
+                response_format=response_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": self.system_message,
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+            )
+        except Exception as e:
+            logger.error(e)
+            raise
+
+        return completion.choices[0].message.parsed

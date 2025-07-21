@@ -350,6 +350,24 @@ def case_new_create_flow(
         # we transition the case to the closed state if its case type has auto close enabled
         case_auto_close_flow(case=case, db_session=db_session)
 
+    if case.assignee and case.assignee.individual:
+        group_flows.update_group(
+            subject=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.assignee.individual.email,
+            db_session=db_session,
+        )
+
+    if case.reporter and case.reporter.individual:
+        group_flows.update_group(
+            subject=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.reporter.individual.email,
+            db_session=db_session,
+        )
+
     return case
 
 

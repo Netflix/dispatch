@@ -38,6 +38,7 @@ import service_feedback from "@/feedback/service/store"
 import signal from "@/signal/store"
 import signalEngagement from "@/signal/engagement/store"
 import signalFilter from "@/signal/filter/store"
+import signalInstance from "@/signal/instance/store"
 import source from "@/data/source/store"
 import sourceDataFormat from "@/data/source/dataFormat/store"
 import sourceEnvironment from "@/data/source/environment/store"
@@ -98,6 +99,7 @@ export default createStore({
     signal,
     signalEngagement,
     signalFilter,
+    signalInstance,
     tag,
     tag_type,
     task,

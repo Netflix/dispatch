@@ -120,6 +120,13 @@
               </v-col>
               <v-col cols="12">
                 <v-checkbox
+                  v-model="generate_read_in_summary"
+                  label="Enable AI-Generated Read-In Summaries"
+                  hint="If checked, AI-generated read-in summaries will be automatically generated for incidents of this type."
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
                   v-model="exclude_from_reminders"
                   label="Exclude from Reminders"
                   hint="Check if this incident type should be excluded from receiving reminders."
@@ -243,6 +250,7 @@ export default {
       "selected.channel_description",
       "selected.description_service",
       "selected.task_plugin_metadata",
+      "selected.generate_read_in_summary",
     ]),
     ...mapFields("incident_type", {
       default_incident_type: "selected.default",
