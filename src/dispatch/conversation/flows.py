@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from dispatch.case.models import Case
 from dispatch.conference.models import Conference
 from dispatch.document.models import Document
+from dispatch.enums import EventType
 from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.messaging.strings import MessageType
@@ -490,8 +491,28 @@ def add_case_participants(
                         case.conversation.thread_id,
                         participant_emails,
                     )
+
+                    # log event for adding participants
+                    event_service.log_case_event(
+                        db_session=db_session,
+                        source=plugin.plugin.title,
+                        description=f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id}, thread ID: {case.conversation.thread_id})",
+                        case_id=case.id,
+                        type=EventType.participant_updated,
+                    )
+                    log.info(f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id}, thread ID: {case.conversation.thread_id})")
         elif case.has_channel:
             plugin.instance.add(case.conversation.channel_id, participant_emails)
+
+            # log event for adding participants
+            event_service.log_case_event(
+                db_session=db_session,
+                source=plugin.plugin.title,
+                description=f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id})",
+                case_id=case.id,
+                type=EventType.participant_updated,
+            )
+            log.info(f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id})")
     except Exception as e:
         event_service.log_case_event(
             db_session=db_session,
