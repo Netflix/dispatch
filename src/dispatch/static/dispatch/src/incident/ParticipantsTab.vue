@@ -132,7 +132,6 @@ export default {
       try {
         // Add each selected participant
         for (const participant of this.selectedParticipant) {
-          console.log("Adding participant:", participant.individual.email)
           await IncidentApi.addParticipant(this.id, participant.individual.email)
         }
 
