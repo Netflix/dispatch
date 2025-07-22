@@ -1099,7 +1099,7 @@ def incident_add_or_reactivate_participant_flow(
             log.info(f"Added {user_email} to conversation in (channel ID: {incident.conversation.channel_id})")
 
         except Exception as e:
-            log.exception(f"Failed to remove user from Slack conversation: {e}")
+            log.exception(f"Failed to add user to Slack conversation: {e}")
 
         # we announce the participant in the conversation
         if send_announcement_message:
