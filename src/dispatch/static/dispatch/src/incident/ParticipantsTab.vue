@@ -125,7 +125,7 @@ export default {
         !Array.isArray(this.selectedParticipant) ||
         this.selectedParticipant.length === 0
       ) {
-        console.log("No participants selected")
+        // No participants selected
         return
       }
 
