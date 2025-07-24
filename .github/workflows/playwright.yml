@@ -1,5 +1,5 @@
-name: "playwright"
-on: # rebuild any PRs and main branch changes
+name: Playwright E2E Tests
+on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
