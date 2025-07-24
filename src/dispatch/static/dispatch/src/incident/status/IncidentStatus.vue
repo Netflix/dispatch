@@ -28,6 +28,22 @@
         </template>
       </v-tooltip>
     </template>
+    <template v-if="cases && cases.length > 0">
+      <v-tooltip location="bottom" :text="`View case`">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-briefcase"
+            variant="text"
+            density="comfortable"
+            class="ml-1"
+            size="small"
+            color="blue"
+            @click.stop="navigateToCase(cases[0])"
+          />
+        </template>
+      </v-tooltip>
+    </template>
   </div>
 </template>
 
@@ -50,6 +66,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    cases: {
+      type: Array,
+      default: () => [],
+    },
   },
 
   computed: {
@@ -66,6 +86,12 @@ export default {
 
   methods: {
     ...mapActions("incident", ["joinIncident", "subscribeToIncident"]),
+    navigateToCase(caseItem) {
+      this.$router.push({
+        name: "CaseTableEdit",
+        params: { name: caseItem.name },
+      })
+    },
   },
 }
 </script>

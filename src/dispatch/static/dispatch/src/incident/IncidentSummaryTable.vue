@@ -4,7 +4,12 @@
       <incident-priority :priority="value" :color="item.incident_priority.color" />
     </template>
     <template #item.status="{ item, value }">
-      <incident-status :status="value" :id="item.id" />
+      <incident-status
+        :status="value"
+        :id="item.id"
+        :allowSelfJoin="item.project?.allow_self_join || false"
+        :cases="item.cases || []"
+      />
     </template>
     <template #item.commander="{ value }">
       <incident-participant :participant="value" />
