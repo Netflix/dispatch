@@ -248,7 +248,7 @@ class ProjectRead(DispatchBase):
     display_name: str | None = None
 
 
-class CaseRead(DispatchBase):
+class CaseReadBasic(DispatchBase):
     """Pydantic model for reading a case resource."""
 
     id: PrimaryKey
@@ -353,12 +353,13 @@ class IncidentReadMinimal(IncidentBase):
     tags: list[TagRead] | None = []
     tasks: list[TaskReadMinimal] | None = []
     total_cost: float | None = None
+    cases: list[CaseReadBasic] | None = []
 
 
 class IncidentUpdate(IncidentBase):
     """Pydantic model for updating an incident resource."""
 
-    cases: list[CaseRead] | None = []
+    cases: list[CaseReadBasic] | None = []
     commander: ParticipantUpdate | None = None
     delay_executive_report_reminder: datetime | None = None
     delay_tactical_report_reminder: datetime | None = None
@@ -396,7 +397,7 @@ class IncidentRead(IncidentBase):
     """Pydantic model for reading an incident resource."""
 
     id: PrimaryKey
-    cases: list[CaseRead] | None = []
+    cases: list[CaseReadBasic] | None = []
     closed_at: datetime | None = None
     commander: ParticipantRead | None = None
     commanders_location: str | None = None

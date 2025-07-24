@@ -78,7 +78,12 @@
                   </div>
                 </template>
                 <template #item.incident.status="{ item }">
-                  <incident-status :status="item.incident.status" :id="item.id" />
+                  <incident-status
+                    :status="item.incident.status"
+                    :id="item.id"
+                    :allowSelfJoin="false"
+                    :cases="[]"
+                  />
                 </template>
                 <template #item.incident_priority.name="{ item }">
                   <incident-priority
