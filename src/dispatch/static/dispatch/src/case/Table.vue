@@ -77,6 +77,7 @@
                 :id="item.id"
                 :allowSelfJoin="item.project.allow_self_join"
                 :dedicatedChannel="item.dedicated_channel"
+                :incidents="item.incidents"
               />
             </template>
             <template #item.project.display_name="{ item }">

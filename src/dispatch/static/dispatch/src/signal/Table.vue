@@ -49,7 +49,13 @@
               <v-checkbox-btn :model-value="value" disabled />
             </template>
             <template #item.status="{ item, value }">
-              <case-status :status="value" :id="item.id" />
+              <case-status
+                :status="value"
+                :id="item.id"
+                :allowSelfJoin="false"
+                :dedicatedChannel="false"
+                :incidents="[]"
+              />
             </template>
             <template #item.project.display_name="{ item }">
               <v-chip size="small" :color="item.project.color">
