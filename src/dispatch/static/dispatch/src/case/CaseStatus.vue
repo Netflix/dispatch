@@ -17,6 +17,21 @@
         </template>
       </v-tooltip>
     </template>
+    <template v-if="incidents && incidents.length > 0">
+      <v-tooltip location="bottom" :text="`View incident`">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-fire"
+            variant="text"
+            density="comfortable"
+            class="ml-1"
+            color="orange"
+            @click.stop="navigateToIncident(incidents[0])"
+          />
+        </template>
+      </v-tooltip>
+    </template>
   </div>
 </template>
 
@@ -43,6 +58,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    incidents: {
+      type: Array,
+      default: () => [],
+    },
   },
 
   computed: {
@@ -61,6 +80,12 @@ export default {
 
   methods: {
     ...mapActions("case_management", ["joinCase"]),
+    navigateToIncident(incident) {
+      this.$router.push({
+        name: "IncidentTableEdit",
+        params: { name: incident.name },
+      })
+    },
   },
 }
 </script>

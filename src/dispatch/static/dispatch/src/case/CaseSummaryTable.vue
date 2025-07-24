@@ -4,7 +4,13 @@
       <case-priority :priority="value" :color="item.case_priority.color" />
     </template>
     <template #item.status="{ item, value }">
-      <case-status :status="value" :id="item.id" />
+      <case-status
+        :status="value"
+        :id="item.id"
+        :allowSelfJoin="item.project?.allow_self_join || false"
+        :dedicatedChannel="item.dedicated_channel || false"
+        :incidents="item.incidents"
+      />
     </template>
     <template #item.project.display_name="{ item, value }">
       <v-chip size="small" :color="item.project.color">

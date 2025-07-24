@@ -176,9 +176,9 @@ export default {
       handler(newVal) {
         if (!newVal.meta) return
         if (newVal.meta.showTimeline) {
-          this.tab = 3
+          this.tab = "timeline"
         } else if (newVal.meta.showForms) {
-          this.tab = 6
+          this.tab = "forms"
         }
       },
     },
