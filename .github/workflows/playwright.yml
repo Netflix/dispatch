@@ -7,7 +7,7 @@ on: # rebuild any PRs and main branch changes
 
 env:
   LOG_LEVEL: ERROR
-  STATIC_DIR:
+  STATIC_DIR: ""
   DATABASE_HOSTNAME: localhost
   DATABASE_CREDENTIALS: dispatch:dispatch
   DISPATCH_ENCRYPTION_KEY: NJHDWDJ3PbHT8h
@@ -16,6 +16,10 @@ env:
 jobs:
   end-to-end:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     services:
       postgres:
         image: postgres
@@ -58,10 +62,10 @@ jobs:
       - name: Setup sample database
         run: dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
       - name: Run tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 30
