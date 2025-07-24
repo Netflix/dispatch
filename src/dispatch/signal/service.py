@@ -776,7 +776,7 @@ def filter_snooze(*, db_session: Session, signal_instance: SignalInstance) -> Si
             SignalInstance.signal_id == signal_instance.signal_id
         )
         query = apply_filter_specific_joins(SignalInstance, f.expression, query)
-        query = apply_filters(query, f.expression)
+        query = apply_filters(query, f.expression, SignalInstance, do_auto_join=False)
         # an expression is not required for snoozing, if absent we snooze regardless of entity
         if f.expression:
             instances = query.filter(SignalInstance.id == signal_instance.id).all()
@@ -845,7 +845,7 @@ def filter_dedup(*, db_session: Session, signal_instance: SignalInstance) -> Sig
         query = query.join(Entity.entity_type)
 
         # Now apply filters
-        query = apply_filters(query, f.expression)
+        query = apply_filters(query, f.expression, SignalInstance, do_auto_join=False)
 
         window = datetime.now(timezone.utc) - timedelta(minutes=f.window)
         query = query.filter(SignalInstance.created_at >= window)
