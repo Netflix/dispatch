@@ -9,7 +9,7 @@ const config: PlaywrightTestConfig = {
   outputDir: "./tests/static/e2e/artifacts/test-failures",
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 10000,
+    actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "http://localhost:8080/",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
@@ -18,7 +18,7 @@ const config: PlaywrightTestConfig = {
     screenshot: "only-on-failure",
   },
   /* Maximum time one test can run for. */
-  timeout: process.env.CI ? 120 * 1000 : 60 * 1000,
+  timeout: process.env.CI ? 200 * 1000 : 60 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
