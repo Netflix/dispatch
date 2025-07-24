@@ -37,7 +37,6 @@
             variant="text"
             density="comfortable"
             class="ml-1"
-            size="small"
             color="blue"
             @click.stop="navigateToCase(cases[0])"
           />

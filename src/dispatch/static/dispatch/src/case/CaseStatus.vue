@@ -26,7 +26,6 @@
             variant="text"
             density="comfortable"
             class="ml-1"
-            size="small"
             color="orange"
             @click.stop="navigateToIncident(incidents[0])"
           />
