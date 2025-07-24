@@ -77,6 +77,7 @@
                 :id="item.id"
                 :allowSelfJoin="item.project.allow_self_join"
                 :visibility="item.visibility"
+                :cases="item.cases"
               />
             </template>
             <template #item.incident_costs="{ value }">

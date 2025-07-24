@@ -78,6 +78,7 @@
                 :allowSelfJoin="item.project.allow_self_join"
                 :dedicatedChannel="item.dedicated_channel"
                 :visibility="item.visibility"
+                :incidents="item.incidents"
               />
             </template>
             <template #item.project.display_name="{ item }">
