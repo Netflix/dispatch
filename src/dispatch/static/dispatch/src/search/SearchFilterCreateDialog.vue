@@ -152,7 +152,12 @@
                     />
                   </template>
                   <template #item.status="{ item }">
-                    <incident-status :status="item.status" :id="item.id" />
+                    <incident-status
+                      :status="item.status"
+                      :id="item.id"
+                      :allowSelfJoin="item.project?.allow_self_join || false"
+                      :cases="item.cases || []"
+                    />
                   </template>
                 </v-data-table>
               </v-card-text>
