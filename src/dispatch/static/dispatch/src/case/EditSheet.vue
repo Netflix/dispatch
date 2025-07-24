@@ -58,42 +58,42 @@
         </v-list-item>
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab">
-        <v-tab key="details"> Details </v-tab>
-        <v-tab key="resources"> Resources </v-tab>
-        <v-tab key="participants"> Participants </v-tab>
-        <v-tab key="timeline"> Timeline </v-tab>
-        <v-tab key="costs"> Cost </v-tab>
-        <v-tab key="workflows"> Workflows </v-tab>
-        <v-tab key="entities"> Entities </v-tab>
-        <v-tab key="signals"> Signals </v-tab>
+        <v-tab value="details"> Details </v-tab>
+        <v-tab value="resources"> Resources </v-tab>
+        <v-tab value="participants"> Participants </v-tab>
+        <v-tab value="timeline"> Timeline </v-tab>
+        <v-tab value="costs"> Cost </v-tab>
+        <v-tab value="workflows"> Workflows </v-tab>
+        <v-tab value="entities"> Entities </v-tab>
+        <v-tab value="signals"> Signals </v-tab>
       </v-tabs>
       <v-window v-model="tab">
-        <v-window-item key="details">
+        <v-window-item value="details">
           <case-details-tab />
         </v-window-item>
-        <v-window-item key="resources">
+        <v-window-item value="resources">
           <case-resources-tab />
         </v-window-item>
-        <v-window-item key="participants">
+        <v-window-item value="participants">
           <case-participants-tab />
         </v-window-item>
-        <v-window-item key="timeline">
+        <v-window-item value="timeline">
           <case-timeline-tab-v1 />
         </v-window-item>
-        <v-window-item key="costs">
+        <v-window-item value="costs">
           <case-costs-tab />
         </v-window-item>
-        <v-window-item key="workflow_instances">
+        <v-window-item value="workflows">
           <workflow-instance-tab v-model="workflow_instances" />
         </v-window-item>
-        <v-window-item key="entities">
+        <v-window-item value="entities">
           <entities-tab
             :selected="selected"
             v-model="signal_instances"
             v-if="selected.signal_instances"
           />
         </v-window-item>
-        <v-window-item key="signal_instances">
+        <v-window-item value="signals">
           <signal-instance-tab v-model="signal_instances" v-if="selected.signal_instances" />
         </v-window-item>
       </v-window>
@@ -178,6 +178,14 @@ export default {
   watch: {
     "$route.params.name": function () {
       this.fetchDetails()
+    },
+    $route: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal.meta?.showTimeline) {
+          this.tab = "timeline"
+        }
+      },
     },
     "navigation.width": function (newWidth) {
       localStorage.setItem("case-drawer-width", newWidth.toString())

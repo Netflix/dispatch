@@ -90,7 +90,13 @@
                   />
                 </template>
                 <template #item.status="{ item }">
-                  <case-status :status="item.status" :id="item.id" />
+                  <case-status
+                    :status="item.status"
+                    :id="item.id"
+                    :allowSelfJoin="item.project?.allow_self_join || false"
+                    :dedicatedChannel="item.dedicated_channel || false"
+                    :incidents="item.incidents"
+                  />
                 </template>
                 <template #item.tags="{ item }">
                   <span v-for="tag in item.tags" :key="tag">

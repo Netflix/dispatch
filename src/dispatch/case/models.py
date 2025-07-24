@@ -388,6 +388,7 @@ class CaseReadMinimal(CaseBase):
     project: ProjectRead
     assignee: ParticipantReadMinimal | None = None
     case_costs: list[CaseCostReadMinimal] = []
+    incidents: list[IncidentReadBasic] | None = []
 
 
 class CaseReadMinimalWithExtras(CaseBase):
