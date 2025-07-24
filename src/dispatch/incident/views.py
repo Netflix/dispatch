@@ -362,8 +362,9 @@ def create_tactical_report(
         organization_slug=organization,
     )
 
+
 @router.get(
-    '/{incident_id}/report/tactical/generate',
+    "/{incident_id}/report/tactical/generate",
     summary="Auto-generate a tactical report based on Slack conversation contents.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
@@ -375,19 +376,26 @@ def generate_tactical_report(
     Auto-generate a tactical report. Requires an enabled Artificial Intelligence Plugin
     """
     if not current_incident.conversation or not current_incident.conversation.channel_id:
-        return TacticalReportResponse(error_message = f"No channel id found for incident {current_incident.id}")
+        return TacticalReportResponse(
+            error_message=f"No channel id found for incident {current_incident.id}"
+        )
     response = ai_service.generate_tactical_report(
-        db_session=db_session,
-        incident=current_incident,
-        project=current_incident.project
+        db_session=db_session, incident=current_incident, project=current_incident.project
     )
     if not response.tactical_report:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=[{"msg": (response.error_message if response.error_message else "Unknown error generating tactical report.")}],
+            detail=[
+                {
+                    "msg": (
+                        response.error_message
+                        if response.error_message
+                        else "Unknown error generating tactical report."
+                    )
+                }
+            ],
         )
     return response
-
 
 
 @router.post(

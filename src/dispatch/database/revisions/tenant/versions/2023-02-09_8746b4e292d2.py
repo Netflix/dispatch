@@ -5,6 +5,7 @@ Revises: 941efd922446
 Create Date: 2023-02-09 23:18:11.326027
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import TSVECTOR, UUID

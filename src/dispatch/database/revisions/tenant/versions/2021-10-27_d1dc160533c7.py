@@ -5,6 +5,7 @@ Revises: ceaf01079f4f
 Create Date: 2021-10-27 14:03:01.385859
 
 """
+
 import json
 from alembic import op
 from pydantic import SecretStr

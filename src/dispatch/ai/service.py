@@ -27,6 +27,7 @@ from .enums import AIEventSource, AIEventDescription
 
 log = logging.getLogger(__name__)
 
+
 def get_model_token_limit(model_name: str, buffer_percentage: float = 0.05) -> int:
     """
     Returns the maximum token limit for a given LLM model with a safety buffer.
@@ -736,7 +737,9 @@ def generate_tactical_report(
         return TacticalReportResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=incident.conversation.channel_id, include_user_details=True, important_reaction=important_reaction
+        conversation_id=incident.conversation.channel_id,
+        include_user_details=True,
+        important_reaction=important_reaction,
     )
     if not conversation:
         message = f"Tactical report not generated for {incident.name}. No conversation found."
@@ -782,7 +785,7 @@ def generate_tactical_report(
             ),
             incident_id=incident.id,
             details=result.dict(),
-            type=EventType.other
+            type=EventType.other,
         )
 
         return TacticalReportResponse(tactical_report=result)
@@ -790,4 +793,4 @@ def generate_tactical_report(
     except Exception as e:
         error_message = f"Error generating tactical report: {str(e)}"
         log.exception(error_message)
-        return TacticalReportResponse(error_message = error_message)
+        return TacticalReportResponse(error_message=error_message)

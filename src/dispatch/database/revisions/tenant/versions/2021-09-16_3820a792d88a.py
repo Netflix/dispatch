@@ -5,6 +5,7 @@ Revises: ebe0cb6528ba
 Create Date: 2021-09-16 16:33:40.605881
 
 """
+
 from alembic import op
 from pydantic import SecretStr, ValidationError
 from pydantic.json import pydantic_encoder

@@ -5,6 +5,7 @@ Revises: 9fcf205ba6a5
 Create Date: 2021-08-09 15:29:24.856985
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base

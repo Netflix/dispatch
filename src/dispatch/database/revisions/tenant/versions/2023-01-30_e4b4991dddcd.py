@@ -5,6 +5,7 @@ Revises: 956eb8f8987e
 Create Date: 2023-01-30 10:52:31.676368
 
 """
+
 from alembic import op
 
 from enum import Enum
@@ -49,7 +50,12 @@ class Case(Base):
 
 # Pydantic models...
 class DispatchBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True, validate_assignment=True, arbitrary_types_allowed=True, str_strip_whitespace=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+        str_strip_whitespace=True,
+    )
 
 
 class DispatchEnum(str, Enum):

@@ -5,6 +5,7 @@ Revises: d1dc160533c7
 Create Date: 2021-10-28 13:44:55.105570
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import Column, Integer, String

@@ -5,6 +5,7 @@ Revises: 0ab4f8f54bfa
 Create Date: 2021-07-22 09:14:12.411910
 
 """
+
 from alembic import op
 from slugify import slugify
 from sqlalchemy import Column, String

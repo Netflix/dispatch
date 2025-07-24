@@ -500,7 +500,9 @@ def add_case_participants(
                         case_id=case.id,
                         type=EventType.participant_updated,
                     )
-                    log.info(f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id}, thread ID: {case.conversation.thread_id})")
+                    log.info(
+                        f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id}, thread ID: {case.conversation.thread_id})"
+                    )
         elif case.has_channel:
             plugin.instance.add(case.conversation.channel_id, participant_emails)
 
@@ -512,7 +514,9 @@ def add_case_participants(
                 case_id=case.id,
                 type=EventType.participant_updated,
             )
-            log.info(f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id})")
+            log.info(
+                f"{', '.join(participant_emails)} added to conversation (channel ID: {case.conversation.channel_id})"
+            )
     except Exception as e:
         event_service.log_case_event(
             db_session=db_session,

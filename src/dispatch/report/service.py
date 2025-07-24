@@ -1,4 +1,3 @@
-
 from .enums import ReportTypes
 from .models import Report, ReportCreate, ReportUpdate
 

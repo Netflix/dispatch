@@ -31,7 +31,7 @@ def test_create(session, project):
         target=target,
         enabled=enabled,
         project=ProjectRead.model_validate(project),
-        filters=[]
+        filters=[],
     )
     created_notification = create(db_session=session, notification_in=notification_in)
     assert created_notification is not None
@@ -54,7 +54,7 @@ def test_update(session, notification, project):
         type=updated_type,
         description=notification.description,
         enabled=notification.enabled,
-        filters=[]
+        filters=[],
     )
     updated_notification_obj = update(
         db_session=session,

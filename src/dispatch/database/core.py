@@ -94,6 +94,7 @@ def resolve_attr(obj, attr, default=None):
 
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy models."""
+
     __repr_attrs__ = []
     __repr_max_length__ = 15
 
@@ -146,6 +147,8 @@ class Base(DeclarativeBase):
             id_str,
             " " + self._repr_attrs_str if self._repr_attrs_str else "",
         )
+
+
 make_searchable(Base.metadata)
 
 

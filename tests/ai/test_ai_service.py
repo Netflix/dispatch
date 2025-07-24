@@ -3,7 +3,12 @@ import pytest
 from unittest.mock import Mock, patch
 
 from dispatch.ai.service import generate_read_in_summary, generate_tactical_report
-from dispatch.ai.models import ReadInSummary, ReadInSummaryResponse, TacticalReport, TacticalReportResponse
+from dispatch.ai.models import (
+    ReadInSummary,
+    ReadInSummaryResponse,
+    TacticalReport,
+    TacticalReportResponse,
+)
 from dispatch.ai.enums import AIEventSource, AIEventDescription
 from dispatch.plugins.dispatch_slack.models import IncidentSubjects, CaseSubjects
 from dispatch.enums import EventType
@@ -57,7 +62,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.event_service.log_incident_event") as mock_log_event,
         ):
-
             # Mock no recent event (cache miss)
             mock_get_event.return_value = None
 
@@ -123,7 +127,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.event_service.log_case_event") as mock_log_event,
         ):
-
             # Mock no recent event (cache miss)
             mock_get_event.return_value = None
 
@@ -181,7 +184,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.event_service.get_recent_summary_event") as mock_get_event,
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
         ):
-
             # Mock recent event (cache hit)
             mock_event = Mock()
             mock_event.id = 789
@@ -216,7 +218,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.log") as mock_log,
         ):
-
             # Mock recent event with invalid data
             mock_event = Mock()
             mock_event.id = 789
@@ -262,7 +263,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.log") as mock_log,
         ):
-
             # Mock no recent event
             mock_get_event.return_value = None
 
@@ -297,7 +297,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.log") as mock_log,
         ):
-
             # Mock no recent event
             mock_get_event.return_value = None
 
@@ -333,7 +332,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.log") as mock_log,
         ):
-
             # Mock no recent event
             mock_get_event.return_value = None
 
@@ -383,7 +381,6 @@ class TestGenerateReadInSummary:
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,
             patch("dispatch.ai.service.log") as mock_log,
         ):
-
             # Mock no recent event
             mock_get_event.return_value = None
 
@@ -475,7 +472,6 @@ class TestGenerateReadInSummary:
             )
 
 
-
 class TestGenerateTacticalReport:
     """Test suite for generate_tactical_report function."""
 
@@ -506,7 +502,7 @@ class TestGenerateTacticalReport:
         return TacticalReport(
             conditions="These are the conditions",
             actions=["Action 1", "Action 2"],
-            needs=["Need 1"]
+            needs=["Need 1"],
         )
 
     def test_generate_tactical_report_success(
@@ -615,9 +611,7 @@ class TestGenerateTacticalReport:
             assert "No conversation plugin enabled" in result.error_message
             mock_log.warning.assert_called()
 
-    def test_generate_tactical_report_no_conversation(
-        self, session, mock_incident, mock_project
-    ):
+    def test_generate_tactical_report_no_conversation(self, session, mock_incident, mock_project):
         """Test tactical report generation when no conversation is found."""
         with (
             patch("dispatch.ai.service.plugin_service.get_active_instance") as mock_get_plugin,

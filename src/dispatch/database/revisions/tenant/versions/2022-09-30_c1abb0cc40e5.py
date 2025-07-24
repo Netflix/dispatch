@@ -5,6 +5,7 @@ Revises: df200ca113f7
 Create Date: 2022-09-30 10:26:15.849836
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

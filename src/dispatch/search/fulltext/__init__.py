@@ -2,6 +2,7 @@
 Originally authored by:
 https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searchable
 """
+
 import os
 from functools import reduce
 
@@ -55,9 +56,11 @@ def search(query, search_query, vector=None, regconfig=None, sort=False):
         # Get the entity class from the query in a SQLAlchemy 2.x compatible way
         try:
             # For SQLAlchemy 2.x
-            entity = query.column_descriptions[0]['entity']
+            entity = query.column_descriptions[0]["entity"]
         except (AttributeError, IndexError, KeyError):
-            raise ValueError("Could not determine entity class from query. Please provide vector explicitly.") from None
+            raise ValueError(
+                "Could not determine entity class from query. Please provide vector explicitly."
+            ) from None
 
         search_vectors = inspect_search_vectors(entity)
         vector = search_vectors[0]

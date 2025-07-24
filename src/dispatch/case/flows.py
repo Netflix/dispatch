@@ -198,19 +198,20 @@ def case_remove_participant_flow(
             return
 
         slack_conversation_plugin.instance.remove_user(
-            conversation_id=case.conversation.channel_id,
-            user_email=user_email
+            conversation_id=case.conversation.channel_id, user_email=user_email
         )
 
         event_service.log_case_event(
-                db_session=db_session,
-                source=slack_conversation_plugin.plugin.title,
-                description=f"{user_email} removed from conversation (channel ID: {case.conversation.channel_id})",
-                case_id=case.id,
-                type=EventType.participant_updated,
+            db_session=db_session,
+            source=slack_conversation_plugin.plugin.title,
+            description=f"{user_email} removed from conversation (channel ID: {case.conversation.channel_id})",
+            case_id=case.id,
+            type=EventType.participant_updated,
         )
 
-        log.info(f"Removed {user_email} from conversation in channel {case.conversation.channel_id}")
+        log.info(
+            f"Removed {user_email} from conversation in channel {case.conversation.channel_id}"
+        )
 
     except Exception as e:
         log.exception(f"Failed to remove user from Slack conversation: {e}")

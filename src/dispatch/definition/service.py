@@ -1,4 +1,3 @@
-
 from dispatch.project import service as project_service
 from dispatch.term import service as term_service
 

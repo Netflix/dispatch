@@ -696,7 +696,7 @@ def case_visibility_select(
     """Creates a case visibility select."""
     visibility = [
         {"text": Visibility.restricted, "value": Visibility.restricted},
-        {"text": Visibility.open, "value": Visibility.open}
+        {"text": Visibility.open, "value": Visibility.open},
     ]
 
     return static_select_block(

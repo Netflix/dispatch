@@ -1,4 +1,3 @@
-
 from .models import Group, GroupCreate, GroupUpdate
 
 

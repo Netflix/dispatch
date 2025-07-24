@@ -5,6 +5,7 @@ Revises: 3097592c0739
 Create Date: 2021-11-18 10:09:22.330772
 
 """
+
 from alembic import op
 from collections import Counter
 import enum

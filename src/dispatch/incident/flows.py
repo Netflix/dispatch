@@ -59,7 +59,9 @@ from .models import Incident, IncidentStatus
 log = logging.getLogger(__name__)
 
 
-def filter_participants_for_bridge(participant_emails: list[str], project_id: int, db_session: Session) -> list[str]:
+def filter_participants_for_bridge(
+    participant_emails: list[str], project_id: int, db_session: Session
+) -> list[str]:
     """Filter participant emails to only include those who have opted into bridge participation."""
     filtered_emails = []
     for email in participant_emails:
@@ -1089,14 +1091,16 @@ def incident_add_or_reactivate_participant_flow(
                 return
 
             event_service.log_incident_event(
-                    db_session=db_session,
-                    source=slack_conversation_plugin.plugin.title,
-                    description=f"{user_email} added to conversation (channel ID: {incident.conversation.channel_id})",
-                    incident_id=incident.id,
-                    type=EventType.participant_updated,
+                db_session=db_session,
+                source=slack_conversation_plugin.plugin.title,
+                description=f"{user_email} added to conversation (channel ID: {incident.conversation.channel_id})",
+                incident_id=incident.id,
+                type=EventType.participant_updated,
             )
 
-            log.info(f"Added {user_email} to conversation in (channel ID: {incident.conversation.channel_id})")
+            log.info(
+                f"Added {user_email} to conversation in (channel ID: {incident.conversation.channel_id})"
+            )
 
         except Exception as e:
             log.exception(f"Failed to add user to Slack conversation: {e}")
@@ -1192,19 +1196,20 @@ def incident_remove_participant_flow(
             return
 
         slack_conversation_plugin.instance.remove_user(
-            conversation_id=incident.conversation.channel_id,
-            user_email=user_email
+            conversation_id=incident.conversation.channel_id, user_email=user_email
         )
 
         event_service.log_incident_event(
-                db_session=db_session,
-                source=slack_conversation_plugin.plugin.title,
-                description=f"{user_email} removed from conversation (channel ID: {incident.conversation.channel_id})",
-                incident_id=incident.id,
-                type=EventType.participant_updated,
+            db_session=db_session,
+            source=slack_conversation_plugin.plugin.title,
+            description=f"{user_email} removed from conversation (channel ID: {incident.conversation.channel_id})",
+            incident_id=incident.id,
+            type=EventType.participant_updated,
         )
 
-        log.info(f"Removed {user_email} from conversation in channel {incident.conversation.channel_id}")
+        log.info(
+            f"Removed {user_email} from conversation in channel {incident.conversation.channel_id}"
+        )
 
     except Exception as e:
         log.exception(f"Failed to remove user from Slack conversation: {e}")

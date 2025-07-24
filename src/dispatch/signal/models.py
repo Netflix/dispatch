@@ -413,5 +413,6 @@ class SignalInstanceRead(SignalInstanceBase):
 class SignalInstancePagination(Pagination):
     items: list[SignalInstanceRead]
 
+
 # Update forward references
 SignalFilterRead.model_rebuild()

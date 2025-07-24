@@ -450,7 +450,11 @@ class SlackConversationPlugin(ConversationPlugin):
             raise
 
     def get_conversation(
-        self, conversation_id: str, oldest: str = "0", include_user_details = False, important_reaction: str | None = None
+        self,
+        conversation_id: str,
+        oldest: str = "0",
+        include_user_details=False,
+        important_reaction: str | None = None,
     ) -> list:
         """
         Fetches the top-level posts from a Slack conversation.

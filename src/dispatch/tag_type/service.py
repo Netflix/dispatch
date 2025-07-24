@@ -44,7 +44,7 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in: TagTypeRea
                     "msg": "Tag type not found.",
                     "input": tag_type_in.name,
                 }
-            ]
+            ],
         )
 
     return tag_type

@@ -64,6 +64,7 @@ assoc_workflow_terms = Table(
 
 class Workflow(Base, ProjectMixin, TimeStampMixin):
     """SQLAlchemy model for workflow resources."""
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -73,20 +74,15 @@ class Workflow(Base, ProjectMixin, TimeStampMixin):
     plugin_instance_id = Column(Integer, ForeignKey(PluginInstance.id))
     plugin_instance = relationship(PluginInstance)
     instances = relationship("WorkflowInstance")
-    incident_priorities = relationship(
-        "IncidentPriority", assoc_workflow_incident_priorities
-    )
-    incident_types = relationship(
-        "IncidentType", assoc_workflow_incident_types
-    )
-    terms = relationship(
-        "Term", assoc_workflow_terms
-    )
+    incident_priorities = relationship("IncidentPriority", assoc_workflow_incident_priorities)
+    incident_types = relationship("IncidentType", assoc_workflow_incident_types)
+    terms = relationship("Term", assoc_workflow_terms)
     search_vector = Column(TSVectorType("name", "description"))
 
 
 class WorkflowInstance(Base, ResourceMixin):
     """SQLAlchemy model for workflow instance resources."""
+
     id = Column(Integer, primary_key=True)
     workflow_id = Column(Integer, ForeignKey("workflow.id"))
     parameters = Column(JSON, default=[])
@@ -97,25 +93,26 @@ class WorkflowInstance(Base, ResourceMixin):
     signal_id = Column(Integer, ForeignKey("signal.id", ondelete="CASCADE"))
     creator = relationship("Participant")
     status = Column(String, default=WorkflowInstanceStatus.submitted)
-    artifacts = relationship(
-        "Document", assoc_workflow_instances_artifacts
-    )
+    artifacts = relationship("Document", assoc_workflow_instances_artifacts)
 
 
 class WorkflowIncident(DispatchBase):
     """Pydantic model for workflow incident reference."""
+
     id: PrimaryKey
     name: NameStr | None
 
 
 class WorkflowCase(DispatchBase):
     """Pydantic model for workflow case reference."""
+
     id: PrimaryKey
     name: NameStr | None
 
 
 class WorkflowSignal(DispatchBase):
     """Pydantic model for workflow signal reference."""
+
     id: PrimaryKey
     name: NameStr | None
 
@@ -123,6 +120,7 @@ class WorkflowSignal(DispatchBase):
 # Pydantic models...
 class WorkflowBase(DispatchBase):
     """Base Pydantic model for workflow resources."""
+
     name: NameStr
     resource_id: str
     plugin_instance: PluginInstanceReadMinimal
@@ -135,16 +133,19 @@ class WorkflowBase(DispatchBase):
 
 class WorkflowCreate(WorkflowBase):
     """Pydantic model for creating a workflow resource."""
+
     project: ProjectRead
 
 
 class WorkflowUpdate(WorkflowBase):
     """Pydantic model for updating a workflow resource."""
+
     id: PrimaryKey
 
 
 class WorkflowRead(WorkflowBase):
     """Pydantic model for reading a workflow resource."""
+
     id: PrimaryKey
 
     @field_validator("description", mode="before")
@@ -158,11 +159,13 @@ class WorkflowRead(WorkflowBase):
 
 class WorkflowPagination(Pagination):
     """Pydantic model for paginated workflow results."""
+
     items: list[WorkflowRead] = []
 
 
 class WorkflowInstanceBase(ResourceBase):
     """Base Pydantic model for workflow instance resources."""
+
     artifacts: list[DocumentCreate] | None = None
     created_at: datetime | None = None
     parameters: list[dict[str, object]] | None = None
@@ -176,6 +179,7 @@ class WorkflowInstanceBase(ResourceBase):
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
     """Pydantic model for creating a workflow instance resource."""
+
     creator: ParticipantRead | None = None
     incident: WorkflowIncident | None = None
     case: WorkflowCase | None = None
@@ -188,6 +192,7 @@ class WorkflowInstanceUpdate(WorkflowInstanceBase):
 
 class WorkflowInstanceRead(WorkflowInstanceBase):
     """Pydantic model for reading a workflow instance resource."""
+
     id: PrimaryKey
     workflow: WorkflowRead | None = None
     creator: ParticipantRead | None = None
@@ -195,4 +200,5 @@ class WorkflowInstanceRead(WorkflowInstanceBase):
 
 class WorkflowInstancePagination(Pagination):
     """Pydantic model for paginated workflow instance results."""
+
     items: list[WorkflowInstanceRead] = []

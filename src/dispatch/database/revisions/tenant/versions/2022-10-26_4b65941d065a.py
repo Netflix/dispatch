@@ -5,6 +5,7 @@ Revises: 3b0f5b81376f
 Create Date: 2022-10-26 16:02:26.996119
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -16,7 +17,9 @@ from pydantic import Field, StringConstraints
 from typing import Annotated
 
 PrimaryKey = Annotated[int, Field(gt=0, lt=2147483647)]
-NameStr = Annotated[str, StringConstraints(pattern=r"^.*\S.*$", strip_whitespace=True, min_length=3)]
+NameStr = Annotated[
+    str, StringConstraints(pattern=r"^.*\S.*$", strip_whitespace=True, min_length=3)
+]
 
 Base = declarative_base()
 

@@ -97,7 +97,10 @@ def test_log_case_event(session, case):
     source = "Dispatch event source"
     description = "Dispatch event description"
     event = log_case_event(
-        db_session=session, source=source, description=description, case_id=case.id,
+        db_session=session,
+        source=source,
+        description=description,
+        case_id=case.id,
         started_at=datetime.datetime.now(),
         ended_at=datetime.datetime.now(),
         details={},
