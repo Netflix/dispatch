@@ -1534,7 +1534,8 @@ def handle_escalation_submission_event(
 ):
     """Handles the escalation submission event."""
 
-    from dispatch.incident.type.service import get_by_name
+    from dispatch.incident.type.service import get_by_name as get_type_by_name
+    from dispatch.incident.priority.service import get_by_name as get_priority_by_name
 
     case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
     ack_handle_escalation_submission_event(ack=ack, case=case)
@@ -1556,7 +1557,7 @@ def handle_escalation_submission_event(
 
     incident_type = None
     if form_data.get(DefaultBlockIds.incident_type_select):
-        incident_type = get_by_name(
+        incident_type = get_type_by_name(
             db_session=db_session,
             project_id=case.project.id,
             name=form_data[DefaultBlockIds.incident_type_select]["name"],
@@ -1564,7 +1565,7 @@ def handle_escalation_submission_event(
 
     incident_priority = None
     if form_data.get(DefaultBlockIds.incident_priority_select):
-        incident_priority = get_by_name(
+        incident_priority = get_priority_by_name(
             db_session=db_session,
             project_id=case.project.id,
             name=form_data[DefaultBlockIds.incident_priority_select]["name"],
