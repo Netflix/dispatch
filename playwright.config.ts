@@ -18,7 +18,7 @@ const config: PlaywrightTestConfig = {
     screenshot: "only-on-failure",
   },
   /* Maximum time one test can run for. */
-  timeout: process.env.CI ? 60 * 1000 : 120 * 1000,
+  timeout: process.env.CI ? 120 * 1000 : 60 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
