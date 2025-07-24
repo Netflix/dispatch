@@ -4,7 +4,6 @@ from collections import namedtuple
 from collections.abc import Iterable
 from inspect import signature
 from itertools import chain
-from typing import Annotated
 
 from fastapi import Depends, Query
 from pydantic import StringConstraints
@@ -19,6 +18,7 @@ from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.models import Field, BadQuery, BadSpec
 
+from .core import Base, get_class_by_tablename, get_model_name_by_tablename
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import CurrentUser, get_current_role
 from dispatch.case.models import Case
@@ -36,9 +36,9 @@ from dispatch.project.models import Project
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.signal.models import Signal, SignalInstance
 from dispatch.tag.models import Tag
-from dispatch.task.models import Task
 
-from .core import Base, get_class_by_tablename, get_model_name_by_tablename
+from dispatch.task.models import Task
+from typing import Annotated
 
 log = logging.getLogger(__file__)
 
@@ -179,31 +179,16 @@ def get_model_from_spec(spec, query, default_model=None):
         If the query contains no models.
     """
     models = get_query_models(query)
+    if not models:
+        raise BadQuery("The query does not contain any models.")
 
     model_name = spec.get("model")
     if model_name is not None:
-        if models:
-            models = [v for (k, v) in models.items() if k == model_name]
-            if models:
-                return models[0]
-
-        # If we couldn't find the model in the query, try to get it from the registry
-        # This handles cases where joins are applied but not detected by get_query_models
-        if default_model:
-            registry = default_model.registry._class_registry
-            model = get_model_class_by_name(registry, model_name)
-            if model:
-                return model
-
-        raise BadSpec(
-            f"The query had models {list(models.keys()) if isinstance(models, dict) else []} does not contain model `{model_name}`."
-        )
-    else:
+        models = [v for (k, v) in models.items() if k == model_name]
         if not models:
-            if default_model is not None:
-                return default_model
-            raise BadQuery("The query does not contain any models.")
-
+            raise BadSpec(f"The query had models {models} does not contain model `{model_name}`.")
+        model = models[0]
+    else:
         if len(models) == 1:
             model = list(models.values())[0]
         elif default_model is not None:
@@ -465,6 +450,7 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
     """Applies any model specific implicitly joins."""
+    print(f"Applying filter specific joins for model: {model} and filter_spec: {filter_spec}")
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
