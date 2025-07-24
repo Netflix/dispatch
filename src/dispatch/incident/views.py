@@ -39,6 +39,7 @@ from .flows import (
     incident_create_resources_flow,
     incident_create_stable_flow,
     incident_delete_flow,
+    incident_remove_participant_flow,
     incident_subscribe_participant_flow,
     incident_update_flow,
 )
@@ -287,6 +288,52 @@ def subscribe_to_incident(
     background_tasks.add_task(
         incident_subscribe_participant_flow,
         current_user.email,
+        incident_id=current_incident.id,
+        organization_slug=organization,
+    )
+
+
+@router.delete(
+    "/{incident_id}/remove/{email}",
+    summary="Removes an individual from an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def remove_participant_from_incident(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    email: str,
+    current_incident: CurrentIncident,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Removes an individual from an incident."""
+    background_tasks.add_task(
+        incident_remove_participant_flow,
+        email,
+        incident_id=current_incident.id,
+        organization_slug=organization,
+    )
+
+
+@router.post(
+    "/{incident_id}/add/{email}",
+    summary="Adds an individual to an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def add_participant_to_incident(
+    db_session: DbSession,
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    email: str,
+    current_incident: CurrentIncident,
+    current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
+):
+    """Adds an individual to an incident."""
+    background_tasks.add_task(
+        incident_add_or_reactivate_participant_flow,
+        email,
         incident_id=current_incident.id,
         organization_slug=organization,
     )

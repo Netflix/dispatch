@@ -2055,9 +2055,9 @@ def handle_engage_oncall_submission_event(
 
 def tactical_report_modal(
     context: BoltContext,
-    conditions: str,
-    actions: str,
-    needs: str,
+    conditions: str | None = None,
+    actions: str | None = None,
+    needs: str | None = None,
     genai_loading: bool = False,
 ):
     """
@@ -2138,14 +2138,14 @@ def handle_report_tactical_command(
         report_type=ReportTypes.tactical_report,
     )
 
-    conditions = actions = needs = ""
+    conditions = actions = needs = None
     if tactical_report:
         conditions = tactical_report.details.get("conditions")
         actions = tactical_report.details.get("actions")
         needs = tactical_report.details.get("needs")
 
     incident = incident_service.get(db_session=db_session, incident_id=int(context["subject"].id))
-    outstanding_actions = "" if actions == "" else actions
+    outstanding_actions = "" if actions is None else actions
     if incident.tasks:
         outstanding_actions += "\n\nOutstanding Incident Tasks:\n".join(
             [
@@ -2218,17 +2218,6 @@ def handle_tactical_report_draft_with_genai(
         private_metadata=context["subject"].json(),
             ).build()
         )
-
-        client.views_update(
-        view_id=body['view']['id'],
-        view=tactical_report_modal(
-            context=context,
-            conditions='',
-            actions='',
-            needs='',
-            genai_loading=False,
-            error_message=f"Unable to locate incident with id {id}. Please contact your Dispatch admins"
-        ))
         return
 
     draft_report = ai_service.generate_tactical_report(
@@ -2242,6 +2231,7 @@ def handle_tactical_report_draft_with_genai(
     if not tactical_report:
         error_message = draft_report.error_message if draft_report.error_message else "Unexpected error encountered generating tactical report."
         log.error(error_message)
+
         client.views_update(
             view_id=body['view']['id'],
             view=Modal(
