@@ -74,7 +74,8 @@ const config: PlaywrightTestConfig = {
     command: "dispatch server develop",
     url: "http://localhost:8080/",
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    /* Increase timeout to allow server to fully start and settle - especially important after removing the 2-minute wait from tests */
+    timeout: 240 * 1000, // 4 minutes to ensure server is fully ready
   },
 }
 

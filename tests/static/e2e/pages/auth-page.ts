@@ -51,7 +51,27 @@ export class AuthPage {
     ])
   }
 
+  /**
+   * Wait for the application to be fully ready by checking that all necessary elements are loaded
+   * and the page is stable. This replaces the previous 2-minute static wait.
+   */
+  async waitForAppReady() {
+    // Wait for the page to be loaded and interactive
+    await this.page.waitForLoadState("networkidle")
+
+    // Additional wait to ensure any background initialization is complete
+    // This is much shorter than the previous 2-minute wait but ensures stability
+    await this.page.waitForTimeout(5000)
+
+    // Verify the basic UI elements are working by ensuring we can navigate to login
+    await this.page.goto(this.loginRoute, { waitUntil: "networkidle" })
+    await expect(this.loginHeader).toBeVisible()
+  }
+
   async registerNewUser(email: string, password: string) {
+    // Ensure the application is ready before attempting registration
+    await this.waitForAppReady()
+
     await this.gotoRegisterWithLink()
     await this.emailLabel.first().click()
     await this.emailLabel.fill(email)
