@@ -200,14 +200,15 @@ export DISPATCH_LIGHT_BUILD=1
 uv sync --dev
 ```
 
-## What's Deprecated
+## What's Deprecated/Removed
 
-❌ **setup.py**: Replaced by `pyproject.toml`
-❌ **requirements-\*.txt**: Replaced by `pyproject.toml` + `uv.lock`
+❌ **setup.py**: Replaced by `pyproject.toml` (moved to `setup.py.bak`)
+❌ **setup.cfg**: Configurations moved to `pyproject.toml`
+❌ **requirements-\*.in/txt**: Replaced by `pyproject.toml` + `uv.lock`
 ❌ **pip-compile**: Replaced by `uv lock`
 ❌ **Manual venv management**: Replaced by `uv sync`
 
-These files are kept for backward compatibility but are no longer the primary way to manage the project.
+These files have been removed from the repository as they're no longer needed.
 
 ## Additional Resources
 
