@@ -393,7 +393,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache",
-        "Programming Language :: Python :: 3.11.2",
+        "Programming Language :: Python :: 3.11.11",
     ],
     package_dir={"": "src"},
     packages=find_packages("src"),
