@@ -16,6 +16,8 @@ const config: PlaywrightTestConfig = {
     trace: "retain-on-failure",
     video: "retain-on-failure",
     screenshot: "only-on-failure",
+    /* Navigation timeout - increase for slower CI environments */
+    navigationTimeout: process.env.CI ? 60000 : 30000,
   },
   /* Maximum time one test can run for. */
   timeout: process.env.CI ? 200 * 1000 : 60 * 1000,

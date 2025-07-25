@@ -450,7 +450,6 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
     """Applies any model specific implicitly joins."""
-    print(f"Applying filter specific joins for model: {model} and filter_spec: {filter_spec}")
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
@@ -689,7 +688,8 @@ def search_filter_sort_paginate(
             sort = False if sort_by else True
             query = search(query_str=query_str, query=query, model=model, sort=sort)
 
-        query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
+        # Apply model-specific filters directly to the query to avoid intersect ordering issues
+        query = apply_model_specific_filters(model_cls, query, current_user, role)
 
         tag_all_filters = []
         if filter_spec:
@@ -713,15 +713,9 @@ def search_filter_sort_paginate(
             else:
                 query = apply_filters(query, filter_spec, model_cls)
 
-        if model == "Incident":
-            query = query.intersect(query_restricted)
-            for filter in tag_all_filters:
-                query = query.intersect(filter)
-
-        if model == "Case":
-            query = query.intersect(query_restricted)
-            for filter in tag_all_filters:
-                query = query.intersect(filter)
+        # Apply tag_all filters using intersect only when necessary
+        for filter in tag_all_filters:
+            query = query.intersect(filter)
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
@@ -808,35 +802,49 @@ def search_filter_sort_paginate(
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
-    if role == UserRoles.member:
-        # We filter out restricted incidents for users with a member role if the user is not an incident participant
-        query = (
-            query.join(Participant, Incident.id == Participant.incident_id)
-            .join(IndividualContact)
-            .filter(
-                or_(
-                    Incident.visibility == Visibility.open,
+    # Allow unrestricted access for admin roles
+    if role in [UserRoles.admin, UserRoles.owner, UserRoles.manager]:
+        return query.distinct()
+
+    # For all other roles (including member, none, and any unhandled roles),
+    # apply restrictive filtering - default deny approach
+    query = (
+        query.outerjoin(Participant, Incident.id == Participant.incident_id)
+        .outerjoin(IndividualContact, IndividualContact.id == Participant.individual_contact_id)
+        .filter(
+            or_(
+                Incident.visibility == Visibility.open,
+                and_(
+                    Incident.visibility == Visibility.restricted,
                     IndividualContact.email == current_user.email,
-                )
+                ),
             )
         )
+    )
     return query.distinct()
 
 
 def restricted_case_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional case filters to query (usually for permissions)."""
-    if role == UserRoles.member:
-        # We filter out restricted cases for users with a member role if the user is not a case participant
-        query = (
-            query.join(Participant, Case.id == Participant.case_id)
-            .join(IndividualContact)
-            .filter(
-                or_(
-                    Case.visibility == Visibility.open,
+    # Allow unrestricted access for admin roles
+    if role in [UserRoles.admin, UserRoles.owner, UserRoles.manager]:
+        return query.distinct()
+
+    # For all other roles (including member, none, and any unhandled roles),
+    # apply restrictive filtering - default deny approach
+    query = (
+        query.outerjoin(Participant, Case.id == Participant.case_id)
+        .outerjoin(IndividualContact, IndividualContact.id == Participant.individual_contact_id)
+        .filter(
+            or_(
+                Case.visibility == Visibility.open,
+                and_(
+                    Case.visibility == Visibility.restricted,
                     IndividualContact.email == current_user.email,
-                )
+                ),
             )
         )
+    )
     return query.distinct()
 
 
