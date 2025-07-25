@@ -1,8 +1,6 @@
 from datetime import datetime
-from typing import List
 from pydantic import Field
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.sql.schema import UniqueConstraint
 
 from dispatch.models import DispatchBase
 from dispatch.database.core import Base
@@ -35,7 +33,7 @@ class TagRecommendations(DispatchBase):
     grouped by tag type.
     """
 
-    recommendations: List[TagTypeRecommendation] = Field(
+    recommendations: list[TagTypeRecommendation] = Field(
         description="List of tag recommendations grouped by tag type", default_factory=list
     )
 
@@ -48,10 +46,10 @@ class ReadInSummary(DispatchBase):
     actions taken, and current status sections.
     """
 
-    timeline: List[str] = Field(
+    timeline: list[str] = Field(
         description="Chronological list of key events and decisions", default_factory=list
     )
-    actions_taken: List[str] = Field(
+    actions_taken: list[str] = Field(
         description="List of actions that were taken to address the security event",
         default_factory=list,
     )
