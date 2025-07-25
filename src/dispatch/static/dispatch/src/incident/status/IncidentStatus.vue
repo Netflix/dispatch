@@ -4,7 +4,7 @@
       {{ status }}
     </v-badge>
     <template v-if="status === 'Active' || status === 'Stable'">
-      <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin">
+      <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin && visibility !== 'Restricted'">
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
@@ -24,6 +24,21 @@
             variant="text"
             density="comfortable"
             @click.stop="subscribeToIncident(id)"
+          />
+        </template>
+      </v-tooltip>
+    </template>
+    <template v-if="cases && cases.length > 0">
+      <v-tooltip location="bottom" :text="`View case`">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-briefcase"
+            variant="text"
+            density="comfortable"
+            class="ml-1"
+            color="blue"
+            @click.stop="navigateToCase(cases[0])"
           />
         </template>
       </v-tooltip>
@@ -50,6 +65,15 @@ export default {
       type: Boolean,
       required: true,
     },
+    visibility: {
+      type: String,
+      required: false,
+      default: "Open",
+    },
+    cases: {
+      type: Array,
+      default: () => [],
+    },
   },
 
   computed: {
@@ -66,6 +90,12 @@ export default {
 
   methods: {
     ...mapActions("incident", ["joinIncident", "subscribeToIncident"]),
+    navigateToCase(caseItem) {
+      this.$router.push({
+        name: "CaseTableEdit",
+        params: { name: caseItem.name },
+      })
+    },
   },
 }
 </script>

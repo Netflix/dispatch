@@ -82,6 +82,8 @@ const state = {
     showEditEventDialog: false,
     showEditTaskDialog: false,
     showDeleteEventDialog: false,
+    showRemoveParticipantDialog: false,
+    participantToRemove: null,
   },
   report: {
     ...getDefaultReportState(),
@@ -266,6 +268,14 @@ const actions = {
   closeHandoffDialog({ commit }) {
     commit("SET_DIALOG_SHOW_HANDOFF", false)
     commit("RESET_SELECTED")
+  },
+  showRemoveParticipantDialog({ commit }, participant) {
+    commit("SET_DIALOG_SHOW_REMOVE_PARTICIPANT", true)
+    commit("SET_DIALOG_PARTICIPANT_TO_REMOVE", participant)
+  },
+  closeRemoveParticipantDialog({ commit }) {
+    commit("SET_DIALOG_SHOW_REMOVE_PARTICIPANT", false)
+    commit("SET_DIALOG_PARTICIPANT_TO_REMOVE", null)
   },
   showNewEditEventDialog({ commit }, event) {
     state.selected.currentEvent = event
@@ -514,6 +524,20 @@ const actions = {
       )
     })
   },
+  removeParticipant({ commit, dispatch, state }) {
+    return IncidentApi.removeParticipant(
+      state.selected.id,
+      state.dialogs.participantToRemove.individual.email
+    ).then(function () {
+      dispatch("closeRemoveParticipantDialog")
+      dispatch("get", state.selected.id)
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Participant removed successfully.", type: "success" },
+        { root: true }
+      )
+    })
+  },
   createReport({ commit, dispatch }) {
     return IncidentApi.createReport(
       state.selected.id,
@@ -722,6 +746,12 @@ const mutations = {
   },
   SET_DIALOG_EDIT_TASK(state, value) {
     state.dialogs.showEditTaskDialog = value
+  },
+  SET_DIALOG_SHOW_REMOVE_PARTICIPANT(state, value) {
+    state.dialogs.showRemoveParticipantDialog = value
+  },
+  SET_DIALOG_PARTICIPANT_TO_REMOVE(state, participant) {
+    state.dialogs.participantToRemove = participant
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value

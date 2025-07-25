@@ -93,6 +93,14 @@
           </div>
         </div>
 
+        <!-- No project error banner -->
+        <div v-if="noProjectError" class="error-banner mb-3">
+          <div class="error-content">
+            <v-icon size="18" color="#f57f17" class="mr-2">mdi-alert</v-icon>
+            <span class="error-message">{{ noProjectError }}</span>
+          </div>
+        </div>
+
         <!-- Suggestions panel: Show when generated (expanded or collapsed) -->
         <div
           v-if="suggestionsGenerated && tagSuggestions.length > 0 && props.showGenAISuggestions"
@@ -273,6 +281,7 @@ const isDropdownOpen = ref(false)
 const snackbar = ref(false)
 const suggestionsExpanded = ref(false)
 const error = ref(null)
+const noProjectError = ref(null)
 
 const props = defineProps({
   modelValue: {
@@ -352,21 +361,29 @@ function validateTags(value) {
     return
   }
 
-  const project_id = props.project?.id || 0
-  var all_tags_in_project = false
-  if (project_id) {
-    all_tags_in_project = value.every((tag) => tag.project?.id == project_id)
-  } else {
-    const project_name = props.project?.name
-    if (!project_name) {
-      error.value = true
-      dummyText.value += " "
-      return
-    }
-    all_tags_in_project = value.every((tag) => tag.project?.name == project_name)
+  // Handle both single project object and array of projects
+  const projects = Array.isArray(props.project) ? props.project : [props.project]
+  const validProjects = projects.filter((p) => p && p.name)
+
+  if (!validProjects.length) {
+    error.value = true
+    dummyText.value += " "
+    return
   }
 
-  if (all_tags_in_project) {
+  // Check if all tags belong to any of the selected projects
+  const all_tags_in_projects = value.every((tag) => {
+    return validProjects.some((project) => {
+      if (project.id && tag.project?.id) {
+        return tag.project.id === project.id
+      } else if (project.name && tag.project?.name) {
+        return tag.project.name === project.name
+      }
+      return false
+    })
+  })
+
+  if (all_tags_in_projects) {
     const requiredSelected = are_required_tags_selected(value)
 
     if (!requiredSelected) {
@@ -380,18 +397,31 @@ function validateTags(value) {
       error.value = null
     }
   } else {
-    error.value = "Only tags in selected project are allowed"
+    error.value = "Only tags in selected projects are allowed"
   }
   dummyText.value += " "
 }
 
 // Methods
 const fetchData = async () => {
-  if (!props.project) {
+  // Handle both single project object and array of projects
+  const projects = Array.isArray(props.project) ? props.project : [props.project]
+  const validProjects = projects.filter((p) => p && p.name)
+
+  if (!validProjects.length) {
+    // Show error message when no projects are selected
+    store.commit("tag/SET_TABLE_ROWS", { items: [], total: 0 })
+    store.commit("tag/SET_GROUPS", {})
+    noProjectError.value = "You must select a project to view tags"
     return
   }
+
+  // Clear any previous error when we have valid projects
+  noProjectError.value = null
+
+  // Let the store handle all the logic for single or multiple projects
   await store.dispatch("tag/fetchTags", {
-    project: props.project,
+    project: validProjects,
     model: props.model,
   })
 }
@@ -401,9 +431,11 @@ const fetchTagTypes = async () => {
 }
 
 const generateSuggestions = async () => {
-  if (!props.project?.id) return
+  // Handle both single project object and array of projects
+  const project = Array.isArray(props.project) ? props.project[0] : props.project
+  if (!project?.id) return
   await store.dispatch("tag/generateSuggestions", {
-    projectId: props.project.id,
+    projectId: project.id,
     modelId: props.modelId,
     modelType: props.modelType,
   })

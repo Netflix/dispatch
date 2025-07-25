@@ -188,18 +188,25 @@ def inactivate_participant(user_email: str, subject: Subject, db_session: Sessio
 
 
 def reactivate_participant(
-    user_email: str, incident: Incident, db_session: Session, service_id: int = None
+    user_email: str, subject: Subject, db_session: Session, service_id: int = None
 ):
     """Reactivates a participant."""
-    participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=user_email
-    )
+    subject_type = get_table_name_by_class_instance(subject)
+
+    if subject_type == "case":
+        participant = participant_service.get_by_case_id_and_email(
+            db_session=db_session, case_id=subject.id, email=user_email
+        )
+    else:
+        participant = participant_service.get_by_incident_id_and_email(
+            db_session=db_session, incident_id=subject.id, email=user_email
+        )
 
     if not participant:
-        log.debug(f"{user_email} is not an inactive participant of {incident.name} incident.")
+        log.debug(f"{user_email} is not an inactive participant of {subject.name} {subject_type}.")
         return False
 
-    log.debug(f"Reactivating {participant.individual.name} on {incident.name} incident...")
+    log.debug(f"Reactivating {participant.individual.name} on {subject.name} {subject_type}...")
 
     # we get the last active role
     participant_role = participant_role_service.get_last_active_role(
@@ -219,11 +226,11 @@ def reactivate_participant(
     db_session.add(participant)
     db_session.commit()
 
-    event_service.log_incident_event(
+    event_service.log_subject_event(
+        subject=subject,
         db_session=db_session,
         source="Dispatch Core App",
         description=f"{participant.individual.name} has been reactivated",
-        incident_id=incident.id,
         type=EventType.participant_updated,
     )
 

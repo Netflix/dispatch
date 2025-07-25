@@ -224,6 +224,16 @@ export const protectedRoute = [
                 showEditSheet: true,
               },
             },
+            {
+              path: "/:organization/cases/:name/timeline",
+              name: "CaseTableEditTimeline",
+              component: () => import("@/case/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+                showTimeline: true,
+              },
+            },
           ],
         },
         {

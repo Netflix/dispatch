@@ -1,5 +1,6 @@
 import logging
 
+from dispatch.ai.constants import READ_IN_SUMMARY_CACHE_DURATION
 from dispatch.plugins.dispatch_slack.models import IncidentSubjects
 import tiktoken
 from sqlalchemy.orm import aliased, Session
@@ -49,10 +50,6 @@ from .strings import (
 )
 
 log = logging.getLogger(__name__)
-
-# Cache duration for AI-generated read-in summaries (in seconds)
-READ_IN_SUMMARY_CACHE_DURATION = 120  # 2 minutes
-
 
 def get_model_token_limit(model_name: str, buffer_percentage: float = 0.05) -> int:
     """
@@ -648,7 +645,7 @@ def generate_read_in_summary(
         return ReadInSummaryResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=channel_id, important_reaction=important_reaction
+        conversation_id=channel_id, include_user_details=True, important_reaction=important_reaction
     )
     if not conversation:
         message = f"Read-in summary not generated for {subject.name}. No conversation found."
@@ -744,7 +741,7 @@ def generate_tactical_report(
         return TacticalReportResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=incident.conversation.channel_id, important_reaction=important_reaction
+        conversation_id=incident.conversation.channel_id, include_user_details=True, important_reaction=important_reaction
     )
     if not conversation:
         message = f"Tactical report not generated for {incident.name}. No conversation found."

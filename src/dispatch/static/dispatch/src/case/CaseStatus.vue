@@ -4,7 +4,7 @@
       {{ status }}
     </v-badge>
     <template v-if="status !== 'Closed' && dedicatedChannel">
-      <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin">
+      <v-tooltip location="bottom" text="Join" v-if="allowSelfJoin && visibility !== 'Restricted'">
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
@@ -13,6 +13,21 @@
             density="comfortable"
             class="ml-1"
             @click.stop="joinCase(id)"
+          />
+        </template>
+      </v-tooltip>
+    </template>
+    <template v-if="incidents && incidents.length > 0">
+      <v-tooltip location="bottom" :text="`View incident`">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-fire"
+            variant="text"
+            density="comfortable"
+            class="ml-1"
+            color="orange"
+            @click.stop="navigateToIncident(incidents[0])"
           />
         </template>
       </v-tooltip>
@@ -43,6 +58,15 @@ export default {
       type: Boolean,
       required: true,
     },
+    visibility: {
+      type: String,
+      required: false,
+      default: "Open",
+    },
+    incidents: {
+      type: Array,
+      default: () => [],
+    },
   },
 
   computed: {
@@ -61,6 +85,12 @@ export default {
 
   methods: {
     ...mapActions("case_management", ["joinCase"]),
+    navigateToIncident(incident) {
+      this.$router.push({
+        name: "IncidentTableEdit",
+        params: { name: incident.name },
+      })
+    },
   },
 }
 </script>

@@ -1,6 +1,7 @@
 import functools
 import heapq
 import logging
+import re
 from datetime import datetime
 
 from blockkit.surfaces import Block
@@ -350,6 +351,13 @@ def add_conversation_bookmark(
 
 def remove_member_from_channel(client: WebClient, conversation_id: str, user_id: str) -> None:
     """Removes a user from a channel."""
+    log.info(f"Attempting to remove user {user_id} from channel {conversation_id}")
+
+    # Check if user is actually in the channel before attempting removal
+    if not is_member_in_channel(client, conversation_id, user_id):
+        log.info(f"User {user_id} is not in channel {conversation_id}, skipping removal")
+        return
+
     return make_call(
         client, SlackAPIPostEndpoints.conversations_kick, channel=conversation_id, user=user_id
     )
@@ -610,9 +618,18 @@ def get_channel_activity(
     conversation_id: str,
     oldest: str = "0",
     include_message_text: bool = False,
+    include_user_details: bool = False,
     important_reaction: str | None = None,
 ) -> list:
     """Gets all top-level messages for a given Slack channel.
+
+    Args:
+        client (WebClient): Slack client responsible for API calls
+        conversation_id (str): Channel ID to reference
+        oldest (int): Oldest timestamp to fetch messages from
+        include_message_text (bool): Include message text (in addition to datetime and user id)
+        include_user_details (bool): Include user name and email information
+        important_reaction (str): Optional emoji reaction designating important messages
 
     Returns:
         A sorted list of tuples (utc_dt, user_id) of each message in the channel,
@@ -620,6 +637,20 @@ def get_channel_activity(
     """
     result = []
     cursor = None
+
+    def mention_resolver(user_match):
+        """
+        Helper function to extract user informations from @ mentions in messages.
+        """
+        user_id = user_match.group(1)
+        try:
+            user_info = get_user_info_by_id(client, user_id)
+            return user_info.get('real_name', f"{user_id} (name not found)")
+        except SlackApiError as e:
+            log.warning(f"Error resolving mentioned Slack user: {e}")
+            # fall back on id
+            return user_id
+
     while True:
         response = make_call(
             client,
@@ -640,13 +671,28 @@ def get_channel_activity(
             if "user" in message:
                 user_id = resolve_user(client, message["user"])["id"]
                 utc_dt = datetime.utcfromtimestamp(float(message["ts"]))
+
+                message_result = [utc_dt, user_id]
+
                 if include_message_text:
                     message_text = message.get("text", "")
                     if has_important_reaction(message, important_reaction):
                         message_text = f"IMPORTANT!: {message_text}"
-                    heapq.heappush(result, (utc_dt, user_id, message_text))
-                else:
-                    heapq.heappush(result, (utc_dt, user_id))
+
+                    if include_user_details:  # attempt to resolve mentioned users
+                        message_text = re.sub(r'<@(\w+)>', mention_resolver, message_text)
+
+                    message_result.append(message_text)
+
+                if include_user_details:
+                    user_details = get_user_info_by_id(client, user_id)
+                    user_name = user_details.get('real_name', "Name not found")
+                    user_profile = user_details.get('profile', {})
+                    user_display_name = user_profile.get('display_name_normalized', "DisplayName not found")
+                    user_email = user_profile.get('email', "Email not found")
+                    message_result.extend([user_name, user_display_name, user_email])
+
+                heapq.heappush(result, tuple(message_result))
 
         if not response["has_more"]:
             break
@@ -695,3 +741,41 @@ def create_genai_message_metadata_blocks(
     )
     blocks.append(Divider())
     return Message(blocks=blocks).build()["blocks"]
+
+
+def is_member_in_channel(client: WebClient, conversation_id: str, user_id: str) -> bool:
+    """
+    Check if a user is a member of a specific Slack channel.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        conversation_id (str): The ID of the Slack channel/conversation to check.
+        user_id (str): The ID of the user to check for membership.
+
+    Returns:
+        bool: True if the user is a member of the channel, False otherwise.
+
+    Raises:
+        SlackApiError: If there's an error from the Slack API (e.g., channel not found).
+    """
+    try:
+        response = make_call(
+            client,
+            SlackAPIGetEndpoints.conversations_members,
+            channel=conversation_id,
+        )
+
+        # Check if the user_id is in the list of members
+        return user_id in response.get("members", [])
+
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
+            log.warning(f"Channel {conversation_id} not found when checking membership for user {user_id}")
+            return False
+        elif e.response["error"] == SlackAPIErrorCode.USER_NOT_IN_CHANNEL:
+            # The bot itself is not in the channel, so it can't check membership
+            log.warning(f"Bot not in channel {conversation_id}, cannot check membership for user {user_id}")
+            return False
+        else:
+            log.exception(f"Error checking channel membership for user {user_id} in channel {conversation_id}: {e}")
+            raise

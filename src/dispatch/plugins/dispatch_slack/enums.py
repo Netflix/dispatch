@@ -37,6 +37,7 @@ class SlackAPIErrorCode(DispatchEnum):
     FATAL_ERROR = "fatal_error"
     IS_ARCHIVED = "is_archived"  # Channel is archived
     MISSING_SCOPE = "missing_scope"
+    NOT_IN_CHANNEL = "not_in_channel"
     ORG_USER_NOT_IN_TEAM = "org_user_not_in_team"
     USERS_NOT_FOUND = "users_not_found"
     USER_IN_CHANNEL = "user_in_channel"
