@@ -1,6 +1,6 @@
-# Migration Guide: From pip to uv
+# Migration Complete: Full uv and pyproject.toml Support
 
-This guide outlines the steps taken to migrate the Dispatch project from pip to uv for Python dependency management.
+This document describes the **complete migration** from pip to uv with full pyproject.toml support for Dispatch.
 
 ## What is uv?
 
@@ -9,171 +9,208 @@ uv is a fast Python package and project manager written in Rust. It's designed t
 ## Benefits of uv
 
 - **Speed**: 10-100x faster than pip
-- **Compatibility**: Drop-in replacement for pip commands
-- **Resolution**: Better dependency resolution
-- **Caching**: Smart caching for faster subsequent installs
-- **Virtual Environments**: Built-in virtual environment management
+- **Modern dependency management**: Lock files, dependency resolution
+- **Complete workflow**: `uv add`, `uv remove`, `uv sync`, `uv lock`
+- **Virtual environment management**: Built-in venv handling
+- **Reproducible builds**: With `uv.lock` file
 
-## Migration Approach
+## Migration Completed ✅
 
-Due to Dispatch's complex build system with custom asset building commands, we've taken a **hybrid approach** that maintains backward compatibility while enabling uv usage:
+### **Full pyproject.toml Migration**
 
-- **Kept setup.py**: For complex build logic and asset compilation
-- **Simplified pyproject.toml**: Focuses on build system and tool configuration
-- **uv compatibility**: All uv commands work seamlessly with the existing setup
+We've completely migrated from setup.py to pyproject.toml:
 
-## Migration Steps Completed
+- ✅ All dependencies now in `pyproject.toml`
+- ✅ All entry points and plugin configurations migrated
+- ✅ Full uv command support: `uv add`, `uv remove`, `uv sync`
+- ✅ Lock file generation with `uv.lock`
+- ✅ Dynamic versioning with `versioningit` (automatic Git-based versions)
+- ✅ setup.py deprecated (kept as backup at `setup.py.bak`)
 
-### 1. Updated pyproject.toml
+### **What Works Now**
 
-- Kept `[build-system]` section for setuptools compatibility
-- **Removed** conflicting `[project]` metadata (handled by setup.py)
-- Added `[tool.uv]` section for uv-specific configuration
-- Maintained all existing tool configurations (black, ruff)
-
-### 2. Updated CI/CD Workflows
-
-- Modified `.github/workflows/python.yml` to use uv
-- Modified `.github/workflows/playwright.yml` to use uv
-- Added uv installation step in workflows
-- Updated dependency installation commands
-
-### 3. Updated Dockerfile
-
-- Added uv installation in the Docker image
-- Replaced `pip install` with `uv pip install --system`
-
-### 4. Updated Documentation
-
-- Updated all documentation files to use uv commands
-- Modified contribution guidelines
-- Updated plugin development instructions
-
-### 5. Updated Development Setup Files
-
-- Modified `.devcontainer/postCreateCommand.sh`
-- Updated `.pre-commit-config.yaml` comments
-- Updated `requirements-dev.in` comments
-
-## How to Use uv with Dispatch
-
-### Installation
-
-```bash
-# macOS
-brew install uv
-
-# Linux/Windows
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### Development Workflow
-
-1. **Setup Environment**:
-
-   ```bash
-   uv venv
-   source .venv/bin/activate  # Linux/macOS
-   # .venv\Scripts\activate   # Windows
-
-   export DISPATCH_LIGHT_BUILD=1
-   uv pip install -e ".[dev]"
-   ```
-
-2. **Run Tests**:
-
-   ```bash
-   pytest
-   ```
-
-3. **Lint Code**:
-
-   ```bash
-   ruff check src tests
-   black src tests
-   ```
-
-4. **Update Dependencies**:
-   ```bash
-   # Update requirements files (still used by setup.py)
-   ./scripts/compile-requirements.sh
-   ```
-
-### Common Commands
-
-```bash
-# Create virtual environment
-uv venv
-
-# Install dependencies (replaces pip install)
-uv pip install -e ".[dev]"
-
-# Install a specific package
-uv pip install package-name
-
-# List installed packages
-uv pip list
-
-# Sync dependencies from requirements
-uv pip sync requirements-base.txt
-```
-
-## What Works
-
+✅ **Modern Commands**: `uv add`, `uv remove`, `uv sync`, `uv lock`
 ✅ **Installation**: `uv pip install -e ".[dev]"` works perfectly
 ✅ **CLI**: `dispatch` command is available and functional
-✅ **Plugins**: All 28 dispatch plugins are properly discovered
-✅ **Dependencies**: All base and dev dependencies install correctly
-✅ **Import**: `import dispatch` works without issues
-✅ **Speed**: ~10x faster than pip for dependency resolution and installation
+✅ **Plugins**: All 28 dispatch plugins properly discovered
+✅ **Dependencies**: Managed entirely through `pyproject.toml`
+✅ **Lock file**: `uv.lock` for reproducible installations
+✅ **Dynamic versioning**: Automatic Git-based version generation
+✅ **Speed**: ~10x faster than pip for all operations
 
-## Technical Details
+## New Modern Workflow
 
-### File Structure
+### **Installation**
 
-- **setup.py**: Handles package metadata, dependencies, and custom build commands
-- **pyproject.toml**: Handles build system configuration and tool settings
-- **requirements-\*.txt**: Still generated from .in files for compatibility
-- **[tool.uv]**: uv-specific configuration for development dependencies
+```bash
+# Install uv
+brew install uv  # macOS
+# or
+curl -LsSf https://astral.sh/uv/install.sh | sh  # Linux/Windows
+```
 
-### Why This Hybrid Approach?
+### **Development Setup (Modern uv Way)**
 
-1. **Complex Build System**: Dispatch has custom asset building commands that are difficult to migrate
-2. **Backward Compatibility**: Existing CI/CD and deployment systems still work
-3. **Progressive Migration**: Allows gradual adoption without breaking existing workflows
-4. **Plugin System**: Maintains all entry points and plugin discovery
+```bash
+# 1. Clone and enter project
+git clone <repo>
+cd dispatch
 
-## Migration Benefits Achieved
+# 2. Create and sync environment (replaces manual venv + install)
+export DISPATCH_LIGHT_BUILD=1
+uv sync --dev
+
+# 3. Activate environment
+source .venv/bin/activate
+
+# That's it! Everything is installed and ready
+```
+
+### **Dependency Management**
+
+```bash
+# Add a new dependency
+uv add requests
+
+# Add a development dependency
+uv add --dev pytest-xdist
+
+# Remove a dependency
+uv remove requests
+
+# Update dependencies
+uv sync --upgrade
+
+# Lock dependencies (creates/updates uv.lock)
+uv lock
+```
+
+### **Alternative: Traditional pip-style**
+
+```bash
+# If you prefer the old way (still works)
+uv venv --python 3.11
+source .venv/bin/activate
+export DISPATCH_LIGHT_BUILD=1
+uv pip install -e ".[dev]"
+```
+
+## Key Files
+
+- **`pyproject.toml`**: Primary configuration, dependencies, and metadata
+- **`uv.lock`**: Lock file for reproducible installations
+- **`DYNAMIC_VERSIONING.md`**: Documentation for automatic Git-based versioning
+- **`setup.py.bak`**: Backup of old setup.py (for reference only)
+- **`requirements-*.txt`**: Legacy files (will be deprecated)
+
+## CI/CD Updates
+
+All CI/CD workflows have been updated:
+
+- GitHub Actions use uv for faster builds
+- Docker images use uv for faster builds
+- All installation commands updated
+
+## Development Commands
+
+```bash
+# Run tests
+pytest
+
+# Lint code
+ruff check src tests
+black src tests
+
+# Add/remove dependencies
+uv add package-name
+uv remove package-name
+
+# Sync environment with lock file
+uv sync
+
+# Update lock file
+uv lock --upgrade
+```
+
+## Benefits Achieved
 
 - **10x faster** dependency resolution and installation
-- **Better caching** for CI/CD pipelines
-- **Improved developer experience** with faster environment setup
-- **Future-ready** for when full pyproject.toml migration is desired
+- **Modern dependency management** with lock files
+- **Simplified workflow** with `uv sync`
+- **Better reproducibility** with `uv.lock`
+- **Easier dependency management** with `uv add`/`uv remove`
+- **Future-proof** setup using modern Python packaging standards
 
-## Compatibility Notes
+## Migration from Old Setup
 
-- All existing `pip` commands can be replaced with `uv pip` commands
-- Requirements files are still maintained for compatibility
-- Docker builds use uv for faster image building
-- CI/CD pipelines benefit from uv's speed improvements
+If you were using the old pip-based setup:
 
-## Rollback Instructions
+### **Replace this** (old way):
 
-If you need to rollback to pip:
+```bash
+pip install -e ".[dev]"
+```
 
-1. Replace all `uv pip` commands with `pip` in:
+### **With this** (new way):
 
-   - GitHub workflows
-   - Dockerfile
-   - Documentation
-   - Development scripts
+```bash
+uv sync --dev
+```
 
-2. Remove uv installation steps from CI/CD workflows and Dockerfile
+### **Replace this** (old dependency management):
 
-3. Continue using the existing requirements files as before
+```bash
+# Edit requirements-base.in
+# Run pip-compile
+```
+
+### **With this** (new dependency management):
+
+```bash
+uv add package-name
+```
+
+## Troubleshooting
+
+### Python Version Issues
+
+If you get Python version errors:
+
+```bash
+# Specify Python version explicitly
+uv sync --python 3.11
+```
+
+### Environment Issues
+
+If you have environment conflicts:
+
+```bash
+# Reset environment
+rm -rf .venv uv.lock
+uv sync --dev
+```
+
+### Asset Building
+
+For development (skips frontend asset building):
+
+```bash
+export DISPATCH_LIGHT_BUILD=1
+uv sync --dev
+```
+
+## What's Deprecated
+
+❌ **setup.py**: Replaced by `pyproject.toml`
+❌ **requirements-\*.txt**: Replaced by `pyproject.toml` + `uv.lock`
+❌ **pip-compile**: Replaced by `uv lock`
+❌ **Manual venv management**: Replaced by `uv sync`
+
+These files are kept for backward compatibility but are no longer the primary way to manage the project.
 
 ## Additional Resources
 
 - [uv Documentation](https://github.com/astral-sh/uv)
-- [uv vs pip Comparison](https://github.com/astral-sh/uv#uv-vs-pip)
-- [Python Packaging Guide](https://packaging.python.org/)
+- [uv Guide](https://docs.astral.sh/uv/)
+- [Python pyproject.toml Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
