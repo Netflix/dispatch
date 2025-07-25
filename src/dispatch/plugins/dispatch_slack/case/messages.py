@@ -15,7 +15,6 @@ from dispatch.plugins.dispatch_slack.service import create_genai_message_metadat
 from sqlalchemy.orm import Session
 
 from dispatch.ai import service as ai_service
-from dispatch.ai.exceptions import GenAIException
 from dispatch.case import service as case_service
 from dispatch.case.enums import CaseStatus
 from dispatch.case.models import Case
@@ -346,8 +345,21 @@ def create_genai_signal_analysis_message(
     """
     signal_metadata_blocks = []
     try:
-        summary = ai_service.generate_case_signal_summary(case, db_session)
-    except GenAIException as e:
+        response = ai_service.generate_case_signal_summary(case, db_session)
+        if s := response.summary:
+            summary = {
+                "Summary": s.summary,
+                "Historical Summary": s.historical_summary,
+                "Critical Analysis": s.critical_analysis,
+                "Recommendation": s.recommendation,
+            }
+        elif response.error_message:
+            summary = response.error_message
+        else:
+            summary = (
+                "We encountered an error while generating the GenAI analysis summary for this case."
+            )
+    except Exception as e:
         summary = (
             "We encountered an error while generating the GenAI analysis summary for this case."
         )

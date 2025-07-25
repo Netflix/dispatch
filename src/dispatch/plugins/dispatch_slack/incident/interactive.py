@@ -2089,22 +2089,25 @@ def tactical_report_modal(
 
     if genai_loading:
         blocks.append(
-        Section(
-            text=MarkdownText(text=":hourglass_flowing_sand: This may take a moment. Be sure to verify all information before relying on it!")
+            Section(
+                text=MarkdownText(
+                    text=":hourglass_flowing_sand: This may take a moment. Be sure to verify all information before relying on it!"
+                )
+            )
         )
-    )
     else:
         blocks.append(
-        Actions(
-            elements=[
-                Button(
-                    text=":sparkles: Draft with GenAI",
-                    action_id=TACTICAL_REPORT_SLACK_ACTION,
-                    style="primary",
-                    value=context["subject"].json()
-                )
-            ]
-        ))
+            Actions(
+                elements=[
+                    Button(
+                        text=":sparkles: Draft with GenAI",
+                        action_id=TACTICAL_REPORT_SLACK_ACTION,
+                        style="primary",
+                        value=context["subject"].json(),
+                    )
+                ]
+            )
+        )
 
     modal = Modal(
         title="Tactical Report",
@@ -2158,65 +2161,60 @@ def handle_report_tactical_command(
     if len(outstanding_actions):
         actions = outstanding_actions
 
-
-    modal = tactical_report_modal(
-        context,
-        conditions,
-        actions,
-        needs,
-        genai_loading=False
-    )
+    modal = tactical_report_modal(context, conditions, actions, needs, genai_loading=False)
 
     client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-
-@app.action(TACTICAL_REPORT_SLACK_ACTION,
-            middleware=[button_context_middleware, configuration_middleware, db_middleware, user_middleware]
-            )
+@app.action(
+    TACTICAL_REPORT_SLACK_ACTION,
+    middleware=[
+        button_context_middleware,
+        configuration_middleware,
+        db_middleware,
+        user_middleware,
+    ],
+)
 def handle_tactical_report_draft_with_genai(
-    ack: Ack,
-    body: dict,
-    client: WebClient,
-    context: BoltContext,
-    user: DispatchUser
+    ack: Ack, body: dict, client: WebClient, context: BoltContext, user: DispatchUser
 ):
     ack()
 
     client.views_update(
-        view_id=body['view']['id'],
+        view_id=body["view"]["id"],
         view=tactical_report_modal(
             context,
             conditions="Drafting...",
             actions="Drafting...",
             needs="Drafting...",
             genai_loading=True,
-        )
+        ),
     )
 
-    db_session = context['db_session']
-    incident_id = context['subject'].id
+    db_session = context["db_session"]
+    incident_id = context["subject"].id
 
-    incident = incident_service.get(
-        db_session=db_session,
-        incident_id=incident_id
-    )
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not incident:
-        log.error(f"Unable to retrieve incident with id {incident_id} to generate tactical report via Slack")
+        log.error(
+            f"Unable to retrieve incident with id {incident_id} to generate tactical report via Slack"
+        )
 
         client.views_update(
-            view_id=body['view']['id'],
+            view_id=body["view"]["id"],
             view=Modal(
-                    title="Tactical Report",
-        blocks=[
-            Section(
-                text=MarkdownText(text=f":exclamation: Unable to retrieve incident with id {incident_id}. Please contact your Dispatch admin.")
-            )
-        ],
-        close="Close",
-        private_metadata=context["subject"].json(),
-            ).build()
+                title="Tactical Report",
+                blocks=[
+                    Section(
+                        text=MarkdownText(
+                            text=f":exclamation: Unable to retrieve incident with id {incident_id}. Please contact your Dispatch admin."
+                        )
+                    )
+                ],
+                close="Close",
+                private_metadata=context["subject"].json(),
+            ).build(),
         )
         return
 
@@ -2224,48 +2222,48 @@ def handle_tactical_report_draft_with_genai(
         db_session=db_session,
         project=incident.project,
         incident=incident,
-        important_reaction=context['config'].timeline_event_reaction
+        important_reaction=context["config"].timeline_event_reaction,
     )
 
     tactical_report = draft_report.tactical_report
     if not tactical_report:
-        error_message = draft_report.error_message if draft_report.error_message else "Unexpected error encountered generating tactical report."
+        error_message = (
+            draft_report.error_message
+            if draft_report.error_message
+            else "Unexpected error encountered generating tactical report."
+        )
         log.error(error_message)
 
         client.views_update(
-            view_id=body['view']['id'],
+            view_id=body["view"]["id"],
             view=Modal(
-                    title="Tactical Report",
-        blocks=[
-            Section(
-                text=MarkdownText(text=f":exclamation: {error_message}")
-            )
-        ],
-        close="Close",
-        private_metadata=context["subject"].json(),
-            ).build()
+                title="Tactical Report",
+                blocks=[Section(text=MarkdownText(text=f":exclamation: {error_message}"))],
+                close="Close",
+                private_metadata=context["subject"].json(),
+            ).build(),
         )
         return
 
-    conditions, actions, needs = tactical_report.conditions, tactical_report.actions, tactical_report.needs
-    if isinstance(actions, list):
-        actions = '- ' + '\n- '.join(actions)
-    if isinstance(needs, list):
-        needs = '- ' + '\n-'.join(needs)
+    conditions, actions, needs = (
+        tactical_report.conditions,
+        tactical_report.actions,
+        tactical_report.needs,
+    )
+    actions = "- " + "\n- ".join(actions)
+    needs = "- " + "\n- ".join(needs)
 
     client.views_update(
-        view_id=body['view']['id'],
+        view_id=body["view"]["id"],
         view=tactical_report_modal(
             context=context,
             conditions=conditions,
             actions=actions,
-            needs=needs + '\n\nThis report was generated with AI. Please verify all information before relying on it!',
-            genai_loading=False
-        )
-
+            needs=needs
+            + "\n\nThis report was generated with AI. Please verify all information before relying on it!",
+            genai_loading=False,
+        ),
     )
-
-
 
 
 def ack_report_tactical_submission_event(ack: Ack) -> None:

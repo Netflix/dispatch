@@ -24,6 +24,7 @@ from dispatch.data.source.views import router as source_router
 from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
 from dispatch.email_templates.views import router as email_template_router
+from dispatch.ai.views import router as ai_router
 from dispatch.entity.views import router as entity_router
 from dispatch.entity_type.views import router as entity_type_router
 from dispatch.feedback.incident.views import router as feedback_router
@@ -249,6 +250,7 @@ authenticated_organization_api_router.include_router(
 authenticated_organization_api_router.include_router(
     email_template_router, prefix="/email_template", tags=["email_template"]
 )
+authenticated_organization_api_router.include_router(ai_router, prefix="/ai", tags=["ai"])
 
 
 @api_router.get("/healthcheck", include_in_schema=False)
