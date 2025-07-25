@@ -97,14 +97,10 @@ def update_prompt(
             prompt_in=prompt_in,
         )
     except IntegrityError:
-        raise ValidationError(
-            [
-                {
-                    "msg": "An AI prompt with this configuration already exists.",
-                    "loc": "genai_type",
-                }
-            ],
-        ) from None
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": "An AI prompt with this configuration already exists.", "loc": "genai_type"}],
+        )
     return prompt
 
 
