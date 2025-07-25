@@ -51,7 +51,7 @@ sh
 slack-bolt
 slack_sdk
 slowapi
-spacy==3.8.5
+spacy==3.8.7
 sqlalchemy-filters
 sqlalchemy-utils
 sqlalchemy==2.0.8
