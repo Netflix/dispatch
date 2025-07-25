@@ -34,18 +34,25 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
       - name: Install python dependencies
         run: |
           export DISPATCH_LIGHT_BUILD=1
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e ".[dev]"
       - name: "Lint with ruff"
         run: |
+          source .venv/bin/activate
           ruff check src tests
           ruff format src tests
       - name: Test with pytest
         run: |
-          pip install pytest-cov
+          source .venv/bin/activate
+          uv pip install pytest-cov
           pytest --junitxml=junit/test-results.xml --cov=dispatch --cov-report=json:coverage.json --cov-report=xml --cov-report=html
       - name: Coverage per file
         # All modified files should meet the minimum code coverage requirement.
