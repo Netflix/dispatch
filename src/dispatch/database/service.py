@@ -689,7 +689,8 @@ def search_filter_sort_paginate(
             sort = False if sort_by else True
             query = search(query_str=query_str, query=query, model=model, sort=sort)
 
-        query_restricted = apply_model_specific_filters(model_cls, query, current_user, role)
+        # Apply model-specific filters directly to the query to avoid intersect ordering issues
+        query = apply_model_specific_filters(model_cls, query, current_user, role)
 
         tag_all_filters = []
         if filter_spec:
@@ -713,15 +714,9 @@ def search_filter_sort_paginate(
             else:
                 query = apply_filters(query, filter_spec, model_cls)
 
-        if model == "Incident":
-            query = query.intersect(query_restricted)
-            for filter in tag_all_filters:
-                query = query.intersect(filter)
-
-        if model == "Case":
-            query = query.intersect(query_restricted)
-            for filter in tag_all_filters:
-                query = query.intersect(filter)
+        # Apply tag_all filters using intersect only when necessary
+        for filter in tag_all_filters:
+            query = query.intersect(filter)
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
