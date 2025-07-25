@@ -1,6 +1,5 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic import ValidationError
 
 from sqlalchemy.exc import IntegrityError
 
@@ -69,7 +68,9 @@ def create_prompt(
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=[{"msg": "An AI prompt with this configuration already exists.", "loc": "genai_type"}],
+            detail=[
+                {"msg": "An AI prompt with this configuration already exists.", "loc": "genai_type"}
+            ],
         ) from None
 
 
@@ -99,8 +100,10 @@ def update_prompt(
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=[{"msg": "An AI prompt with this configuration already exists.", "loc": "genai_type"}],
-        )
+            detail=[
+                {"msg": "An AI prompt with this configuration already exists.", "loc": "genai_type"}
+            ],
+        ) from None
     return prompt
 
 
