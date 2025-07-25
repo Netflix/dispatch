@@ -13,7 +13,7 @@
               variant="text"
               color="info"
               :loading="loading"
-              :disabled="!isValid.value"
+              :disabled="!isValid.value || !genai_prompt"
               @click="save()"
             >
               <v-icon>mdi-content-save</v-icon>
@@ -43,27 +43,53 @@
                 />
               </v-col>
               <v-col cols="12">
-                <v-textarea
-                  v-model="genai_prompt"
-                  label="Prompt"
-                  hint="The main prompt template to send to the AI model. Use placeholders like {tags}, {incident_data}, etc."
-                  clearable
-                  auto-grow
-                  rows="6"
-                  required
-                  name="Prompt"
-                  :rules="[rules.required]"
-                />
+                <v-card variant="outlined" class="pa-4">
+                  <v-textarea
+                    v-model="genai_prompt"
+                    label="Prompt"
+                    hint="The main prompt template to send to the AI model. Use placeholders like {tags}, {incident_data}, etc."
+                    clearable
+                    auto-grow
+                    rows="6"
+                    required
+                    name="Prompt"
+                    :rules="[rules.required]"
+                  />
+                  <v-btn
+                    variant="text"
+                    color="secondary"
+                    size="small"
+                    class="mt-2"
+                    :disabled="!genai_type"
+                    @click="pasteDefaultPrompt"
+                  >
+                    <v-icon start>mdi-content-paste</v-icon>
+                    Paste default
+                  </v-btn>
+                </v-card>
               </v-col>
               <v-col cols="12">
-                <v-textarea
-                  v-model="genai_system_message"
-                  label="System Message"
-                  hint="The system message to set the behavior of the AI assistant"
-                  clearable
-                  auto-grow
-                  rows="4"
-                />
+                <v-card variant="outlined" class="pa-4">
+                  <v-textarea
+                    v-model="genai_system_message"
+                    label="System Message"
+                    hint="The system message to set the behavior of the AI assistant"
+                    clearable
+                    auto-grow
+                    rows="4"
+                  />
+                  <v-btn
+                    variant="text"
+                    color="secondary"
+                    size="small"
+                    class="mt-2"
+                    :disabled="!genai_type"
+                    @click="pasteDefaultSystemMessage"
+                  >
+                    <v-icon start>mdi-content-paste</v-icon>
+                    Paste default
+                  </v-btn>
+                </v-card>
               </v-col>
             </v-row>
             <v-col>
@@ -104,6 +130,8 @@ export default {
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit",
+      "defaults.prompts",
+      "defaults.system_messages",
     ]),
     genaiTypeOptions() {
       return getGenaiTypeOptions()
@@ -112,6 +140,35 @@ export default {
 
   methods: {
     ...mapActions("prompt", ["save", "closeCreateEdit"]),
+
+    pasteDefaultPrompt() {
+      const defaultPrompt = this.getDefaultPrompt()
+      if (this.genai_prompt) {
+        this.genai_prompt += "\n\n" + defaultPrompt
+      } else {
+        this.genai_prompt = defaultPrompt
+      }
+    },
+
+    pasteDefaultSystemMessage() {
+      const defaultSystemMessage = this.getDefaultSystemMessage()
+      if (this.genai_system_message) {
+        this.genai_system_message += "\n\n" + defaultSystemMessage
+      } else {
+        this.genai_system_message = defaultSystemMessage
+      }
+    },
+
+    getDefaultPrompt() {
+      return (
+        this.prompts[this.genai_type] ||
+        "Enter your prompt template here with placeholders like {data}..."
+      )
+    },
+
+    getDefaultSystemMessage() {
+      return this.system_messages[this.genai_type] || "You are a helpful AI assistant."
+    },
   },
 
   created() {

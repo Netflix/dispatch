@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from pydantic import Field
 from sqlalchemy import Column, Integer, String, Boolean
@@ -7,6 +8,7 @@ from dispatch.models import DispatchBase
 from dispatch.database.core import Base
 from dispatch.models import TimeStampMixin, ProjectMixin, Pagination, PrimaryKey
 from dispatch.project.models import ProjectRead
+from dispatch.tag.models import TagTypeRecommendation
 
 
 class Prompt(Base, TimeStampMixin, ProjectMixin):
@@ -23,6 +25,19 @@ class Prompt(Base, TimeStampMixin, ProjectMixin):
     genai_prompt = Column(String, nullable=False)
     genai_system_message = Column(String, nullable=True)
     enabled = Column(Boolean, default=False, nullable=False)
+
+
+class TagRecommendations(DispatchBase):
+    """
+    Model for structured tag recommendations output from AI analysis.
+
+    This model ensures the AI response contains properly structured tag recommendations
+    grouped by tag type.
+    """
+
+    recommendations: List[TagTypeRecommendation] = Field(
+        description="List of tag recommendations grouped by tag type", default_factory=list
+    )
 
 
 class ReadInSummary(DispatchBase):
@@ -126,71 +141,29 @@ class CaseSignalSummaryResponse(DispatchBase):
 
 # AI Prompt Models
 class PromptBase(DispatchBase):
-    """
-    Base Pydantic model for AI prompts.
-
-    This model defines the core fields for AI prompts that can be used
-    for various GenAI operations like tag recommendations, incident summaries, etc.
-    """
-
-    genai_type: int = Field(
-        description="The type of GenAI prompt (1=Tag Recommendation, 2=Incident Summary, etc.)"
-    )
-    genai_prompt: str = Field(description="The main prompt template to send to the AI model")
-    genai_system_message: str | None = Field(
-        default=None, description="The system message to set the behavior of the AI assistant"
-    )
-    enabled: bool = Field(
-        default=False, description="Whether this prompt is active and available for use"
-    )
+    genai_type: int | None = None
+    genai_prompt: str | None = None
+    genai_system_message: str | None = None
+    enabled: bool | None = None
 
 
 class PromptCreate(PromptBase):
-    """
-    Model for creating a new AI prompt.
-
-    Inherits all fields from PromptBase.
-    """
-
-    pass
+    project: ProjectRead | None = None
 
 
 class PromptUpdate(DispatchBase):
-    """
-    Model for updating an existing AI prompt.
-
-    All fields are optional to allow partial updates.
-    """
-
-    genai_type: int | None = Field(
-        default=None,
-        description="The type of GenAI prompt (1=Tag Recommendation, 2=Incident Summary, etc.)",
-    )
-    genai_prompt: str | None = Field(
-        default=None, description="The main prompt template to send to the AI model"
-    )
-    genai_system_message: str | None = Field(
-        default=None, description="The system message to set the behavior of the AI assistant"
-    )
-    enabled: bool | None = Field(
-        default=None, description="Whether this prompt is active and available for use"
-    )
+    genai_type: int | None = None
+    genai_prompt: str | None = None
+    genai_system_message: str | None = None
+    enabled: bool | None = None
 
 
 class PromptRead(PromptBase):
-    """
-    Model for reading AI prompt data.
-
-    Includes all base fields plus metadata fields.
-    """
-
-    id: PrimaryKey = Field(description="Unique identifier for the prompt")
-    created_at: str = Field(description="ISO timestamp when the prompt was created")
-    updated_at: str = Field(description="ISO timestamp when the prompt was last updated")
-    project: ProjectRead = Field(description="Project this prompt belongs to")
+    id: PrimaryKey
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    project: ProjectRead | None = None
 
 
 class PromptPagination(Pagination):
-    """Pagination model for AI prompts."""
-
     items: list[PromptRead]

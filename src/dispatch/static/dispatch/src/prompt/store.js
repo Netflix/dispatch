@@ -1,6 +1,6 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
-import { GENAI_TYPES } from "@/constants/genai-types"
+import PromptApi from "./api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -16,69 +16,6 @@ const getDefaultSelectedState = () => {
   }
 }
 
-// Mock data
-const mockPrompts = [
-  {
-    id: 1,
-    genai_type: 1,
-    genai_prompt:
-      "Analyze the following tags and recommend additional relevant tags for this incident: {tags}",
-    genai_system_message:
-      "You are a cybersecurity expert who specializes in incident classification and tagging.",
-    enabled: true,
-    created_at: "2024-01-15T10:30:00Z",
-    updated_at: "2024-01-15T10:30:00Z",
-    project: { name: "default" },
-  },
-  {
-    id: 2,
-    genai_type: 2,
-    genai_prompt:
-      "Create a comprehensive summary of this incident including timeline, impact, and resolution: {incident_data}",
-    genai_system_message:
-      "You are a cybersecurity analyst tasked with creating clear, concise incident summaries.",
-    enabled: true,
-    created_at: "2024-01-16T14:20:00Z",
-    updated_at: "2024-01-16T14:20:00Z",
-    project: { name: "default" },
-  },
-  {
-    id: 3,
-    genai_type: 3,
-    genai_prompt:
-      "Analyze this signal and provide insights on potential threats and recommended actions: {signal_data}",
-    genai_system_message:
-      "You are a threat intelligence analyst specializing in signal analysis and threat assessment.",
-    enabled: false,
-    created_at: "2024-01-17T09:15:00Z",
-    updated_at: "2024-01-17T09:15:00Z",
-    project: { name: "default" },
-  },
-  {
-    id: 4,
-    genai_type: 4,
-    genai_prompt: "Summarize the key points from this conversation thread: {conversation_data}",
-    genai_system_message:
-      "You are a communication specialist who extracts key information from conversations.",
-    enabled: true,
-    created_at: "2024-01-18T11:45:00Z",
-    updated_at: "2024-01-18T11:45:00Z",
-    project: { name: "default" },
-  },
-  {
-    id: 5,
-    genai_type: 5,
-    genai_prompt:
-      "Create a tactical report summary with conditions, actions, and needs: {incident_data}",
-    genai_system_message:
-      "You are a cybersecurity analyst tasked with creating structured tactical reports.",
-    enabled: false,
-    created_at: "2024-01-19T16:30:00Z",
-    updated_at: "2024-01-19T16:30:00Z",
-    project: { name: "default" },
-  },
-]
-
 const state = {
   selected: {
     ...getDefaultSelectedState(),
@@ -89,8 +26,8 @@ const state = {
   },
   table: {
     rows: {
-      items: mockPrompts,
-      total: mockPrompts.length,
+      items: [],
+      total: 0,
     },
     options: {
       q: "",
@@ -104,6 +41,11 @@ const state = {
     },
     loading: false,
   },
+  defaults: {
+    prompts: {},
+    system_messages: {},
+    loading: false,
+  },
 }
 
 const getters = {
@@ -111,59 +53,35 @@ const getters = {
 }
 
 const actions = {
-  getAll: debounce(({ commit, state }) => {
+  getAll: debounce(async ({ commit, state, dispatch }) => {
     commit("SET_TABLE_LOADING", "primary")
 
-    // Simulate API delay
-    setTimeout(() => {
-      let filteredItems = [...mockPrompts]
-
-      // Apply search filter
-      if (state.table.options.q) {
-        const searchTerm = state.table.options.q.toLowerCase()
-        filteredItems = filteredItems.filter((item) => {
-          const typeName = GENAI_TYPES[item.genai_type] || ""
-          return (
-            typeName.toLowerCase().includes(searchTerm) ||
-            item.genai_prompt.toLowerCase().includes(searchTerm) ||
-            (item.genai_system_message &&
-              item.genai_system_message.toLowerCase().includes(searchTerm))
-          )
-        })
+    try {
+      const params = {
+        page: state.table.options.page,
+        itemsPerPage: state.table.options.itemsPerPage,
+        q: state.table.options.q || undefined,
+        sortBy: state.table.options.sortBy,
+        descending: state.table.options.descending,
       }
 
-      // Apply sorting
-      if (state.table.options.sortBy.length > 0) {
-        const sortBy = state.table.options.sortBy[0]
-        const descending = state.table.options.descending[0]
-
-        filteredItems.sort((a, b) => {
-          let aVal = a[sortBy]
-          let bVal = b[sortBy]
-
-          // Handle genai_type sorting by name
-          if (sortBy === "genai_type") {
-            aVal = GENAI_TYPES[a.genai_type] || ""
-            bVal = GENAI_TYPES[b.genai_type] || ""
-          }
-
-          if (aVal < bVal) return descending ? 1 : -1
-          if (aVal > bVal) return descending ? -1 : 1
-          return 0
-        })
-      }
-
-      // Apply pagination
-      const startIndex = (state.table.options.page - 1) * state.table.options.itemsPerPage
-      const endIndex = startIndex + state.table.options.itemsPerPage
-      const paginatedItems = filteredItems.slice(startIndex, endIndex)
+      const response = await PromptApi.getAll(params)
+      const { items, total } = response.data
 
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", {
-        items: paginatedItems,
-        total: filteredItems.length,
+        items,
+        total,
       })
-    }, 300)
+
+      // Also load defaults if they haven't been loaded yet
+      if (Object.keys(state.defaults.prompts).length === 0) {
+        await dispatch("loadDefaults")
+      }
+    } catch (error) {
+      commit("SET_TABLE_LOADING", false)
+      console.error("Error fetching prompts:", error)
+    }
   }, 500),
 
   createEditShow({ commit }, prompt) {
@@ -188,32 +106,21 @@ const actions = {
     commit("RESET_SELECTED")
   },
 
-  save({ commit, dispatch }) {
+  async save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
 
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      const promptData = {
+        genai_type: state.selected.genai_type,
+        genai_prompt: state.selected.genai_prompt,
+        genai_system_message: state.selected.genai_system_message,
+        enabled: state.selected.enabled,
+        project: state.selected.project,
+      }
+
       if (!state.selected.id) {
         // Create new prompt
-        const newPrompt = {
-          ...state.selected,
-          id: Date.now(), // Simple ID generation
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          project: { name: "default" },
-        }
-
-        // If enabling this prompt, disable others of the same type
-        if (newPrompt.enabled) {
-          mockPrompts.forEach((p) => {
-            if (p.genai_type === newPrompt.genai_type && p.id !== newPrompt.id) {
-              p.enabled = false
-            }
-          })
-        }
-
-        mockPrompts.push(newPrompt)
-
+        await PromptApi.create(promptData)
         commit(
           "notification_backend/addBeNotification",
           { text: "Prompt created successfully.", type: "success" },
@@ -221,26 +128,7 @@ const actions = {
         )
       } else {
         // Update existing prompt
-        const index = mockPrompts.findIndex((p) => p.id === state.selected.id)
-        if (index !== -1) {
-          const updatedPrompt = {
-            ...mockPrompts[index],
-            ...state.selected,
-            updated_at: new Date().toISOString(),
-          }
-
-          // If enabling this prompt, disable others of the same type
-          if (updatedPrompt.enabled) {
-            mockPrompts.forEach((p) => {
-              if (p.genai_type === updatedPrompt.genai_type && p.id !== updatedPrompt.id) {
-                p.enabled = false
-              }
-            })
-          }
-
-          mockPrompts[index] = updatedPrompt
-        }
-
+        await PromptApi.update(state.selected.id, promptData)
         commit(
           "notification_backend/addBeNotification",
           { text: "Prompt updated successfully.", type: "success" },
@@ -251,18 +139,22 @@ const actions = {
       commit("SET_SELECTED_LOADING", false)
       dispatch("closeCreateEdit")
       dispatch("getAll")
-    }, 500)
+    } catch (error) {
+      commit("SET_SELECTED_LOADING", false)
+      console.error("Error saving prompt:", error)
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Error saving prompt.", type: "error" },
+        { root: true }
+      )
+    }
   },
 
-  remove({ commit, dispatch }) {
+  async remove({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
 
-    // Simulate API delay
-    setTimeout(() => {
-      const index = mockPrompts.findIndex((p) => p.id === state.selected.id)
-      if (index !== -1) {
-        mockPrompts.splice(index, 1)
-      }
+    try {
+      await PromptApi.delete(state.selected.id)
 
       commit("SET_SELECTED_LOADING", false)
       dispatch("closeRemove")
@@ -272,7 +164,28 @@ const actions = {
         { text: "Prompt deleted successfully.", type: "success" },
         { root: true }
       )
-    }, 300)
+    } catch (error) {
+      commit("SET_SELECTED_LOADING", false)
+      console.error("Error deleting prompt:", error)
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Error deleting prompt.", type: "error" },
+        { root: true }
+      )
+    }
+  },
+
+  async loadDefaults({ commit }) {
+    commit("SET_DEFAULTS_LOADING", true)
+
+    try {
+      const response = await PromptApi.getDefaults()
+      commit("SET_DEFAULTS", response.data)
+    } catch (error) {
+      console.error("Error loading default prompts:", error)
+    } finally {
+      commit("SET_DEFAULTS_LOADING", false)
+    }
   },
 }
 
@@ -301,6 +214,13 @@ const mutations = {
     let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
+  },
+  SET_DEFAULTS(state, value) {
+    state.defaults.prompts = value.prompts
+    state.defaults.system_messages = value.system_messages
+  },
+  SET_DEFAULTS_LOADING(state, value) {
+    state.defaults.loading = value
   },
 }
 

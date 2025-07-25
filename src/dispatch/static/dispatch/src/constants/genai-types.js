@@ -7,18 +7,9 @@ export const GENAI_TYPES = {
   5: "Tactical Report Summary",
 }
 
-// Reverse mapping for easy lookup - generated programmatically
-export const GENAI_TYPE_IDS = Object.fromEntries(
-  Object.entries(GENAI_TYPES).map(([id, name]) => [name, parseInt(id)])
-)
-
 // Helper functions
 export const getGenaiTypeName = (typeId) => {
   return GENAI_TYPES[typeId] || `Unknown Type (${typeId})`
-}
-
-export const getGenaiTypeId = (typeName) => {
-  return GENAI_TYPE_IDS[typeName]
 }
 
 export const getGenaiTypeOptions = () => {
