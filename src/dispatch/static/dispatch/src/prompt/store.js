@@ -106,7 +106,7 @@ const actions = {
     commit("RESET_SELECTED")
   },
 
-  async save({ commit, dispatch }) {
+  async save({ commit, dispatch, state }) {
     commit("SET_SELECTED_LOADING", true)
 
     try {

@@ -79,19 +79,19 @@ class TacticalReport(DispatchBase):
     conditions: str = Field(
         description="Summary of incident circumstances, with focus on scope and impact", default=""
     )
-    actions: str | list[str] = Field(
+    actions: list[str] = Field(
         description=(
             "Chronological list of actions and analysis by both the party instigating "
             "the incident and the response team"
         ),
         default_factory=list,
     )
-    needs: str | list[str] = Field(
+    needs: list[str] = Field(
         description=(
             "Identified and unresolved action items from the incident, or an indication "
             "that the incident is at resolution"
         ),
-        default="",
+        default_factory=list,
     )
 
 

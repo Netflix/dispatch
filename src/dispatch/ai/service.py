@@ -51,6 +51,7 @@ from .strings import (
 
 log = logging.getLogger(__name__)
 
+
 def get_model_token_limit(model_name: str, buffer_percentage: float = 0.05) -> int:
     """
     Returns the maximum token limit for a given LLM model with a safety buffer.
@@ -741,7 +742,9 @@ def generate_tactical_report(
         return TacticalReportResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=incident.conversation.channel_id, include_user_details=True, important_reaction=important_reaction
+        conversation_id=incident.conversation.channel_id,
+        include_user_details=True,
+        important_reaction=important_reaction,
     )
     if not conversation:
         message = f"Tactical report not generated for {incident.name}. No conversation found."
@@ -796,7 +799,7 @@ def get_by_type(*, genai_type: int, project_id: int, db_session: Session) -> Pro
         db_session.query(Prompt)
         .filter(Prompt.project_id == project_id)
         .filter(Prompt.genai_type == genai_type)
-        .filter(Prompt.enabled == True)  # noqa
+        .filter(Prompt.enabled)
         .first()
     )
 
