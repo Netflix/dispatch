@@ -81,16 +81,57 @@ def test_simple_filter_specification(session, incidents, admin_user):
 
 def test_sorting_functionality(session, incidents, user):
     """Test sorting functionality."""
-    result = search_filter_sort_paginate(
-        db_session=session,
-        model="Incident",
-        sort_by=["title"],
-        descending=[True],
-        current_user=user,
-    )
+    # Create a unique prefix for our test incidents to ensure isolation
+    import uuid
+    import json
+    test_prefix = f"SORT_TEST_{uuid.uuid4().hex[:8]}_"
 
-    titles = [incident.title for incident in result["items"]]
-    assert titles == sorted(titles, reverse=True)
+    # Create test incidents with predictable titles for sorting
+    from dispatch.incident.models import Incident
+    from dispatch.enums import Visibility
+
+    test_incidents = []
+    test_titles = [f"{test_prefix}Alpha", f"{test_prefix}Beta", f"{test_prefix}Charlie"]
+
+    for title in test_titles:
+        incident = Incident(
+            title=title,
+            description="Test incident for sorting",
+            visibility=Visibility.open,
+            project_id=incidents[0].project_id  # Use same project as fixture incidents
+        )
+        session.add(incident)
+        test_incidents.append(incident)
+
+    session.commit()
+
+    try:
+        # Use filter instead of search to find our test incidents
+        filter_spec = {
+            "field": "title",
+            "op": "like",
+            "value": f"{test_prefix}%"
+        }
+
+        result = search_filter_sort_paginate(
+            db_session=session,
+            model="Incident",
+            filter_spec=json.dumps(filter_spec),  # Filter to only our test incidents
+            sort_by=["title"],
+            descending=[True],
+            current_user=user,
+        )
+
+        titles = [incident.title for incident in result["items"]]
+        expected_titles = sorted(test_titles, reverse=True)
+
+        assert titles == expected_titles, f"Expected {expected_titles}, got {titles}"
+
+    finally:
+        # Clean up our test incidents
+        for incident in test_incidents:
+            session.delete(incident)
+        session.commit()
 
 
 def test_unlimited_pagination(session, incidents, admin_user):

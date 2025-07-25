@@ -450,7 +450,6 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
 
 def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
     """Applies any model specific implicitly joins."""
-    print(f"Applying filter specific joins for model: {model} and filter_spec: {filter_spec}")
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
