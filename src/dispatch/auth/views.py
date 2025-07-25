@@ -125,7 +125,19 @@ def create_user(
     return user
 
 
-@user_router.get("/{user_id}", response_model=UserRead)
+@user_router.get(
+    "/{user_id}",
+    dependencies=[
+        Depends(
+            PermissionsDependency(
+                [
+                    OrganizationMemberPermission,
+                ]
+            )
+        )
+    ],
+    response_model=UserRead,
+)
 def get_user(db_session: DbSession, user_id: PrimaryKey):
     """Get a user."""
     user = get(db_session=db_session, user_id=user_id)

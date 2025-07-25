@@ -281,8 +281,8 @@ def get_query_models(query):
         # Try to get the statement from the query
         stmt = query.statement
 
-        # Extract entities from the statement's froms
-        for from_obj in stmt.froms:
+        # Extract entities from the statement's forms
+        for from_obj in stmt.forms:
             if hasattr(from_obj, "entity"):
                 # For select statements with an entity
                 if from_obj.entity not in models:
@@ -808,35 +808,49 @@ def search_filter_sort_paginate(
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
-    if role == UserRoles.member:
-        # We filter out restricted incidents for users with a member role if the user is not an incident participant
-        query = (
-            query.join(Participant, Incident.id == Participant.incident_id)
-            .join(IndividualContact)
-            .filter(
-                or_(
-                    Incident.visibility == Visibility.open,
+    # Allow unrestricted access for admin roles
+    if role in [UserRoles.admin, UserRoles.owner, UserRoles.manager]:
+        return query.distinct()
+
+    # For all other roles (including member, none, and any unhandled roles),
+    # apply restrictive filtering - default deny approach
+    query = (
+        query.outerjoin(Participant, Incident.id == Participant.incident_id)
+        .outerjoin(IndividualContact, IndividualContact.id == Participant.individual_contact_id)
+        .filter(
+            or_(
+                Incident.visibility == Visibility.open,
+                and_(
+                    Incident.visibility == Visibility.restricted,
                     IndividualContact.email == current_user.email,
-                )
+                ),
             )
         )
+    )
     return query.distinct()
 
 
 def restricted_case_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional case filters to query (usually for permissions)."""
-    if role == UserRoles.member:
-        # We filter out restricted cases for users with a member role if the user is not a case participant
-        query = (
-            query.join(Participant, Case.id == Participant.case_id)
-            .join(IndividualContact)
-            .filter(
-                or_(
-                    Case.visibility == Visibility.open,
+    # Allow unrestricted access for admin roles
+    if role in [UserRoles.admin, UserRoles.owner, UserRoles.manager]:
+        return query.distinct()
+
+    # For all other roles (including member, none, and any unhandled roles),
+    # apply restrictive filtering - default deny approach
+    query = (
+        query.outerjoin(Participant, Case.id == Participant.case_id)
+        .outerjoin(IndividualContact, IndividualContact.id == Participant.individual_contact_id)
+        .filter(
+            or_(
+                Case.visibility == Visibility.open,
+                and_(
+                    Case.visibility == Visibility.restricted,
                     IndividualContact.email == current_user.email,
-                )
+                ),
             )
         )
+    )
     return query.distinct()
 
 

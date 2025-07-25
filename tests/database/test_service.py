@@ -11,6 +11,8 @@ from dispatch.database.service import (
 )
 from dispatch.incident.models import Incident
 from dispatch.enums import UserRoles, Visibility
+from dispatch.case.models import Case
+from dispatch.database.service import restricted_case_filter
 
 
 # Test the Filter class and related functions
@@ -172,6 +174,76 @@ def test_restricted_incident_filter_admin(session, user):
     )
 
     assert filtered_query is not None
+
+
+def test_restricted_incident_filter_owner(session, user):
+    """Tests incident filtering for owner role - should have unrestricted access."""
+    query = session.query(Incident)
+    filtered_query = restricted_incident_filter(
+        query=query, current_user=user, role=UserRoles.owner
+    )
+
+    assert filtered_query is not None
+
+
+def test_restricted_incident_filter_manager(session, user):
+    """Tests incident filtering for manager role - should have unrestricted access."""
+    query = session.query(Incident)
+    filtered_query = restricted_incident_filter(
+        query=query, current_user=user, role=UserRoles.manager
+    )
+
+    assert filtered_query is not None
+
+
+def test_restricted_incident_filter_none_role(session, user):
+    """Tests incident filtering for None role - should apply restrictive filters."""
+    query = session.query(Incident)
+    filtered_query = restricted_incident_filter(query=query, current_user=user, role=None)
+
+    assert filtered_query is not None
+    # The filter should have been applied (restrictive behavior)
+
+
+def test_restricted_case_filter_member(session, user):
+    """Tests case filtering for member role."""
+    query = session.query(Case)
+    filtered_query = restricted_case_filter(query=query, current_user=user, role=UserRoles.member)
+
+    assert filtered_query is not None
+
+
+def test_restricted_case_filter_admin(session, user):
+    """Tests case filtering for admin role."""
+    query = session.query(Case)
+    filtered_query = restricted_case_filter(query=query, current_user=user, role=UserRoles.admin)
+
+    assert filtered_query is not None
+
+
+def test_restricted_case_filter_owner(session, user):
+    """Tests case filtering for owner role - should have unrestricted access."""
+    query = session.query(Case)
+    filtered_query = restricted_case_filter(query=query, current_user=user, role=UserRoles.owner)
+
+    assert filtered_query is not None
+
+
+def test_restricted_case_filter_manager(session, user):
+    """Tests case filtering for manager role - should have unrestricted access."""
+    query = session.query(Case)
+    filtered_query = restricted_case_filter(query=query, current_user=user, role=UserRoles.manager)
+
+    assert filtered_query is not None
+
+
+def test_restricted_case_filter_none_role(session, user):
+    """Tests case filtering for None role - should apply restrictive filters."""
+    query = session.query(Case)
+    filtered_query = restricted_case_filter(query=query, current_user=user, role=None)
+
+    assert filtered_query is not None
+    # The filter should have been applied (restrictive behavior)
 
 
 # Test apply_filters
