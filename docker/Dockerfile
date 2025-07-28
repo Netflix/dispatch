@@ -15,7 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   # Needed for fetching stuff
   ca-certificates \
   wget \
+  curl \
   && rm -rf /var/lib/apt/lists/*
+
+# Install uv for building
+RUN curl -LsSf https://astral.sh/uv/0.4.17/install.sh | sh && \
+  mv /root/.cargo/bin/uv /usr/local/bin/
 
 RUN wget --quiet -O - https://deb.nodesource.com/setup_20.x | bash - \
   && apt-get install -y nodejs --no-install-recommends
@@ -51,7 +56,7 @@ COPY . /usr/src/dispatch/
 RUN YARN_CACHE_FOLDER="$(mktemp -d)" \
   && export YARN_CACHE_FOLDER \
   && pushd /usr/src/dispatch \
-  && python setup.py bdist_wheel \
+  && uv build \
   && rm -r "$YARN_CACHE_FOLDER" \
   && mv /usr/src/dispatch/dist /dist
 
@@ -85,7 +90,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+RUN curl -LsSf https://astral.sh/uv/0.4.17/install.sh | sh && \
   mv /root/.cargo/bin/uv /usr/local/bin/
 
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
