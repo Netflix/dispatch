@@ -120,7 +120,9 @@ jobs:
       - name: Install playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Setup sample database
-        run: dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
+        run: |
+          source .venv/bin/activate
+          dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
       - name: Run tests
         run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
