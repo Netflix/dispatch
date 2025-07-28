@@ -124,7 +124,9 @@ jobs:
           source .venv/bin/activate
           dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
       - name: Run tests
-        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/4
+        run: |
+          source .venv/bin/activate
+          npx playwright test --project=chromium --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
