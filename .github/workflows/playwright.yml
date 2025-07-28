@@ -95,7 +95,7 @@ jobs:
           python-version: 3.11.11
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version-file: .nvmrc
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -116,7 +116,7 @@ jobs:
       - name: Install npm dependencies
         run: |
           npm ci -D --prefix src/dispatch/static/dispatch
-          npm install -D @playwright/test
+          npm ci
       - name: Install playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Setup sample database
