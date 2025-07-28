@@ -70,13 +70,22 @@ const config: PlaywrightTestConfig = {
   // outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "dispatch server develop",
-    url: "http://localhost:8080/",
-    reuseExistingServer: !process.env.CI,
-    /* Increase timeout to allow server to fully start and settle - especially important after removing the 2-minute wait from tests */
-    timeout: 240 * 1000, // 4 minutes to ensure server is fully ready
-  },
+  webServer: [
+    {
+      command: "dispatch server develop",
+      url: "http://localhost:8080/",
+      reuseExistingServer: !process.env.CI,
+      /* Increase timeout to allow server to fully start and settle */
+      timeout: 240 * 1000, // 4 minutes to ensure server is fully ready
+    },
+    {
+      // Wait for the backend API to be ready by checking the health endpoint
+      command: "", // No command needed as it's started by the first webServer
+      url: "http://localhost:8000/api/v1/healthcheck",
+      reuseExistingServer: !process.env.CI,
+      timeout: 60 * 1000, // 1 minute should be enough for API to be ready after frontend
+    },
+  ],
 }
 
 export default config
