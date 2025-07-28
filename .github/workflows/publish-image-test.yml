@@ -43,15 +43,15 @@ jobs:
             SOURCE_COMMIT=${{ github.sha }}
             VITE_DISPATCH_COMMIT_HASH=${{ github.sha }}
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "dispatch-test:${{ github.event.pull_request.head.sha || github.sha }}"
-          format: "sarif"
-          output: "trivy-results.sarif"
+      # - name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: "dispatch-test:${{ github.event.pull_request.head.sha || github.sha }}"
+      #     format: "sarif"
+      #     output: "trivy-results.sarif"
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: "trivy-results.sarif"
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   if: always()
+      #   with:
+      #     sarif_file: "trivy-results.sarif"

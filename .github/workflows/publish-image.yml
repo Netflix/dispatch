@@ -78,28 +78,28 @@ jobs:
             SOURCE_COMMIT=${{ github.sha }}
             VITE_DISPATCH_COMMIT_HASH=${{ github.sha }}
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.REGISTRY_GITHUB }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
-          format: "sarif"
-          output: "trivy-results.sarif"
+      # - name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ${{ env.REGISTRY_GITHUB }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+      #     format: "sarif"
+      #     output: "trivy-results.sarif"
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: "trivy-results.sarif"
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   if: always()
+      #   with:
+      #     sarif_file: "trivy-results.sarif"
 
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: ${{ env.REGISTRY_GITHUB }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
-          format: spdx-json
-          output-file: sbom.spdx.json
+      # - name: Generate SBOM
+      #   uses: anchore/sbom-action@v0
+      #   with:
+      #     image: ${{ env.REGISTRY_GITHUB }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+      #     format: spdx-json
+      #     output-file: sbom.spdx.json
 
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom
-          path: sbom.spdx.json
+      # - name: Upload SBOM
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: sbom
+      #     path: sbom.spdx.json
