@@ -1,6 +1,6 @@
 name: Test image build
 
-on:
+"on":
   pull_request:
     paths:
       - "Dockerfile"

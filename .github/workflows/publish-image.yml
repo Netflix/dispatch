@@ -1,6 +1,6 @@
 name: Publish Docker image
 
-on:
+"on":
   release:
     types: [published]
   workflow_dispatch:
