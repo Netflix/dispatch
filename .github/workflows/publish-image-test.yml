@@ -26,8 +26,8 @@ jobs:
         with:
           images: dispatch-test
           tags: |
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=ref,event=pr,prefix=pr-
+            type=sha,prefix=sha-
 
       - name: Build Docker image
         uses: docker/build-push-action@v6
