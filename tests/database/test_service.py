@@ -390,7 +390,7 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
         except Exception as cleanup_error:
             # If cleanup fails, at least try to rollback
             session.rollback()
-            print(f"Warning: Cleanup failed: {cleanup_error}")
+            pytest.warns(UserWarning, f"Cleanup failed: {cleanup_error}")
 
 
 def test_restricted_case_filter_with_test_data(session, user, admin_user):
