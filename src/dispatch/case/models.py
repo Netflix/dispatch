@@ -176,6 +176,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
 
+    # Foreign key to individual who resolved
+    resolved_by_id = Column(Integer, ForeignKey("individual_contact.id"))
+    resolved_by = relationship("IndividualContact", foreign_keys=[resolved_by_id])
+
     # resources
     case_costs = relationship(
         "CaseCost",
@@ -324,6 +328,7 @@ class CaseBase(DispatchBase):
     description: str | None = None
     resolution: str | None = None
     resolution_reason: CaseResolutionReason | None = None
+    resolved_by: IndividualContactRead | None = None
     status: CaseStatus | None = None
     visibility: Visibility | None = None
 
