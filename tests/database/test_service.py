@@ -87,6 +87,9 @@ def test_sorting_functionality(session, incidents, user):
 
     test_prefix = f"SORT_TEST_{uuid.uuid4().hex[:8]}_"
 
+    # Ensure clean session state
+    session.expire_all()
+
     # Create test incidents with predictable titles for sorting
     from dispatch.incident.models import Incident
     from dispatch.enums import Visibility
@@ -104,7 +107,7 @@ def test_sorting_functionality(session, incidents, user):
         session.add(incident)
         test_incidents.append(incident)
 
-    session.commit()
+    session.flush()
 
     try:
         # Use filter instead of search to find our test incidents
@@ -128,7 +131,7 @@ def test_sorting_functionality(session, incidents, user):
         # Clean up our test incidents
         for incident in test_incidents:
             session.delete(incident)
-        session.commit()
+        session.flush()
 
 
 def test_unlimited_pagination(session, incidents, admin_user):
