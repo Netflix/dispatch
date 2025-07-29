@@ -619,7 +619,7 @@ def test_participant_based_filtering_edge_cases(session, user):
 
         # Test user not in participants cannot see restricted incident
         non_participant_email = f"nonparticipant_{test_id}@example.com"
-        non_participant_user = User(email=non_participant_email)  # Properly initialize user
+        non_participant_user = user.__class__(email=non_participant_email)  # Properly initialize user
         query = session.query(Incident).filter(Incident.project_id == project.id)
         filtered_query = restricted_incident_filter(query, non_participant_user, UserRoles.member)
         results = filtered_query.all()
