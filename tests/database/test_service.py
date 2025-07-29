@@ -384,6 +384,7 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
     user_email = f"test_case_user_{test_id}@example.com"
     other_email = f"other_case_user_{test_id}@example.com"
 
+    project = None  # Initialize to avoid unbound variable error
     try:
         # Create test project
         project = Project(name=project_name, default=False)
@@ -494,29 +495,30 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
 
         # Clean up test data in reverse order
         try:
-            # Clean up participants
-            session.query(Participant).filter(
-                Participant.case_id.in_(
-                    session.query(Case.id).filter(Case.project_id == project.id)
+            if project and hasattr(project, "id"):
+                # Clean up participants
+                session.query(Participant).filter(
+                    Participant.case_id.in_(
+                        session.query(Case.id).filter(Case.project_id == project.id)
+                    )
+                ).delete(synchronize_session=False)
+
+                # Clean up cases
+                session.query(Case).filter(Case.project_id == project.id).delete(
+                    synchronize_session=False
                 )
-            ).delete(synchronize_session=False)
 
-            # Clean up cases
-            session.query(Case).filter(Case.project_id == project.id).delete(
-                synchronize_session=False
-            )
+                # Clean up contacts
+                session.query(IndividualContact).filter(
+                    IndividualContact.project_id == project.id
+                ).delete(synchronize_session=False)
 
-            # Clean up contacts
-            session.query(IndividualContact).filter(
-                IndividualContact.project_id == project.id
-            ).delete(synchronize_session=False)
+                # Clean up project
+                session.query(Project).filter(Project.id == project.id).delete(
+                    synchronize_session=False
+                )
 
-            # Clean up project
-            session.query(Project).filter(Project.id == project.id).delete(
-                synchronize_session=False
-            )
-
-            session.commit()
+                session.commit()
         except Exception as cleanup_error:
             # If cleanup fails, at least try to rollback
             session.rollback()
@@ -544,6 +546,7 @@ def test_participant_based_filtering_edge_cases(session, user):
     user_email = f"edge_test_user_{test_id}@example.com"
     other_email = f"edge_other_user_{test_id}@example.com"
 
+    project = None  # Initialize to avoid unbound variable error
     try:
         # Create test project
         project = Project(name=project_name, default=False)
@@ -605,29 +608,30 @@ def test_participant_based_filtering_edge_cases(session, user):
 
         # Clean up test data in reverse order
         try:
-            # Clean up participants
-            session.query(Participant).filter(
-                Participant.incident_id.in_(
-                    session.query(Incident.id).filter(Incident.project_id == project.id)
+            if project and hasattr(project, "id"):
+                # Clean up participants
+                session.query(Participant).filter(
+                    Participant.incident_id.in_(
+                        session.query(Incident.id).filter(Incident.project_id == project.id)
+                    )
+                ).delete(synchronize_session=False)
+
+                # Clean up incidents
+                session.query(Incident).filter(Incident.project_id == project.id).delete(
+                    synchronize_session=False
                 )
-            ).delete(synchronize_session=False)
 
-            # Clean up incidents
-            session.query(Incident).filter(Incident.project_id == project.id).delete(
-                synchronize_session=False
-            )
+                # Clean up contacts
+                session.query(IndividualContact).filter(
+                    IndividualContact.project_id == project.id
+                ).delete(synchronize_session=False)
 
-            # Clean up contacts
-            session.query(IndividualContact).filter(
-                IndividualContact.project_id == project.id
-            ).delete(synchronize_session=False)
+                # Clean up project
+                session.query(Project).filter(Project.id == project.id).delete(
+                    synchronize_session=False
+                )
 
-            # Clean up project
-            session.query(Project).filter(Project.id == project.id).delete(
-                synchronize_session=False
-            )
-
-            session.commit()
+                session.commit()
         except Exception as cleanup_error:
             # If cleanup fails, at least try to rollback
             session.rollback()
