@@ -19,6 +19,36 @@ from dispatch.project.models import Project
 from dispatch.case.models import Case
 
 
+# Override session fixture to ensure clean state for these tests
+@pytest.fixture
+def session(db):
+    """
+    Override the session fixture to ensure clean state for database tests.
+    This handles potential ID conflicts by properly managing transactions.
+    """
+    from tests.database import Session
+
+    # Create a new session with a savepoint
+    session = Session()
+    session.begin_nested()
+
+    # Ensure clean session state
+    session.expire_all()
+
+    try:
+        yield session
+    finally:
+        try:
+            # Always rollback to clean up
+            session.rollback()
+        except Exception:
+            # If rollback fails, force close the session
+            session.close()
+        finally:
+            # Remove the session from the scoped session registry
+            Session.remove()
+
+
 # Test the Filter class and related functions
 def test_operator_invalid():
     """Tests that invalid operators raise BadFilterFormat."""
