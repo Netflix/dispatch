@@ -1,5 +1,6 @@
 import pytest
 import json
+import uuid
 from json.decoder import JSONDecodeError
 from sqlalchemy_filters.exceptions import BadFilterFormat
 from dispatch.database.service import (
@@ -9,10 +10,13 @@ from dispatch.database.service import (
     restricted_incident_filter,
     apply_filters,
 )
-from dispatch.incident.models import Incident
-from dispatch.enums import UserRoles, Visibility
-from dispatch.case.models import Case
 from dispatch.database.service import restricted_case_filter
+from dispatch.enums import UserRoles, Visibility
+from dispatch.incident.models import Incident
+from dispatch.individual.models import IndividualContact
+from dispatch.participant.models import Participant
+from dispatch.project.models import Project
+from dispatch.case.models import Case
 
 
 # Test the Filter class and related functions
@@ -82,8 +86,6 @@ def test_simple_filter_specification(session, incidents, admin_user):
 def test_sorting_functionality(session, incidents, user):
     """Test sorting functionality."""
     # Create a unique prefix for our test incidents to ensure isolation
-    import uuid
-    import json
 
     test_prefix = f"SORT_TEST_{uuid.uuid4().hex[:8]}_"
 
@@ -91,8 +93,6 @@ def test_sorting_functionality(session, incidents, user):
     session.expire_all()
 
     # Create test incidents with predictable titles for sorting
-    from dispatch.incident.models import Incident
-    from dispatch.enums import Visibility
 
     test_incidents = []
     test_titles = [f"{test_prefix}Alpha", f"{test_prefix}Beta", f"{test_prefix}Charlie"]
@@ -199,13 +199,6 @@ def test_role_based_filtering(session, incidents, user, admin_user):
 # Test restricted filters
 def test_restricted_incident_filter_with_test_data(session, user, admin_user):
     """Test incident filtering with comprehensive test data setup."""
-    from dispatch.incident.models import Incident
-    from dispatch.participant.models import Participant
-    from dispatch.individual.models import IndividualContact
-    from dispatch.enums import Visibility, UserRoles
-    from dispatch.project.models import Project
-    import uuid
-
     # Store original user email to restore later
     original_user_email = getattr(user, "email", "test@example.com")
 
@@ -372,13 +365,6 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
 
 def test_restricted_case_filter_with_test_data(session, user, admin_user):
     """Test case filtering with comprehensive test data setup."""
-    from dispatch.case.models import Case
-    from dispatch.participant.models import Participant
-    from dispatch.individual.models import IndividualContact
-    from dispatch.enums import Visibility, UserRoles
-    from dispatch.project.models import Project
-    import uuid
-
     # Store original user email to restore later
     original_user_email = getattr(user, "email", "test@example.com")
 
@@ -538,13 +524,6 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
 
 def test_participant_based_filtering_edge_cases(session, user):
     """Test edge cases in participant-based filtering logic."""
-    from dispatch.incident.models import Incident
-    from dispatch.participant.models import Participant
-    from dispatch.individual.models import IndividualContact
-    from dispatch.enums import Visibility, UserRoles
-    from dispatch.project.models import Project
-    import uuid
-
     # Store original user email to restore later
     original_user_email = getattr(user, "email", "test@example.com")
 
