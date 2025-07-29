@@ -216,11 +216,15 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
     other_email = f"other_user_{test_id}@example.com"
 
     project = None  # Initialize to avoid unbound variable error
+
+    # Ensure clean session state
+    session.expire_all()
+
     try:
         # Create test project
         project = Project(name=project_name, default=False)
         session.add(project)
-        session.commit()  # Commit to get ID
+        session.flush()  # Use flush instead of commit to get ID within transaction
 
         # Create test individual contacts
         regular_user_contact = IndividualContact(
@@ -230,7 +234,7 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
             email=other_email, name="Other User", project_id=project.id
         )
         session.add_all([regular_user_contact, other_user_contact])
-        session.commit()
+        session.flush()
 
         # Create test incidents with unique titles
         test_prefix = f"TEST_{test_id}"
@@ -262,7 +266,7 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
         ]
 
         session.add_all(incidents_to_create)
-        session.commit()
+        session.flush()
 
         # Get the created incidents
         created_incidents = (
@@ -279,7 +283,7 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
             individual_contact_id=regular_user_contact.id,
         )
         session.add(user_participant)
-        session.commit()
+        session.flush()
 
         # Temporarily change user email for testing
         user.email = user_email
@@ -356,7 +360,7 @@ def test_restricted_incident_filter_with_test_data(session, user, admin_user):
                     synchronize_session=False
                 )
 
-                session.commit()
+                session.flush()
         except Exception as cleanup_error:
             # If cleanup fails, at least try to rollback
             session.rollback()
@@ -385,11 +389,15 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
     other_email = f"other_case_user_{test_id}@example.com"
 
     project = None  # Initialize to avoid unbound variable error
+
+    # Ensure clean session state
+    session.expire_all()
+
     try:
         # Create test project
         project = Project(name=project_name, default=False)
         session.add(project)
-        session.commit()  # Commit to get ID
+        session.flush()  # Use flush instead of commit to get ID within transaction
 
         # Create test individual contacts
         regular_user_contact = IndividualContact(
@@ -399,7 +407,7 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
             email=other_email, name="Other User", project_id=project.id
         )
         session.add_all([regular_user_contact, other_user_contact])
-        session.commit()
+        session.flush()
 
         # Create test cases with unique titles
         test_prefix = f"CASE_TEST_{test_id}"
@@ -431,7 +439,7 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
         ]
 
         session.add_all(cases_to_create)
-        session.commit()
+        session.flush()
 
         # Get the created cases
         created_cases = session.query(Case).filter(Case.title.like(f"{test_prefix}%")).all()
@@ -445,7 +453,7 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
             case_id=restricted_user_participant.id, individual_contact_id=regular_user_contact.id
         )
         session.add(user_participant)
-        session.commit()
+        session.flush()
 
         # Temporarily change user email for testing
         user.email = user_email
@@ -518,7 +526,7 @@ def test_restricted_case_filter_with_test_data(session, user, admin_user):
                     synchronize_session=False
                 )
 
-                session.commit()
+                session.flush()
         except Exception as cleanup_error:
             # If cleanup fails, at least try to rollback
             session.rollback()
@@ -547,11 +555,15 @@ def test_participant_based_filtering_edge_cases(session, user):
     other_email = f"edge_other_user_{test_id}@example.com"
 
     project = None  # Initialize to avoid unbound variable error
+
+    # Ensure clean session state
+    session.expire_all()
+
     try:
         # Create test project
         project = Project(name=project_name, default=False)
         session.add(project)
-        session.commit()  # Commit to get ID
+        session.flush()  # Use flush instead of commit to get ID within transaction
 
         # Create test individual contacts
         user_contact = IndividualContact(email=user_email, name="Test User", project_id=project.id)
@@ -559,7 +571,7 @@ def test_participant_based_filtering_edge_cases(session, user):
             email=other_email, name="Other User", project_id=project.id
         )
         session.add_all([user_contact, other_contact])
-        session.commit()
+        session.flush()
 
         # Test case: Multiple participants, user is one of them
         test_prefix = f"EDGE_TEST_{test_id}"
@@ -570,7 +582,7 @@ def test_participant_based_filtering_edge_cases(session, user):
             project_id=project.id,
         )
         session.add(restricted_incident)
-        session.commit()
+        session.flush()
 
         # Create multiple participants including our user
         user_participant = Participant(
@@ -580,7 +592,7 @@ def test_participant_based_filtering_edge_cases(session, user):
             incident_id=restricted_incident.id, individual_contact_id=other_contact.id
         )
         session.add_all([user_participant, other_participant])
-        session.commit()
+        session.flush()
 
         # Temporarily change user email for testing
         user.email = user_email
@@ -631,7 +643,7 @@ def test_participant_based_filtering_edge_cases(session, user):
                     synchronize_session=False
                 )
 
-                session.commit()
+                session.flush()
         except Exception as cleanup_error:
             # If cleanup fails, at least try to rollback
             session.rollback()
