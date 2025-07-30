@@ -113,7 +113,6 @@ dev = [
     "pytest-mock",
     "ruff",
     "typing-extensions==4.13.2",
-    "vulture",
 ]
 
 [project.scripts]
@@ -284,24 +283,3 @@ known-third-party = ["fastapi", "pydantic", "starlette"]
 [tool.ruff.lint.per-file-ignores]
 "tests/conftest.py" = ["E402"]
 "src/dispatch/entity/service.py" = ["W605"]
-
-[tool.uv]
-dev-dependencies = [
-    "attrs>=22.2.0",
-    "black",
-    "click",
-    "coverage",
-    "devtools",
-    "easydict",
-    "factory-boy",
-    "faker",
-    "ipython",
-    "pre-commit",
-    "pytest==7.4.4",
-    "pytest-mock",
-    "ruff",
-    "typing-extensions==4.13.2",
-    "vulture",
-    "hatchling>=1.27.0",
-    "versioningit>=3.3.0",
-]
