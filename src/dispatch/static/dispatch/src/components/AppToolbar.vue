@@ -52,7 +52,12 @@
               append-icon="mdi-open-in-new"
             >
               <v-list-item-title>
-                Current version: {{ formatHash(currentVersion()) }}{{ currentVersionDate() && currentVersionDate() !== "Unknown" ? ` (${currentVersionDate()})` : "" }}
+                Current version: {{ formatHash(currentVersion())
+                }}{{
+                  currentVersionDate() && currentVersionDate() !== "Unknown"
+                    ? ` (${currentVersionDate()})`
+                    : ""
+                }}
               </v-list-item-title>
             </v-list-item>
           </v-list>
