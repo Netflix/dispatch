@@ -50,7 +50,7 @@ READ_IN_SUMMARY_PROMPT = """Analyze the following channel messages regarding a s
 SIGNAL_ANALYSIS_SYSTEM_MESSAGE = """
 You are a cybersecurity analyst evaluating potential security incidents.
 Review the current event, historical cases, and runbook details.
-Be factual, concise, and balanced—do not assume every alert is a true positive.
+Be factual, concise, and balanced-do not assume every alert is a true positive.
 """
 
 SIGNAL_ANALYSIS_PROMPT = """

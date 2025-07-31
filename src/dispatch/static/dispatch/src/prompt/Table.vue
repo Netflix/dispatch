@@ -35,7 +35,7 @@
             loading-text="Loading... Please wait"
           >
             <template #item.genai_type="{ value }">
-              {{ getGenaiTypeName(value) }}
+              {{ getGenaiTypeNameSync(value) }}
             </template>
             <template #item.genai_prompt="{ value }">
               <div class="text-truncate" style="max-width: 300px" :title="value">
@@ -87,7 +87,6 @@ import { mapActions } from "vuex"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/prompt/DeleteDialog.vue"
 import NewEditSheet from "@/prompt/NewEditSheet.vue"
-import { getGenaiTypeName } from "@/constants/genai-types"
 
 export default {
   name: "PromptTable",
@@ -108,6 +107,7 @@ export default {
         { title: "Updated", value: "updated_at", sortable: true },
         { title: "", key: "data-table-actions", sortable: false, align: "end" },
       ],
+      genaiTypeNames: {}, // Cache for type names
     }
   },
 
@@ -125,11 +125,12 @@ export default {
     ]),
   },
 
-  created() {
+  async created() {
     if (this.$route.query.project) {
       this.project = [{ name: this.$route.query.project }]
     }
 
+    await this.loadGenaiTypeNames()
     this.getAll()
     this.$watch(
       (vm) => [vm.page],
@@ -150,7 +151,21 @@ export default {
 
   methods: {
     ...mapActions("prompt", ["getAll", "createEditShow", "removeShow"]),
-    getGenaiTypeName,
+    async loadGenaiTypeNames() {
+      try {
+        // Get all types dynamically from the store
+        const types = await this.$store.dispatch("prompt/getGenaiTypes")
+        // Cache the names for each type
+        for (const type of types) {
+          this.genaiTypeNames[type.id] = type.name
+        }
+      } catch (error) {
+        console.error("Error loading GenAI type names:", error)
+      }
+    },
+    getGenaiTypeNameSync(typeId) {
+      return this.genaiTypeNames[typeId] || `Type ${typeId}`
+    },
     formatDate(dateString) {
       if (!dateString) return ""
       return new Date(dateString).toLocaleDateString()

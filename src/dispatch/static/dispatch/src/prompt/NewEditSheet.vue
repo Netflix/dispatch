@@ -110,7 +110,6 @@
 import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { getGenaiTypeOptions } from "@/constants/genai-types"
 
 export default {
   setup() {
@@ -119,6 +118,12 @@ export default {
     }
   },
   name: "PromptNewEditSheet",
+
+  data() {
+    return {
+      genaiTypeOptions: [],
+    }
+  },
 
   computed: {
     ...mapFields("prompt", [
@@ -133,13 +138,19 @@ export default {
       "defaults.prompts",
       "defaults.system_messages",
     ]),
-    genaiTypeOptions() {
-      return getGenaiTypeOptions()
-    },
   },
 
   methods: {
     ...mapActions("prompt", ["save", "closeCreateEdit"]),
+
+    async loadGenaiTypeOptions() {
+      try {
+        this.genaiTypeOptions = await this.$store.dispatch("prompt/getGenaiTypeOptions")
+      } catch (error) {
+        console.error("Error loading GenAI type options:", error)
+        this.genaiTypeOptions = []
+      }
+    },
 
     pasteDefaultPrompt() {
       const defaultPrompt = this.getDefaultPrompt()
@@ -171,10 +182,11 @@ export default {
     },
   },
 
-  created() {
+  async created() {
     if (this.$route.query.project) {
       this.project = { name: this.$route.query.project }
     }
+    await this.loadGenaiTypeOptions()
   },
 }
 </script>

@@ -19,7 +19,8 @@ from .models import (
     PromptCreate,
 )
 from .service import get, create, update, delete
-from .strings import DEFAULT_PROMPTS, DEFAULT_SYSTEM_MESSAGES
+from dispatch.ai.strings import DEFAULT_PROMPTS, DEFAULT_SYSTEM_MESSAGES
+from dispatch.ai.enums import GenAIType
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -29,6 +30,12 @@ router = APIRouter()
 def get_prompts(commons: CommonParameters):
     """Get all AI prompts, or only those matching a given search term."""
     return search_filter_sort_paginate(model="Prompt", **commons)
+
+
+@router.get("/genai-types")
+def get_genai_types():
+    """Get all available GenAI types from the backend enum."""
+    return {"types": GenAIType.get_all_types()}
 
 
 @router.get("/defaults")

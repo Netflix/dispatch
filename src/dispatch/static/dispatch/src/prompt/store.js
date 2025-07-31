@@ -1,6 +1,7 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 import PromptApi from "./api"
+import api from "@/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -46,6 +47,7 @@ const state = {
     system_messages: {},
     loading: false,
   },
+  genaiTypes: null, // Cache for GenAI types
 }
 
 const getters = {
@@ -186,6 +188,46 @@ const actions = {
     } finally {
       commit("SET_DEFAULTS_LOADING", false)
     }
+  },
+
+  // GenAI Type functions
+  async fetchGenaiTypes() {
+    try {
+      const response = await api.get("/ai/genai-types")
+      return response.data.types || []
+    } catch (error) {
+      console.error("Error fetching GenAI types:", error)
+      return []
+    }
+  },
+
+  async getGenaiTypes({ state }) {
+    if (!state.genaiTypes) {
+      state.genaiTypes = await this.dispatch("prompt/fetchGenaiTypes")
+    }
+    return state.genaiTypes
+  },
+
+  async getGenaiTypeName({ dispatch }, typeId) {
+    const types = await dispatch("getGenaiTypes")
+    if (!Array.isArray(types)) {
+      console.warn("GenAI types is not an array:", types)
+      return `Unknown Type (${typeId})`
+    }
+    const type = types.find((t) => t.id === typeId)
+    return type ? type.name : `Unknown Type (${typeId})`
+  },
+
+  async getGenaiTypeOptions({ dispatch }) {
+    const types = await dispatch("getGenaiTypes")
+    if (!Array.isArray(types)) {
+      console.warn("GenAI types is not an array:", types)
+      return []
+    }
+    return types.map((type) => ({
+      value: type.id,
+      text: type.name,
+    }))
   },
 }
 
