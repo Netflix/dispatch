@@ -293,4 +293,4 @@ netflix = [
 ]
 
 [tool.uv.sources]
-dispatch-internal-plugins = { path = "../sirt-dispatch-internal-plugins", editable = true }
+dispatch-internal-plugins = { path = "./internal-plugins", editable = true }
