@@ -2,6 +2,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from dispatch.project import service as project_service
+from dispatch.ai.enums import GenAIType
 from .models import Prompt, PromptCreate, PromptUpdate
 
 log = logging.getLogger(__name__)
@@ -44,8 +45,9 @@ def create(*, prompt_in: PromptCreate, db_session: Session) -> Prompt:
             .first()
         )
         if existing_enabled:
+            type_name = GenAIType(prompt_in.genai_type).display_name
             raise ValueError(
-                f"Another prompt of type {prompt_in.genai_type} is already enabled for this project. "
+                f"Another prompt of type '{type_name}' is already enabled for this project. "
                 "Only one prompt per type can be enabled."
             )
 
@@ -76,8 +78,9 @@ def update(
             .first()
         )
         if existing_enabled:
+            type_name = GenAIType(prompt.genai_type).display_name
             raise ValueError(
-                f"Another prompt of type {prompt.genai_type} is already enabled for this project. "
+                f"Another prompt of type '{type_name}' is already enabled for this project. "
                 "Only one prompt per type can be enabled."
             )
 

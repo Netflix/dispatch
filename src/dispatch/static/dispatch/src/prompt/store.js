@@ -140,10 +140,7 @@ const actions = {
 
       commit("SET_SELECTED_LOADING", false)
       dispatch("getAll")
-      // Delay closing the dialog to ensure notification is visible
-      setTimeout(() => {
-        dispatch("closeCreateEdit")
-      }, 2000) // Increased to 2 seconds to ensure notification is visible
+      dispatch("closeCreateEdit")
     } catch (error) {
       commit("SET_SELECTED_LOADING", false)
       console.error("Error saving prompt:", error)
