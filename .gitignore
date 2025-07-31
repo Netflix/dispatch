@@ -133,6 +133,8 @@ ipython_config.py
 !data/.env
 .venv
 env/
+# uv
+uv.lock
 venv/
 ENV/
 env.bak/
