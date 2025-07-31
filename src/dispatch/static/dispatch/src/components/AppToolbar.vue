@@ -47,7 +47,8 @@
             />
             <v-list-item
               v-if="currentVersion()"
-              @click="showCommitMessage"
+              :href="`https://github.com/Netflix/dispatch/commit/${currentVersion()}`"
+              target="_blank"
               append-icon="mdi-open-in-new"
             >
               <v-list-item-title>
