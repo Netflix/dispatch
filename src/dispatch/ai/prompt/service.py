@@ -34,6 +34,21 @@ def create(*, prompt_in: PromptCreate, db_session: Session) -> Prompt:
         db_session=db_session, project_in=prompt_in.project
     )
 
+    # If this prompt is being enabled, check if another enabled prompt of the same type exists
+    if prompt_in.enabled:
+        existing_enabled = (
+            db_session.query(Prompt)
+            .filter(Prompt.project_id == project.id)
+            .filter(Prompt.genai_type == prompt_in.genai_type)
+            .filter(Prompt.enabled)
+            .first()
+        )
+        if existing_enabled:
+            raise ValueError(
+                f"Another prompt of type {prompt_in.genai_type} is already enabled for this project. "
+                "Only one prompt per type can be enabled."
+            )
+
     prompt = Prompt(**prompt_in.dict(exclude={"project"}), project=project)
 
     db_session.add(prompt)
@@ -48,12 +63,27 @@ def update(
     db_session: Session,
 ) -> Prompt:
     """Updates a prompt."""
-    new_prompt = prompt.dict()
     update_data = prompt_in.dict(exclude_unset=True)
 
-    for field in new_prompt:
-        if field in update_data:
-            setattr(prompt, field, update_data[field])
+    # If this prompt is being enabled, check if another enabled prompt of the same type exists
+    if update_data.get("enabled", False):
+        existing_enabled = (
+            db_session.query(Prompt)
+            .filter(Prompt.project_id == prompt.project_id)
+            .filter(Prompt.genai_type == prompt.genai_type)
+            .filter(Prompt.enabled)
+            .filter(Prompt.id != prompt.id)  # Exclude current prompt
+            .first()
+        )
+        if existing_enabled:
+            raise ValueError(
+                f"Another prompt of type {prompt.genai_type} is already enabled for this project. "
+                "Only one prompt per type can be enabled."
+            )
+
+    # Update only the fields that were provided in the update data
+    for field, value in update_data.items():
+        setattr(prompt, field, value)
 
     db_session.commit()
     return prompt

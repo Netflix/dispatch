@@ -72,6 +72,11 @@ def create_prompt(
     """Create a new AI prompt."""
     try:
         return create(db_session=db_session, prompt_in=prompt_in)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": str(e)}],
+        ) from None
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -104,6 +109,11 @@ def update_prompt(
             prompt=prompt,
             prompt_in=prompt_in,
         )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[{"msg": str(e)}],
+        ) from None
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

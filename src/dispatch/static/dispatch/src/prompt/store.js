@@ -139,16 +139,34 @@ const actions = {
       }
 
       commit("SET_SELECTED_LOADING", false)
-      dispatch("closeCreateEdit")
       dispatch("getAll")
+      // Delay closing the dialog to ensure notification is visible
+      setTimeout(() => {
+        dispatch("closeCreateEdit")
+      }, 2000) // Increased to 2 seconds to ensure notification is visible
     } catch (error) {
       commit("SET_SELECTED_LOADING", false)
       console.error("Error saving prompt:", error)
+
+      // Extract specific error message from backend response
+      let errorMessage = "Error saving prompt."
+      if (error.response && error.response.data && error.response.data.detail) {
+        // Backend returns error details in the format we set up
+        const errorDetail = error.response.data.detail
+        if (Array.isArray(errorDetail) && errorDetail.length > 0) {
+          errorMessage = errorDetail[0].msg || errorMessage
+        }
+      }
+
+      // Show error notification
       commit(
         "notification_backend/addBeNotification",
-        { text: "Error saving prompt.", type: "error" },
+        { text: errorMessage, type: "exception" },
         { root: true }
       )
+
+      // Keep dialog open on error so user can see the notification
+      // Don't close the dialog when there's an error
     }
   },
 
@@ -171,7 +189,7 @@ const actions = {
       console.error("Error deleting prompt:", error)
       commit(
         "notification_backend/addBeNotification",
-        { text: "Error deleting prompt.", type: "error" },
+        { text: "Error deleting prompt.", type: "exception" },
         { root: true }
       )
     }

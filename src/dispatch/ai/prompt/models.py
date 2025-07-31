@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, UniqueConstraint
 
 from dispatch.models import DispatchBase
 from dispatch.database.core import Base
@@ -21,6 +21,18 @@ class Prompt(Base, TimeStampMixin, ProjectMixin):
     genai_prompt = Column(String, nullable=False)
     genai_system_message = Column(String, nullable=True)
     enabled = Column(Boolean, default=False, nullable=False)
+
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint(
+            "genai_type",
+            "project_id",
+            "enabled",
+            name="uq_prompt_type_project_enabled",
+            deferrable=True,
+            initially="DEFERRED",
+        ),
+    )
 
 
 # AI Prompt Models
