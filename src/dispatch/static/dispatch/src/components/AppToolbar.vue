@@ -48,10 +48,10 @@
             <v-list-item
               v-if="currentVersion()"
               @click="showCommitMessage"
-              append-icon="mdi-page-next-outline"
+              append-icon="mdi-open-in-new"
             >
               <v-list-item-title>
-                Current version: {{ formatHash(currentVersion()) }}
+                Current version: {{ formatHash(currentVersion()) }}{{ currentVersionDate() && currentVersionDate() !== "Unknown" ? ` (${currentVersionDate()})` : "" }}
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -230,7 +230,7 @@ export default {
       })
     },
     ...mapState("auth", ["currentUser"]),
-    ...mapState("app", ["currentVersion"]),
+    ...mapState("app", ["currentVersion", "currentVersionDate"]),
     ...mapActions("auth", ["logout", "getExperimentalFeatures"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
