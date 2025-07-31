@@ -114,6 +114,9 @@ dev = [
     "ruff",
     "typing-extensions==4.13.2",
 ]
+netflix = [
+    "dispatch-internal-plugins",
+]
 
 [project.scripts]
 dispatch = "dispatch.cli:entrypoint"
@@ -283,3 +286,11 @@ known-third-party = ["fastapi", "pydantic", "starlette"]
 [tool.ruff.lint.per-file-ignores]
 "tests/conftest.py" = ["E402"]
 "src/dispatch/entity/service.py" = ["W605"]
+
+[dependency-groups]
+netflix = [
+    "dispatch-internal-plugins",
+]
+
+[tool.uv.sources]
+dispatch-internal-plugins = { path = "../sirt-dispatch-internal-plugins", editable = true }
