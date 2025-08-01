@@ -4,7 +4,9 @@ import traceback
 from subprocess import check_output
 
 try:
-    VERSION = __import__("pkg_resources").get_distribution("dispatch").version
+    from importlib.metadata import version
+
+    VERSION = version("dispatch")
 except Exception:
     VERSION = "unknown"
 
@@ -15,6 +17,7 @@ warnings.filterwarnings("ignore", message="int_from_bytes is deprecated")
 
 # sometimes we pull version info before dispatch is totally installed
 try:
+    from dispatch.ai.prompt.models import Prompt  # noqa lgtm[py/unused-import]
     from dispatch.organization.models import Organization  # noqa lgtm[py/unused-import]
     from dispatch.project.models import Project  # noqa lgtm[py/unused-import]
     from dispatch.route.models import Recommendation  # noqa lgtm[py/unused-import]

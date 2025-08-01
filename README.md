@@ -1,3 +1,24 @@
+# 🚨 Notice: Dispatch is Being Archived 🚨
+
+This repository will be **archived and marked as read-only on September 1, 2025**. After this date, no further changes, issues, or pull requests will be accepted.
+
+## 🙏 Thank You
+
+Since the first commit on **February 10, 2020**, Dispatch has grown into a sophisticated incident and signal management platform, thanks to the dedication and passion of its community. We are deeply grateful to the **[80 contributors](https://github.com/Netflix/dispatch/graphs/contributors)** who have shared their time, expertise, and creativity over the years. Your support has made Dispatch what it is today.
+
+## ℹ️ What Does This Mean?
+
+- The codebase will remain publicly available in a **read-only** state.
+- No new issues, pull requests, or discussions will be accepted.
+- Existing issues and pull requests will be closed.
+- We encourage users to fork the repository if they wish to continue development independently.
+
+Thank you again to everyone who has contributed, used, or supported Dispatch over the years!
+
+— The Dispatch Team at Netflix
+
+---
+
 # About
 
 ### What's Dispatch?
