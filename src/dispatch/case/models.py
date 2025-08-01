@@ -270,6 +270,7 @@ class SignalRead(DispatchBase):
     external_id: str
     external_url: str | None = None
     workflow_instances: list[WorkflowInstanceRead] | None = []
+    tags: list[TagRead] | None = []
 
 
 class SignalInstanceRead(DispatchBase):
