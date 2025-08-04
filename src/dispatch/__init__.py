@@ -17,6 +17,7 @@ warnings.filterwarnings("ignore", message="int_from_bytes is deprecated")
 
 # sometimes we pull version info before dispatch is totally installed
 try:
+    from dispatch.ai.prompt.models import Prompt  # noqa lgtm[py/unused-import]
     from dispatch.organization.models import Organization  # noqa lgtm[py/unused-import]
     from dispatch.project.models import Project  # noqa lgtm[py/unused-import]
     from dispatch.route.models import Recommendation  # noqa lgtm[py/unused-import]
