@@ -92,41 +92,32 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11.11
+          python-version: 3.11
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 18
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install dependencies
+      - name: Install python dependencies
         run: |
           export DISPATCH_LIGHT_BUILD=1
-          uv venv
-          source .venv/bin/activate
-          uv pip install psycopg[binary]
-          uv pip install -e ".[dev]"
+          python -m pip install --upgrade pip
+          pip install psycopg[binary]
+          pip install -e ".[dev]"
       - name: Install npm dependencies
         run: |
           npm ci -D --prefix src/dispatch/static/dispatch
-          npm ci
+          npm install -D @playwright/test
       - name: Install playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Setup sample database
-        run: |
-          source .venv/bin/activate
-          dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
+        run: dispatch database restore --dump-file data/dispatch-sample-data.dump --skip-check && dispatch database upgrade
       - name: Run tests
-        run: |
-          source .venv/bin/activate
-          npx playwright test --project=chromium --shard=${{ matrix.shard }}/4
+        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
         if: always()
         with:

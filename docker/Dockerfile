@@ -15,12 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   # Needed for fetching stuff
   ca-certificates \
   wget \
-  curl \
   && rm -rf /var/lib/apt/lists/*
-
-# Install uv for building
-RUN curl -LsSf https://astral.sh/uv/0.4.17/install.sh | sh && \
-  mv /root/.cargo/bin/uv /usr/local/bin/
 
 RUN wget --quiet -O - https://deb.nodesource.com/setup_20.x | bash - \
   && apt-get install -y nodejs --no-install-recommends
@@ -56,7 +51,7 @@ COPY . /usr/src/dispatch/
 RUN YARN_CACHE_FOLDER="$(mktemp -d)" \
   && export YARN_CACHE_FOLDER \
   && pushd /usr/src/dispatch \
-  && uv build \
+  && python setup.py bdist_wheel \
   && rm -r "$YARN_CACHE_FOLDER" \
   && mv /usr/src/dispatch/dist /dist
 
@@ -86,12 +81,8 @@ ENV PIP_NO_CACHE_DIR=off \
 RUN apt-get update && apt-get install -y --no-install-recommends \
   # Needed for fetching stuff
   ca-certificates \
-  wget gnupg curl \
+  wget gnupg \
   && rm -rf /var/lib/apt/lists/*
-
-# Install uv
-RUN curl -LsSf https://astral.sh/uv/0.4.17/install.sh | sh && \
-  mv /root/.cargo/bin/uv /usr/local/bin/
 
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
@@ -103,7 +94,7 @@ RUN buildDeps="" \
   && apt-get update \
   && apt-get install -y --no-install-recommends "$buildDeps" \
   # remove internal index when internal plugins are separated
-  && uv pip install --system -U /tmp/dist/*.whl \
+  && pip install -U /tmp/dist/*.whl \
   && apt-get purge -y --auto-remove "$buildDeps" \
   # We install run-time dependencies strictly after
   # build dependencies to prevent accidental collusion.
@@ -115,7 +106,7 @@ RUN buildDeps="" \
   && rm -rf /var/lib/apt/lists/* \
   # mjml has to be installed differently here because
   # after node 14, docker will install npm files at the
-  # root directory and fail, so we have to create a new
+  # root directoy and fail, so we have to create a new
   # directory and use it for the install then copy the
   # files to the root directory to maintain backwards
   # compatibility for email generation
