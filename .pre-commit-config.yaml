@@ -1,6 +1,6 @@
 # Quick Start:
 #
-# uv pip install pre-commit
+# pip install pre-commit
 # pre-commit install && pre-commit install -t pre-push
 # pre-commit run --all-files
 #
@@ -10,7 +10,7 @@
 fail_fast: false
 
 default_language_version:
-  python: python3.11.11
+  python: python3.11.2
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit

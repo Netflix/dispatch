@@ -4,9 +4,7 @@ import traceback
 from subprocess import check_output
 
 try:
-    from importlib.metadata import version
-
-    VERSION = version("dispatch")
+    VERSION = __import__("pkg_resources").get_distribution("dispatch").version
 except Exception:
     VERSION = "unknown"
 
