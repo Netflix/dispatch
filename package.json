@@ -1,0 +1,15 @@
+{
+  "name": "dispatch-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end tests for Dispatch",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0"
+  }
+}
