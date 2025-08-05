@@ -176,6 +176,8 @@ export default {
         } catch (error) {
           console.error("[EditDialog] Fetch error:", error)
         }
+      } else {
+        console.warn("Bad search filter id - unable to reload")
       }
     },
   },

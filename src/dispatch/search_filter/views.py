@@ -28,7 +28,7 @@ def get_filters(common: CommonParameters):
     return search_filter_sort_paginate(model="SearchFilter", **common)
 
 
-@router.get("/{search_filter_id}", response_model=SearchFilterRead)
+@router.get("/detail/{search_filter_id}", response_model=SearchFilterRead)
 def get_search_filter(
     db_session: DbSession,
     search_filter_id: PrimaryKey,
