@@ -81,7 +81,20 @@
             <v-list-item-title>{{ notification.name }}</v-list-item-title>
           </v-list-item>
         </v-list>
-        <div class="text-body-1 ml-1 mt-2">Search Filter Expression</div>
+        <div class="text-body-1 ml-1 mt-2 d-flex align-center">
+          Search Filter Expression
+          <v-spacer />
+          <v-btn
+            size="small"
+            color="secondary"
+            variant="outlined"
+            @click="reloadExpression"
+            class="ml-2"
+          >
+            <v-icon start>mdi-refresh</v-icon>
+            Refresh
+          </v-btn>
+        </div>
         <v-divider class="mt-2" />
         <v-list style="max-height: 500px">
           <v-list-item>
@@ -147,13 +160,22 @@ export default {
   },
 
   methods: {
-    ...mapActions("search", ["closeCreateEdit", "save"]),
+    ...mapActions("search", ["closeCreateEdit", "save", "get"]),
     convertToParticipant(individual) {
       return {
         individual: {
           name: individual.name,
           email: individual.email,
         },
+      }
+    },
+    async reloadExpression() {
+      if (this.id) {
+        try {
+          await this.get(this.id)
+        } catch (error) {
+          console.error("[EditDialog] Fetch error:", error)
+        }
       }
     },
   },
