@@ -1,4 +1,4 @@
-uv pip install -e /workspaces/dispatch
+pip install -e /workspaces/dispatch
 npm install --prefix /workspaces/dispatch/src/dispatch/static/dispatch
 
 export LOG_LEVEL="ERROR"
