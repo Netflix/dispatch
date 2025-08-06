@@ -388,7 +388,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             case_id=case.id,
         )
 
-    if case_in.visibility and case.visibility != case_in.visibility:
+    if case.visibility != case_in.visibility:
         case.visibility = case_in.visibility
 
         event_service.log_case_event(

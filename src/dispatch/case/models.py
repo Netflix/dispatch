@@ -466,8 +466,6 @@ class CaseRead(CaseBase):
 class CaseUpdate(CaseBase):
     """Pydantic model for updating case data."""
 
-    title: str | None = None
-    description: str | None = None
     assignee: ParticipantUpdate | None = None
     case_costs: list[CaseCostUpdate] = []
     case_priority: CasePriorityBase | None = None
