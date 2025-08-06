@@ -853,8 +853,7 @@ CASE_REPORTER = {
 }
 
 CASE_ASSIGNEE = {
-    "title": ":female-detective: Assignee - {{assignee_fullname}}, {{assignee_team}}",
-    "title_link": "{{assignee_weblink}}",
+    "title": ":female-detective: Assignee: <{{assignee_weblink}}|{{assignee_fullname}}, {{assignee_team}}>",
     "text": CASE_ASSIGNEE_DESCRIPTION,
 }
 
