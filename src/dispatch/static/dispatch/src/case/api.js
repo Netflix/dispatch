@@ -34,7 +34,7 @@ export default {
   bulkUpdate(cases, payload) {
     return Promise.all(
       cases.map((case_obj) => {
-        return this.update(case_obj.id, { ...case_obj, ...payload })
+        return this.update(case_obj.id, payload)
       })
     )
   },
