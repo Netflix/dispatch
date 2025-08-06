@@ -79,6 +79,18 @@
               />
             </v-card>
           </v-list-item>
+          <v-list-item>
+            <v-card class="mx-auto">
+              <v-card-title>Security Events</v-card-title>
+              <v-card-subtitle>Filter cases based on signal instances</v-card-subtitle>
+              <v-checkbox
+                class="ml-10 mr-5"
+                v-model="local_security_event_only"
+                label="Show only Security Event cases"
+                hint="Show only cases that have signal instances attached"
+              />
+            </v-card>
+          </v-list-item>
         </v-list>
         <v-card-actions>
           <v-spacer />
@@ -92,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, watch } from "vue"
 import { useStore } from "vuex"
 import { sum } from "lodash"
 
@@ -132,6 +144,7 @@ const local_tag = ref([])
 const local_tag_type = ref([])
 const local_participant = ref(null)
 const local_participant_is_assignee = ref(false)
+const local_security_event_only = ref(false)
 
 const case_priority = computed(
   () => store.state.case_management.table.options.filters.case_priority
@@ -143,6 +156,26 @@ const project = computed(() => store.state.case_management.table.options.filters
 const status = computed(() => store.state.case_management.table.options.filters.status)
 const tag = computed(() => store.state.case_management.table.options.filters.tag)
 const tag_type = computed(() => store.state.case_management.table.options.filters.tag_type)
+const security_event_only = computed(
+  () => store.state.case_management.table.options.filters.security_event_only
+)
+const case_type = computed(() => store.state.case_management.table.options.filters.case_type)
+
+// Initialize local variables when dialog opens
+watch(display, (newValue) => {
+  if (newValue) {
+    local_case_priority.value = case_priority.value || []
+    local_case_severity.value = case_severity.value || []
+    local_selected_case_types.value = case_type.value || []
+    local_project.value = project.value || []
+    local_status.value = status.value || []
+    local_tag.value = tag.value || []
+    local_tag_type.value = tag_type.value || []
+    local_participant.value = null
+    local_participant_is_assignee.value = false
+    local_security_event_only.value = security_event_only.value || false
+  }
+})
 
 const numFilters = computed(() => {
   return sum([
@@ -154,6 +187,7 @@ const numFilters = computed(() => {
     tag.value?.length || 0,
     tag_type.value?.length || 0,
     local_participant.value == null ? 0 : 1,
+    local_security_event_only.value ? 1 : 0,
   ])
 })
 
@@ -181,6 +215,7 @@ const applyFilters = () => {
     tag_type: local_tag_type.value,
     participant: filtered_participant,
     assignee: filtered_assignee,
+    security_event_only: local_security_event_only.value,
   }
 
   // Commit the mutation to update the filters in the Vuex store

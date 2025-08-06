@@ -591,6 +591,7 @@ def common_parameters(
     sort_by: list[str] = Query([], alias="sortBy[]"),
     descending: list[bool] = Query([], alias="descending[]"),
     role: UserRoles = Depends(get_current_role),
+    security_event_only: bool = Query(None, alias="security_event_only"),
 ):
     return {
         "db_session": db_session,
@@ -602,11 +603,15 @@ def common_parameters(
         "descending": descending,
         "current_user": current_user,
         "role": role,
+        "security_event_only": security_event_only,
     }
 
 
 CommonParameters = Annotated[
-    dict[str, int | CurrentUser | DbSession | QueryStr | Json | list[str] | list[bool] | UserRoles],
+    dict[
+        str,
+        int | CurrentUser | DbSession | QueryStr | Json | list[str] | list[bool] | UserRoles | bool,
+    ],
     Depends(common_parameters),
 ]
 
@@ -676,6 +681,7 @@ def search_filter_sort_paginate(
     descending: list[bool] = None,
     current_user: DispatchUser = None,
     role: UserRoles = UserRoles.member,
+    security_event_only: bool = None,
 ):
     """Common functionality for searching, filtering, sorting, and pagination."""
     model_cls = get_class_by_tablename(model)
@@ -711,6 +717,13 @@ def search_filter_sort_paginate(
                     tag_all_filters.append(apply_filters(query, tag_filter, model_cls))
             else:
                 query = apply_filters(query, filter_spec, model_cls)
+
+        # Handle security_event_only filter for Case model
+        if model == "Case" and security_event_only:
+            # Use NOT EXISTS to find cases that do NOT have signal instances
+            from sqlalchemy import exists
+
+            query = query.filter(~exists().where(SignalInstance.case_id == Case.id))
 
         # Apply tag_all filters using intersect only when necessary
         for filter in tag_all_filters:
