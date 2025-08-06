@@ -23,6 +23,10 @@
     />
     <v-spacer />
     <v-toolbar-items>
+      <v-btn nav variant="text" @click="navigateToEventReport" class="ml-2" hide-details>
+        <v-icon start color="error">mdi-shield-search</v-icon>
+        <span class="text-uppercase text-body-2 font-weight-bold">Report Security Event</span>
+      </v-btn>
       <v-btn icon variant="text" @click="toggleDarkTheme">
         <v-icon :icon="dark_theme ? 'mdi-white-balance-sunny' : 'mdi-moon-waxing-crescent'" />
         <v-tooltip activator="parent" location="bottom">
@@ -223,6 +227,9 @@ export default {
       this.$vuetify.theme.global.name = this.$vuetify.theme.global.current.dark ? "light" : "dark"
       localStorage.setItem("dark_theme", this.$vuetify.theme.global.current.dark.toString())
       this.dark_theme = !this.dark_theme
+    },
+    navigateToEventReport() {
+      this.$router.push({ name: "eventReport" })
     },
     switchOrganizations(slug) {
       this.$router.push({ params: { organization: slug } }).then(() => {

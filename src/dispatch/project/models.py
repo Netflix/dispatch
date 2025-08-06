@@ -67,6 +67,9 @@ class Project(Base):
     report_incident_title_hint = Column(String, nullable=True)
     report_incident_description_hint = Column(String, nullable=True)
 
+    # controls visibility of the "Report Incident" button
+    show_report_incident_button = Column(Boolean, default=True, server_default="t")
+
     snooze_extension_oncall_service_id = Column(Integer, nullable=True)
     snooze_extension_oncall_service = relationship(
         "Service",
@@ -116,6 +119,7 @@ class ProjectBase(DispatchBase):
     report_incident_instructions: str | None = None
     report_incident_title_hint: str | None = None
     report_incident_description_hint: str | None = None
+    show_report_incident_button: bool | None = Field(True)
     snooze_extension_oncall_service: Service | None = None
 
 
@@ -127,8 +131,8 @@ class ProjectUpdate(ProjectBase):
     send_daily_reports: bool | None = Field(True)
     send_weekly_reports: bool | None = Field(False)
     weekly_report_notification_id: int | None = None
-    stable_priority_id: int | None
-    snooze_extension_oncall_service_id: int | None
+    stable_priority_id: int | None = None
+    snooze_extension_oncall_service_id: int | None = None
 
 
 class ProjectRead(ProjectBase):
