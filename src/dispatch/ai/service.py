@@ -1,4 +1,3 @@
-import json
 import logging
 
 from dispatch.ai.constants import READ_IN_SUMMARY_CACHE_DURATION
@@ -22,10 +21,33 @@ from dispatch.event import service as event_service
 from dispatch.enums import EventType
 
 from .exceptions import GenAIException
-from .models import ReadInSummary, ReadInSummaryResponse, TacticalReport, TacticalReportResponse
-from .enums import AIEventSource, AIEventDescription
+from .models import (
+    ReadInSummary,
+    ReadInSummaryResponse,
+    CaseSignalSummary,
+    CaseSignalSummaryResponse,
+    TacticalReport,
+    TacticalReportResponse,
+    TagRecommendations,
+)
+from .prompt.service import get_by_type
+from .enums import AIEventSource, AIEventDescription, GenAIType
+from .strings import (
+    TAG_RECOMMENDATION_PROMPT,
+    TAG_RECOMMENDATION_SYSTEM_MESSAGE,
+    INCIDENT_SUMMARY_PROMPT,
+    INCIDENT_SUMMARY_SYSTEM_MESSAGE,
+    READ_IN_SUMMARY_PROMPT,
+    READ_IN_SUMMARY_SYSTEM_MESSAGE,
+    SIGNAL_ANALYSIS_PROMPT,
+    SIGNAL_ANALYSIS_SYSTEM_MESSAGE,
+    STRUCTURED_OUTPUT,
+    TACTICAL_REPORT_PROMPT,
+    TACTICAL_REPORT_SYSTEM_MESSAGE,
+)
 
 log = logging.getLogger(__name__)
+
 
 def get_model_token_limit(model_name: str, buffer_percentage: float = 0.05) -> int:
     """
@@ -212,7 +234,7 @@ def generate_case_signal_historical_context(case: Case, db_session: Session) -> 
     return "\n".join(historical_context)
 
 
-def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, str]:
+def generate_case_signal_summary(case: Case, db_session: Session) -> CaseSignalSummaryResponse:
     """
     Generate an analysis summary of a case stemming from a signal.
 
@@ -221,7 +243,7 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
         db_session (Session): The database session used for querying related data.
 
     Returns:
-        dict: A dictionary containing the analysis summary, or an error message if the summary generation fails.
+        CaseSignalSummaryResponse: A structured response containing the analysis summary or error message.
     """
     # we generate the historical context
     try:
@@ -279,9 +301,16 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
         raise GenAIException(message)
 
     # we generate the prompt
+    db_prompt = get_by_type(
+        genai_type=GenAIType.SIGNAL_ANALYSIS,
+        project_id=case.project.id,
+        db_session=db_session,
+    )
     prompt = f"""
     <prompt>
-    {signal_instance.signal.genai_prompt}
+    {signal_instance.signal.genai_prompt
+        if signal_instance.signal.genai_prompt
+        else (db_prompt.genai_prompt if db_prompt and db_prompt.genai_prompt else SIGNAL_ANALYSIS_PROMPT)}
     </prompt>
 
     <current_event>
@@ -302,22 +331,28 @@ def generate_case_signal_summary(case: Case, db_session: Session) -> dict[str, s
     )
 
     # we generate the analysis
-    response = genai_plugin.instance.chat_completion(prompt=prompt)
-
     try:
-        summary = json.loads(response.replace("```json", "").replace("```", "").strip())
+        # Use the system message from the signal if available
+        system_message = (
+            signal_instance.signal.genai_system_message
+            if signal_instance.signal.genai_system_message
+            else (
+                db_prompt.genai_system_message
+                if db_prompt and db_prompt.genai_system_message
+                else SIGNAL_ANALYSIS_SYSTEM_MESSAGE
+            )
+        )
 
-        # we check if the summary is empty
-        if not summary:
-            message = "Unable to generate GenAI signal analysis. We received an empty response from the artificial-intelligence plugin."
-            log.warning(message)
-            raise GenAIException(message)
+        result = genai_plugin.instance.chat_parse(
+            prompt=prompt, response_model=CaseSignalSummary, system_message=system_message
+        )
 
-        return summary
-    except json.JSONDecodeError as e:
-        message = f"Unable to decode JSON response from the artificial-intelligence plugin, returning raw response, with error {e}."
-        log.warning(message)
-        return {"Summary": response}
+        return CaseSignalSummaryResponse(summary=result)
+
+    except Exception as e:
+        log.exception(f"Error generating case signal summary: {e}")
+        error_msg = f"Error generating case signal summary: {str(e)}"
+        return CaseSignalSummaryResponse(error_message=error_msg)
 
 
 def generate_incident_summary(incident: Incident, db_session: Session) -> str:
@@ -370,25 +405,25 @@ def generate_incident_summary(incident: Incident, db_session: Session) -> str:
             file_id=incident.incident_review_document.resource_id,
             mime_type="text/plain",
         )
-        prompt = f"""
-            Given the text of the security post-incident review document below,
-            provide answers to the following questions in a paragraph format.
-            Do not include the questions in your response.
-            Do not use any of these words in your summary unless they appear in the document: breach, unauthorized, leak, violation, unlawful, illegal.
-            1. What is the summary of what happened?
-            2. What were the overall risk(s)?
-            3. How were the risk(s) mitigated?
-            4. How was the incident resolved?
-            5. What are the follow-up tasks?
 
-            {pir_doc}
-        """
+        # Check for enabled prompt in database (type 2 = incident summary)
+        db_prompt = get_by_type(
+            genai_type=GenAIType.INCIDENT_SUMMARY,
+            project_id=incident.project.id,
+            db_session=db_session,
+        )
+        prompt = f"{db_prompt.genai_prompt if db_prompt else INCIDENT_SUMMARY_PROMPT}\n\n{pir_doc}"
+        system_message = (
+            getattr(db_prompt, "genai_system_message", None) or INCIDENT_SUMMARY_SYSTEM_MESSAGE
+        )
 
         prompt = prepare_prompt_for_model(
             prompt, genai_plugin.instance.configuration.chat_completion_model
         )
 
-        summary = genai_plugin.instance.chat_completion(prompt=prompt)
+        summary = genai_plugin.instance.chat_completion(
+            prompt=prompt, system_message=system_message
+        )
 
         incident.summary = summary
         db_session.add(incident)
@@ -426,6 +461,15 @@ def get_tag_recommendations(
         )
         log.warning(message)
         return TagRecommendationResponse(recommendations=[], error_message=message)
+
+    # Check for enabled prompt in database (type 1 = tag recommendation)
+    db_prompt = get_by_type(
+        genai_type=GenAIType.TAG_RECOMMENDATION, project_id=project_id, db_session=db_session
+    )
+    prompt = db_prompt.genai_prompt if db_prompt else TAG_RECOMMENDATION_PROMPT
+    system_message = (
+        getattr(db_prompt, "genai_system_message", None) or TAG_RECOMMENDATION_SYSTEM_MESSAGE
+    )
 
     storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="storage", project_id=project_id
@@ -519,29 +563,6 @@ def get_tag_recommendations(
         + "\n"
     )
 
-    prompt = """
-    You are a security professional that can help with tag recommendations.
-    You will be given details about a security event and a list of tags you can use.
-    You will need to recommend tags for the security event using the descriptions of the tags.
-    Please identify the top three tags of each tag_type_id that best apply to the security event.
-    Provide the output in JSON format organized by tag_type_id in the following format:
-    {"recommendations":
-        [
-            {
-                "tag_type_id": 1,
-                "tags": [
-                    {
-                        "id": 1,
-                        "name": "tag_name",
-                        "reason": "your reasoning for including this tag"
-                    }
-                ]
-            }
-        ]
-    }
-    Do not output anything except for the JSON.
-    """
-
     prompt += f"** Tags you can use: {tag_list} \n ** Security event details: {resources}"
 
     prompt = prepare_prompt_for_model(
@@ -549,21 +570,10 @@ def get_tag_recommendations(
     )
 
     try:
-        result = genai_plugin.instance.chat_completion(prompt=prompt)
-
-        # Clean the JSON string by removing markdown formatting and newlines
-        # Remove markdown code block markers
-        cleaned_result = result.strip()
-        if cleaned_result.startswith("```json"):
-            cleaned_result = cleaned_result[7:]  # Remove ```json
-        if cleaned_result.endswith("```"):
-            cleaned_result = cleaned_result[:-3]  # Remove ```
-
-        # Replace escaped newlines with actual newlines, then clean whitespace
-        cleaned_result = cleaned_result.replace("\\n", "\n")
-        cleaned_result = " ".join(cleaned_result.split())
-
-        return TagRecommendationResponse.model_validate_json(cleaned_result)
+        result = genai_plugin.instance.chat_parse(
+            prompt=prompt, response_model=TagRecommendations, system_message=system_message
+        )
+        return TagRecommendationResponse(recommendations=result.recommendations, error_message=None)
     except Exception as e:
         log.exception(f"Error generating tag recommendations: {e}")
         message = "AI tag suggestions encountered an error. Please try again later."
@@ -640,21 +650,14 @@ def generate_read_in_summary(
         log.warning(message)
         return ReadInSummaryResponse(error_message=message)
 
-    system_message = """You are a cybersecurity analyst tasked with creating structured read-in summaries.
-    Analyze the provided channel messages and extract key information about a security event.
-    Focus on identifying:
-    1. Timeline: Chronological list of key events and decisions (skip channel join/remove messages)
-       - For all timeline events, format timestamps as YYYY-MM-DD HH:MM (no seconds, no 'T').
-    2. Actions taken: List of actions that were taken to address the security event
-    3. Current status: Current status of the security event and any unresolved issues
-    4. Summary: Overall summary of the security event
-
-    Only include the most relevant events and outcomes. Be clear and concise."""
-
-    prompt = f"""Analyze the following channel messages regarding a security event and provide a structured summary.
-
-    Channel messages: {conversation}
-    """
+    # Check for enabled prompt in database (type 4 = read-in summary)
+    db_prompt = get_by_type(
+        genai_type=GenAIType.CONVERSATION_SUMMARY, project_id=project.id, db_session=db_session
+    )
+    prompt = f"{db_prompt.genai_prompt if db_prompt else READ_IN_SUMMARY_PROMPT}\nConversation messages:\n{conversation}"
+    system_message = (
+        getattr(db_prompt, "genai_system_message", None) or READ_IN_SUMMARY_SYSTEM_MESSAGE
+    ) + STRUCTURED_OUTPUT
 
     prompt = prepare_prompt_for_model(
         prompt, genai_plugin.instance.configuration.chat_completion_model
@@ -736,34 +739,23 @@ def generate_tactical_report(
         return TacticalReportResponse(error_message=message)
 
     conversation = conversation_plugin.instance.get_conversation(
-        conversation_id=incident.conversation.channel_id, include_user_details=True, important_reaction=important_reaction
+        conversation_id=incident.conversation.channel_id,
+        include_user_details=True,
+        important_reaction=important_reaction,
     )
     if not conversation:
         message = f"Tactical report not generated for {incident.name}. No conversation found."
         log.warning(message)
         return TacticalReportResponse(error_message=message)
 
-    system_message = """
-    You are a cybersecurity analyst tasked with creating structured tactical reports. Analyze the
-    provided channel messages and extract these 3 key types of information:
-    1. Conditions: the circumstances surrounding the event. For example, initial identification, event description,
-    affected parties and systems, the nature of the security flaw or security type, and the observable impact both inside and outside
-    the organization.
-    2. Actions: the actions performed in response to the event. For example, containment/mitigation steps, investigation or log analysis, internal
-    and external communications or notifications, remediation steps (such as policy or configuration changes), and
-    vendor or partner engagements. Prioritize executed actions over plans. Include relevant team or individual names.
-    3. Needs: unfulfilled requests associated with the event's resolution. For example, information to gather,
-    technical remediation steps, process improvements and preventative actions, or alignment/decision making. Include individuals
-    or teams as assignees where possible. If the incident is at its resolution with no unresolved needs, this section
-    can instead be populated with a note to that effect.
-
-    Only include the most impactful events and outcomes. Be clear, professional, and concise. Use complete sentences with clear subjects, including when writing in bullet points.
-    """
-
-    raw_prompt = f"""Analyze the following channel messages regarding a security event and provide a structured tactical report.
-
-    Channel messages: {conversation}
-    """
+    # Check for enabled prompt in database (type 5 = tactical report)
+    db_prompt = get_by_type(
+        genai_type=GenAIType.TACTICAL_REPORT_SUMMARY, project_id=project.id, db_session=db_session
+    )
+    raw_prompt = f"{db_prompt.genai_prompt if db_prompt else TACTICAL_REPORT_PROMPT}\nConversation messages:\n{conversation}"
+    system_message = (
+        getattr(db_prompt, "genai_system_message", None) or TACTICAL_REPORT_SYSTEM_MESSAGE
+    ) + STRUCTURED_OUTPUT
 
     prompt = prepare_prompt_for_model(
         raw_prompt, genai_plugin.instance.configuration.chat_completion_model
@@ -782,7 +774,7 @@ def generate_tactical_report(
             ),
             incident_id=incident.id,
             details=result.dict(),
-            type=EventType.other
+            type=EventType.other,
         )
 
         return TacticalReportResponse(tactical_report=result)
@@ -790,4 +782,4 @@ def generate_tactical_report(
     except Exception as e:
         error_message = f"Error generating tactical report: {str(e)}"
         log.exception(error_message)
-        return TacticalReportResponse(error_message = error_message)
+        return TacticalReportResponse(error_message=error_message)

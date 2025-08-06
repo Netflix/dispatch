@@ -29,6 +29,7 @@ import organization from "@/organization/store"
 import playground from "@/entity_type/playground/store"
 import plugin from "@/plugin/store"
 import project from "@/project/store"
+import prompt from "@/prompt/store"
 import query from "@/data/query/store"
 import reference from "@/document/reference/store"
 import runbook from "@/document/runbook/store"
@@ -84,6 +85,7 @@ export default createStore({
     playground,
     plugin,
     project,
+    prompt,
     query,
     reference,
     runbook,
