@@ -820,11 +820,40 @@ def run_server(log_level):
     os.environ["LOG_LEVEL"] = log_level.upper()
     if not os.path.isdir(config.STATIC_DIR):
         import atexit
+        import subprocess
         from subprocess import Popen
 
         # take our frontend vars and export them for the frontend to consume
         envvars = os.environ.copy()
         envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VITE_")})
+
+        # Add git commit information for development
+        try:
+            commit_hash = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=".", stderr=subprocess.DEVNULL
+            ).decode("utf-8").strip()
+            envvars["VITE_DISPATCH_COMMIT_HASH"] = commit_hash
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # If git is not available or not in a git repo, use a default value
+            envvars["VITE_DISPATCH_COMMIT_HASH"] = "dev-local"
+
+        try:
+            commit_message = subprocess.check_output(
+                ["git", "log", "-1", "--pretty=%B"], cwd=".", stderr=subprocess.DEVNULL
+            ).decode("utf-8").strip()
+            envvars["VITE_DISPATCH_COMMIT_MESSAGE"] = commit_message
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # If git is not available or not in a git repo, use a default value
+            envvars["VITE_DISPATCH_COMMIT_MESSAGE"] = "Development build"
+
+        try:
+            commit_date = subprocess.check_output(
+                ["git", "log", "-1", "--pretty=%cd", "--date=short"], cwd=".", stderr=subprocess.DEVNULL
+            ).decode("utf-8").strip()
+            envvars["VITE_DISPATCH_COMMIT_DATE"] = commit_date
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # If git is not available or not in a git repo, use a default value
+            envvars["VITE_DISPATCH_COMMIT_DATE"] = "Unknown"
         is_windows = os.name == "nt"
         windows_cmds = ["cmd", "/c"]
         default_cmds = ["npm", "run", "serve"]
