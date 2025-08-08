@@ -34,6 +34,7 @@
             label="Tags"
             model="source"
             :project="local_project"
+            :validate-exclusive-tags="false"
           />
         </v-list-item>
         <v-list-item>

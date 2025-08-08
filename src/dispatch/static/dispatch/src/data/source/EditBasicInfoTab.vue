@@ -82,6 +82,7 @@
           model="source"
           :project="project"
           :model-id="id"
+          :validate-required-tags="true"
         />
       </v-col>
       <v-col cols="12">

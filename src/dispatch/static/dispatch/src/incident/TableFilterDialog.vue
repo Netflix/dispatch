@@ -49,6 +49,7 @@
                 label="Tags"
                 model="incident"
                 :project="local_project"
+                :validate-exclusive-tags="false"
               />
             </v-list-item>
           </v-card>
@@ -60,6 +61,7 @@
                 label="Tags"
                 model="incident"
                 :project="local_project"
+                :validate-exclusive-tags="false"
               />
             </v-list-item>
           </v-card>

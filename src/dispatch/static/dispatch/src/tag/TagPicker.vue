@@ -218,8 +218,18 @@
                         class="tag-type-icon"
                       />
                       <strong v-text="group.label" />
-                      <span v-show="group.isRequired" class="tag-group-rule">Required</span>
-                      <span v-show="group.isExclusive" class="tag-group-rule">Exclusive</span>
+                      <span
+                        v-show="group.isRequired && props.validateRequiredTags"
+                        class="tag-group-rule"
+                      >
+                        Required
+                      </span>
+                      <span
+                        v-show="group.isExclusive && props.validateExclusiveTags"
+                        class="tag-group-rule"
+                      >
+                        Exclusive
+                      </span>
                       <span class="tag-group-icon-down"><v-icon>mdi-chevron-down</v-icon></span>
                       <v-icon class="tag-group-icon-up">mdi-chevron-up</v-icon>
                     </span>
@@ -229,6 +239,7 @@
                       class="tag-group-rule-desc"
                       v-show="
                         group.isExclusive &&
+                        props.validateExclusiveTags &&
                         selectedItems.some((item) => item.tag_type.id === group.id)
                       "
                     >
@@ -246,7 +257,11 @@
                       v-model="selectedItems"
                       :id="item.id"
                       :value="item"
-                      :disabled="group.isExclusive && isItemDisabled(group, item)"
+                      :disabled="
+                        group.isExclusive &&
+                        props.validateExclusiveTags &&
+                        isItemDisabled(group, item)
+                      "
                       class="checkbox-item-box"
                     />
                     {{ item.name }}
@@ -316,6 +331,14 @@ const props = defineProps({
     type: String,
     default: "incident", // "incident" or "case"
   },
+  validateRequiredTags: {
+    type: Boolean,
+    default: false,
+  },
+  validateExclusiveTags: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 // Computed properties from store
@@ -384,15 +407,20 @@ function validateTags(value) {
   })
 
   if (all_tags_in_projects) {
-    const requiredSelected = are_required_tags_selected(value)
+    // Only validate required tags if validateRequiredTags prop is true
+    if (props.validateRequiredTags) {
+      const requiredSelected = are_required_tags_selected(value)
 
-    if (!requiredSelected) {
-      const required_tag_types = Object.values(groups.value)
-        .filter((tag_type) => tag_type.isRequired)
-        .map((tag_type) => tag_type.label)
-      error.value = `Please select at least one tag from each required category (${required_tag_types.join(
-        ", "
-      )})`
+      if (!requiredSelected) {
+        const required_tag_types = Object.values(groups.value)
+          .filter((tag_type) => tag_type.isRequired)
+          .map((tag_type) => tag_type.label)
+        error.value = `Please select at least one tag from each required category (${required_tag_types.join(
+          ", "
+        )})`
+      } else {
+        error.value = null
+      }
     } else {
       error.value = null
     }

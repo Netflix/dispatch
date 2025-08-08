@@ -176,6 +176,7 @@
           show-copy
           :showGenAISuggestions="true"
           modelType="case"
+          :validate-required-tags="true"
         />
       </v-col>
       <v-col cols="12">

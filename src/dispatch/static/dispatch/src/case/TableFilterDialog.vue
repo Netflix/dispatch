@@ -57,6 +57,7 @@
               label="Tags"
               model="case"
               :project="local_project"
+              :validate-exclusive-tags="false"
             />
           </v-list-item>
           <v-list-item>
