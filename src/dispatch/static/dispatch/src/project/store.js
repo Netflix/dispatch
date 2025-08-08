@@ -22,7 +22,7 @@ const getDefaultSelectedState = () => {
     storage_use_title: false,
     allow_self_join: null,
     select_commander_visibility: null,
-    show_report_incident_button: null,
+    suggest_security_event_over_incident: null,
     stable_priority_id: null,
     snooze_extension_oncall_service_id: null,
     report_incident_instructions: null,

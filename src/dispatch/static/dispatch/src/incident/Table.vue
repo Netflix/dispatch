@@ -14,15 +14,7 @@
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
-        <v-btn
-          v-if="shouldShowReportButton"
-          nav
-          variant="flat"
-          color="error"
-          :to="{ name: 'report' }"
-          class="ml-2"
-          hide-details
-        >
+        <v-btn nav variant="flat" color="error" :to="{ name: 'report' }" class="ml-2" hide-details>
           <v-icon start color="white">mdi-fire</v-icon>
           <span class="text-uppercase text-body-2 font-weight-bold">Report incident</span>
         </v-btn>
@@ -254,32 +246,11 @@ export default {
         return d
       },
     },
-
-    shouldShowReportButton() {
-      // Return false if projects haven't loaded yet
-      if (!this.defaultUserProjects || this.defaultUserProjects.length === 0) {
-        return false
-      }
-
-      // Check if any of the default projects have the report button enabled
-      const hasEnabledProject = this.defaultUserProjects.some(
-        (project) => project.show_report_incident_button !== false
-      )
-
-      // If projects have the button enabled, show it
-      if (hasEnabledProject) {
-        return true
-      }
-
-      // If no projects have the button enabled, only show for admin/owner users
-      return this.userAdminOrAbove(this.current_user_role)
-    },
   },
 
   methods: {
     ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
     ...mapActions("workflow", ["showRun"]),
-    ...mapActions("auth", ["refreshCurrentUser"]),
     showIncidentEditSheet(e, { item }) {
       this.$router.push({ name: "IncidentTableEdit", params: { name: item.name } })
     },
@@ -299,13 +270,6 @@ export default {
   },
 
   created() {
-    // Fetch user projects if they're not loaded
-    if (!this.projects || this.projects.length === 0) {
-      this.refreshCurrentUser().catch((error) => {
-        console.error("Failed to refresh user projects:", error)
-      })
-    }
-
     this.filters = {
       ...this.filters,
       ...RouterUtils.deserializeFilters(this.$route.query),

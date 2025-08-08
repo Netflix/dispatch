@@ -1,4 +1,4 @@
-"""Adds support for configuring the reporting security incidents in the project model.
+"""Adds support for configuring security event suggestions in the project model.
 
 Revision ID: f2bce475e71b
 Revises: 408118048599
@@ -16,8 +16,8 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('project', sa.Column('show_report_incident_button', sa.Boolean(), server_default='t', nullable=True))
+    op.add_column('project', sa.Column('suggest_security_event_over_incident', sa.Boolean(), server_default='t', nullable=True))
 
 
 def downgrade():
-    op.drop_column('project', 'show_report_incident_button')
+    op.drop_column('project', 'suggest_security_event_over_incident')

@@ -67,8 +67,8 @@ class Project(Base):
     report_incident_title_hint = Column(String, nullable=True)
     report_incident_description_hint = Column(String, nullable=True)
 
-    # controls visibility of the "Report Incident" button
-    show_report_incident_button = Column(Boolean, default=True, server_default="t")
+    # controls whether to suggest security events over incidents
+    suggest_security_event_over_incident = Column(Boolean, default=True, server_default="t")
 
     snooze_extension_oncall_service_id = Column(Integer, nullable=True)
     snooze_extension_oncall_service = relationship(
@@ -119,7 +119,7 @@ class ProjectBase(DispatchBase):
     report_incident_instructions: str | None = None
     report_incident_title_hint: str | None = None
     report_incident_description_hint: str | None = None
-    show_report_incident_button: bool | None = Field(True)
+    suggest_security_event_over_incident: bool | None = Field(True)
     snooze_extension_oncall_service: Service | None = None
 
 

@@ -184,9 +184,9 @@
               <span class="text-body-1 text-medium-emphasis">Report incident card settings</span>
               <v-col cols="12">
                 <v-checkbox
-                  v-model="show_report_incident_button"
-                  label="Show Report Incident Button"
-                  hint="Controls whether the 'Report Incident' button is visible to regular users. When disabled, only admin and owner users can see the button."
+                  v-model="suggest_security_event_over_incident"
+                  label="Suggest Security Event Over Incident"
+                  hint="Controls whether to suggest security events over incidents for regular users. When enabled, security events are prioritized in the UI."
                 />
               </v-col>
               <v-col cols="12">
@@ -271,7 +271,7 @@ export default {
       "selected.report_incident_instructions",
       "selected.report_incident_title_hint",
       "selected.report_incident_description_hint",
-      "selected.show_report_incident_button",
+      "selected.suggest_security_event_over_incident",
       "selected.snooze_extension_oncall_service",
       "dialogs.showCreateEdit",
     ]),
