@@ -521,13 +521,7 @@ CASE_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
 
 
 CASE_STATUS_CHANGE = {
-    "title": "*{% set status_emojis = {
-        'Closed': ':white_check_mark:',
-        'New': ':new:',
-        'Triage': ':mag:',
-        'Stable': ':shield:',
-        'Escalated': ':arrow_up:'
-    } %}{{ status_emojis.get(case_status_new, ':arrows_counterclockwise:') }} Status Change:* {{ case_status_old }} → {{ case_status_new }}",
+    "title": "*{% set status_emojis = {'Closed': ':white_check_mark:', 'New': ':new:', 'Triage': ':mag:', 'Stable': ':shield:', 'Escalated': ':arrow_up:'} %}{{ status_emojis.get(case_status_new, ':arrows_counterclockwise:') }} Status Change:* {{ case_status_old }} → {{ case_status_new }}",
 }
 
 CASE_TYPE_CHANGE = {"title": "*:label: Case Type Change:* {{ case_type_old }} → {{ case_type_new }}"}
@@ -541,10 +535,7 @@ CASE_PRIORITY_CHANGE = {
 }
 
 CASE_VISIBILITY_CHANGE = {
-    "title": "*{% set visibility_emojis = {
-        'Open': ':unlock:',
-        'Restricted': ':lock:'
-    } %}{{ visibility_emojis.get(case_visibility_new, ':eye:') }} Visibility Change:* {{ case_visibility_old }} → {{ case_visibility_new }}",
+    "title": "*{% set visibility_emojis = {'Open': ':unlock:', 'Restricted': ':lock:'} %}{{ visibility_emojis.get(case_visibility_new, ':eye:') }} Visibility Change:* {{ case_visibility_old }} → {{ case_visibility_new }}",
 }
 
 INCIDENT_NAME = {
@@ -671,11 +662,7 @@ INCIDENT_FAQ_DOCUMENT = {
 }
 
 INCIDENT_STATUS_CHANGE = {
-    "title": "*{% set status_emojis = {
-        'Closed': ':white_check_mark:',
-        'Stable': ':shield:',
-        'Active': ':fire:'
-    } %}{{ status_emojis.get(incident_status_new, ':arrows_counterclockwise:') }} Status Change:* {{ incident_status_old }} → {{ incident_status_new }}",
+    "title": "*{% set status_emojis = {'Closed': ':white_check_mark:', 'Stable': ':shield:', 'Active': ':fire:'} %}{{ status_emojis.get(incident_status_new, ':arrows_counterclockwise:') }} Status Change:* {{ incident_status_old }} → {{ incident_status_new }}",
 }
 
 INCIDENT_TYPE_CHANGE = {"title": "*:label: Incident Type Change:* {{ incident_type_old }} → {{ incident_type_new }}"}
