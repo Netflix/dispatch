@@ -25,6 +25,7 @@
             label="Tags"
             model="case"
             :project="filters.project"
+            :validate-exclusive-tags="false"
           />
         </v-list-item>
         <v-list-item>
