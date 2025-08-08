@@ -184,6 +184,16 @@ const actions = {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
+  async get({ commit }, searchFilterId) {
+    try {
+      const response = await SearchApi.get(searchFilterId)
+      commit("SET_SELECTED", response.data)
+      return response.data
+    } catch (error) {
+      console.error("Error getting search filter:", error)
+      throw error
+    }
+  },
 }
 
 const mutations = {
