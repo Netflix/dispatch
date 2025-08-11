@@ -33,8 +33,10 @@ export default {
 
   bulkUpdate(cases, payload) {
     return Promise.all(
-      cases.map((case_obj) => {
-        return this.update(case_obj.id, { ...case_obj, ...payload })
+      cases.map(async (case_obj) => {
+        // Fetch the full case data to ensure all required fields are available
+        const fullCase = await this.get(case_obj.id)
+        return this.update(case_obj.id, { ...fullCase.data, ...payload })
       })
     )
   },

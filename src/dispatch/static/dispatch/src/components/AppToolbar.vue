@@ -58,11 +58,17 @@
             />
             <v-list-item
               v-if="currentVersion()"
-              @click="showCommitMessage"
-              append-icon="mdi-page-next-outline"
+              :href="`https://github.com/Netflix/dispatch/commit/${currentVersion()}`"
+              target="_blank"
+              append-icon="mdi-open-in-new"
             >
               <v-list-item-title>
-                Current version: {{ formatHash(currentVersion()) }}
+                Current version: {{ formatHash(currentVersion())
+                }}{{
+                  currentVersionDate() && currentVersionDate() !== "Unknown"
+                    ? ` (${currentVersionDate()})`
+                    : ""
+                }}
               </v-list-item-title>
             </v-list-item>
           </v-list>
