@@ -190,12 +190,18 @@ For help please reach out to your Dispatch admins and provide them with the foll
 def format_default_text(item: dict):
     """Creates the correct Slack text string based on the item context."""
     if item.get("title_link"):
-        return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
+        text_part = f"\n{item['text']}" if item.get('text') else ""
+        return f"*<{item['title_link']}|{item['title']}>*{text_part}"
     if item.get("datetime"):
         return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
     if item.get("title"):
-        return f"*{item['title']}*\n{item['text']}"
-    return item["text"]
+        text_part = f"\n{item['text']}" if item.get('text') else ""
+        # Check if title already has formatting (contains asterisks)
+        if '*' in item['title']:
+            return f"{item['title']}{text_part}"
+        else:
+            return f"*{item['title']}*{text_part}"
+    return item.get("text", "")
 
 
 def default_notification(items: list):
