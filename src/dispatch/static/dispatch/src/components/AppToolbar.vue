@@ -23,7 +23,14 @@
     />
     <v-spacer />
     <v-toolbar-items>
-      <v-btn nav variant="text" @click="navigateToEventReport" class="ml-2" hide-details>
+      <v-btn
+        v-if="shouldShowSecurityEventButton"
+        nav
+        variant="text"
+        @click="navigateToEventReport"
+        class="ml-2"
+        hide-details
+      >
         <v-icon start color="error">mdi-shield-search</v-icon>
         <span class="text-uppercase text-body-2 font-weight-bold">Report Security Event</span>
       </v-btn>
@@ -151,6 +158,7 @@ import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
 import UserApi from "@/auth/api"
 import CurrentUserAvatar from "@/atomics/CurrentUserAvatar.vue"
+import { mapFields } from "vuex-map-fields"
 
 export default {
   name: "AppToolbar",
@@ -167,6 +175,7 @@ export default {
     CurrentUserAvatar,
   },
   computed: {
+    ...mapFields("auth", ["currentUser.projects"]),
     queryString: {
       set(query) {
         this.$store.dispatch("search/setQuery", query)
@@ -195,6 +204,18 @@ export default {
             this.$store.dispatch("auth/refreshCurrentUser")
           })
       },
+    },
+    defaultUserProjects() {
+      if (!this.projects || this.projects.length === 0) {
+        return []
+      }
+      return this.projects.filter((v) => v.default === true).map((v) => v.project)
+    },
+    shouldShowSecurityEventButton() {
+      // Check if any of the default projects have the security event suggestion enabled
+      return this.defaultUserProjects.some(
+        (project) => project.suggest_security_event_over_incident === true
+      )
     },
   },
   methods: {
@@ -238,7 +259,7 @@ export default {
     },
     ...mapState("auth", ["currentUser"]),
     ...mapState("app", ["currentVersion"]),
-    ...mapActions("auth", ["logout", "getExperimentalFeatures"]),
+    ...mapActions("auth", ["logout", "getExperimentalFeatures", "refreshCurrentUser"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapActions("app", ["showCommitMessage"]),
@@ -272,6 +293,13 @@ export default {
       this.organizations = response.data.items
       this.loading = false
     })
+
+    // Fetch user projects if they're not loaded
+    if (!this.projects || this.projects.length === 0) {
+      this.refreshCurrentUser().catch((error) => {
+        console.error("Failed to refresh user projects:", error)
+      })
+    }
 
     this.getExperimentalFeatures()
   },
