@@ -258,7 +258,7 @@ export default {
       })
     },
     ...mapState("auth", ["currentUser"]),
-    ...mapState("app", ["currentVersion"]),
+    ...mapState("app", ["currentVersion", "currentVersionDate"]),
     ...mapActions("auth", ["logout", "getExperimentalFeatures", "refreshCurrentUser"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
