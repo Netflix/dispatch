@@ -42,6 +42,7 @@
                           v-model="filters.tag"
                           label="Tags"
                           model="incident"
+                          :validate-exclusive-tags="false"
                         />
                       </v-list-item>
                       <v-list-item>
@@ -83,6 +84,7 @@
                           :project="project"
                           v-model="filters.tag"
                           label="Tags"
+                          :validate-exclusive-tags="false"
                         />
                       </v-list-item>
                       <v-list-item>

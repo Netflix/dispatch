@@ -31,6 +31,7 @@
                     label="Tags"
                     model="case"
                     :project="project"
+                    :validate-exclusive-tags="false"
                   />
                 </v-list-item>
                 <v-list-item>
