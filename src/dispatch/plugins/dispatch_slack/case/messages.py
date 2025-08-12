@@ -150,7 +150,7 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
             ]
         )
         if case.resolved_by:
-            blocks.append(Section(text=f"*Resolved by* \n {case.resolved_by.individual.email}"))
+            blocks.append(Section(text=f"*Resolved by* \n {case.resolved_by.email}"))
         blocks.append(
             Actions(
                 elements=[
