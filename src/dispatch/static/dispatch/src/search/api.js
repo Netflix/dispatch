@@ -12,7 +12,7 @@ export default {
   },
 
   get(searchFilterId) {
-    return API.get(`${resource}/filters/detail/${searchFilterId}`)
+    return API.get(`${resource}/filters/${searchFilterId}`)
   },
 
   create(payload) {
