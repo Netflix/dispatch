@@ -24,42 +24,63 @@
         />
       </v-col>
       <v-col cols="12">
-        <v-select
-          v-model="resolution_reason"
-          label="Resolution Reason"
-          :items="$store.state.case_management.resolutionReasons"
-          hint="The general reason why a given case was resolved."
-          :menu-props="{ contentClass: 'resolution-menu' }"
-        >
-          <template #item="{ item, props }">
-            <v-list-item v-bind="props">
-              <template #title>
-                <div class="d-flex align-center justify-space-between">
-                  {{ item.title }}
-                  <v-tooltip location="right">
-                    <template #activator="{ props: tooltipProps }">
-                      <v-icon
-                        v-bind="tooltipProps"
-                        icon="mdi-information"
-                        size="small"
-                        class="ml-2"
-                      />
+        <v-card variant="outlined" class="pa-4 mt-n5">
+          <v-card-title class="text-h6 pa-0 mb-4">Resolution Details</v-card-title>
+          <v-row>
+            <v-col cols="12">
+              <div class="d-flex align-center">
+                <span class="text-body-2 text-medium-emphasis mr-2">Resolved By:</span>
+                <v-chip v-if="resolved_by" pill size="small">
+                  <v-avatar color="teal" start>
+                    <span class="text-white">{{ initials(resolved_by.name) }}</span>
+                  </v-avatar>
+                  {{ resolved_by.name }}
+                </v-chip>
+                <span v-else class="text-body-2 text-disabled">Not specified</span>
+              </div>
+            </v-col>
+            <v-col cols="12">
+              <v-select
+                v-model="resolution_reason"
+                label="Resolution Reason"
+                :items="$store.state.case_management.resolutionReasons"
+                hint="The general reason why a given case was resolved."
+                :menu-props="{ contentClass: 'resolution-menu' }"
+              >
+                <template #item="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <template #title>
+                      <div class="d-flex align-center justify-space-between">
+                        {{ item.title }}
+                        <v-tooltip location="right">
+                          <template #activator="{ props: tooltipProps }">
+                            <v-icon
+                              v-bind="tooltipProps"
+                              icon="mdi-information"
+                              size="small"
+                              class="ml-2"
+                            />
+                          </template>
+                          <span>{{
+                            $store.state.case_management.resolutionTooltips[item.title]
+                          }}</span>
+                        </v-tooltip>
+                      </div>
                     </template>
-                    <span>{{ $store.state.case_management.resolutionTooltips[item.title] }}</span>
-                  </v-tooltip>
-                </div>
-              </template>
-            </v-list-item>
-          </template>
-        </v-select>
-      </v-col>
-      <v-col cols="12">
-        <v-textarea
-          v-model="resolution"
-          label="Resolution"
-          hint="Description of the actions taken to resolve the case."
-          clearable
-        />
+                  </v-list-item>
+                </template>
+              </v-select>
+            </v-col>
+            <v-col cols="12">
+              <v-textarea
+                v-model="resolution"
+                label="Resolution"
+                hint="Description of the actions taken to resolve the case."
+                clearable
+              />
+            </v-col>
+          </v-row>
+        </v-card>
       </v-col>
       <v-col cols="12">
         <participant-select
@@ -195,6 +216,7 @@
 <script>
 import { required } from "@/util/form"
 import { mapFields } from "vuex-map-fields"
+import { initials } from "@/filters"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
@@ -210,6 +232,7 @@ export default {
   setup() {
     return {
       rules: { required },
+      initials,
     }
   },
   name: "CaseDetailsTab",
@@ -264,6 +287,7 @@ export default {
       "selected.reported_at",
       "selected.resolution_reason",
       "selected.resolution",
+      "selected.resolved_by",
       "selected.signals",
       "selected.stable_at",
       "selected.status",
