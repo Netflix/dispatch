@@ -293,6 +293,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             "project",
             "related",
             "reporter",
+            "resolved_by",
             "status",
             "tags",
             "visibility",
