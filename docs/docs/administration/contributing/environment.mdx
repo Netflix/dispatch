@@ -12,7 +12,7 @@ This guide assumes you're using an OS of the Linux/Unix variant \(Ubuntu/OS X\) 
 Install Dispatch with PIP:
 
 ```bash
-> DISPATCH_LIGHT_BUILD=1 pip install -e .[dev]
+> DISPATCH_LIGHT_BUILD=1 uv pip install -e .[dev]
 ```
 
 Run dev server:
@@ -55,7 +55,7 @@ Create a new virtualenv just for Dispatch:
 Install Dispatch with pip:
 
 ```bash
-> pip install -e /path/to/dispatch
+> uv pip install -e /path/to/dispatch
 ```
 
 Test it by seeing if the `dispatch` command is in your path:

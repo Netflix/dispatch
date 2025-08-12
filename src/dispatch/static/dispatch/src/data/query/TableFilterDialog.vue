@@ -22,6 +22,7 @@
             label="Tags"
             model="query"
             :project="local_project"
+            :validate-exclusive-tags="false"
           />
         </v-list-item>
       </v-list>

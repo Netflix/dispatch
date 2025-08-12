@@ -36,6 +36,7 @@
           :project="project"
           model="query"
           :model-id="id"
+          :validate-required-tags="true"
         />
       </v-col>
     </v-row>

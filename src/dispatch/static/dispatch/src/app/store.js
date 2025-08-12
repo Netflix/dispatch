@@ -10,6 +10,7 @@ const getDefaultRefreshState = () => {
 
 const latestCommitHash = import.meta.env.VITE_DISPATCH_COMMIT_HASH
 const latestCommitMessage = import.meta.env.VITE_DISPATCH_COMMIT_MESSAGE
+const latestCommitDate = import.meta.env.VITE_DISPATCH_COMMIT_DATE
 
 const state = {
   toggleDrawer: true,
@@ -18,6 +19,7 @@ const state = {
   },
   loading: false,
   currentVersion: latestCommitHash,
+  currentVersionDate: latestCommitDate,
 }
 
 const getters = {
@@ -36,14 +38,21 @@ const actions = {
     commit("SET_LOADING", value)
   },
   showCommitMessage({ commit }) {
-    commit(
-      "notification_backend/addBeNotification",
-      {
-        text: `Hash: ${latestCommitHash} | Message: ${latestCommitMessage}`,
-        type: "success",
-      },
-      { root: true }
-    )
+    if (latestCommitHash && latestCommitHash !== "Unknown" && latestCommitHash !== "dev-local") {
+      // Open GitHub commit URL in a new tab
+      const githubUrl = `https://github.com/Netflix/dispatch/commit/${latestCommitHash}`
+      window.open(githubUrl, "_blank")
+    } else {
+      // Fallback to showing notification for local development or unknown commits
+      commit(
+        "notification_backend/addBeNotification",
+        {
+          text: `Hash: ${latestCommitHash} | Message: ${latestCommitMessage}`,
+          type: "success",
+        },
+        { root: true }
+      )
+    }
   },
 }
 
