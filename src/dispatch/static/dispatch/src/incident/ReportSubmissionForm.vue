@@ -43,6 +43,7 @@
             v-model="tags"
             label="Tags"
             model="incident"
+            :validate-required-tags="true"
           />
         </v-col>
       </v-row>
