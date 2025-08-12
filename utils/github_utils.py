@@ -169,10 +169,9 @@ def fetch_pull_requests(repo: str = "Netflix/dispatch", limit: int = 2000) -> Li
 def categorize_pull_requests(prs: List[Dict]) -> Dict[str, List[Dict]]:
     """Categorize pull requests by their type."""
     categories = {
-        'Fix': [],
-        'Chore': [],
-        'Feature': [],
-        'Refactor': []
+        'Fixes': [],
+        'Features': [],
+        'Refactors': []
     }
 
     for pr in prs:
@@ -180,13 +179,11 @@ def categorize_pull_requests(prs: List[Dict]) -> Dict[str, List[Dict]]:
         first_word = title.split('(')[0].split(':')[0].lower()
 
         if first_word in ['fix', 'fixes']:
-            categories['Fix'].append(pr)
-        elif first_word in ['chore', 'deps', 'deps-dev']:
-            categories['Chore'].append(pr)
+            categories['Fixes'].append(pr)
         elif first_word in ['refactor', 'refactoring']:
-            categories['Refactor'].append(pr)
+            categories['Refactors'].append(pr)
         else:
-            categories['Feature'].append(pr)
+            categories['Features'].append(pr)
 
     return categories
 
@@ -208,7 +205,15 @@ def format_deployment_prs(prs: List[Dict]) -> None:
     print(f":announcement-2549: *Dispatch deployment to production today* ({today}) at [TIME] PT. Expect brief downtime.")
     print()
 
-    categories = categorize_pull_requests(prs)
+    # Filter out chore PRs before categorizing
+    non_chore_prs = []
+    for pr in prs:
+        title = pr['title']
+        first_word = title.split('(')[0].split(':')[0].lower()
+        if first_word not in ['chore', 'deps', 'deps-dev']:
+            non_chore_prs.append(pr)
+
+    categories = categorize_pull_requests(non_chore_prs)
 
     for category, pr_list in categories.items():
         if pr_list:
