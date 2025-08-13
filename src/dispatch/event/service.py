@@ -32,7 +32,7 @@ def get(*, db_session, event_id: int) -> Event | None:
 
 def get_by_case_id(*, db_session, case_id: int) -> list[Event | None]:
     """Get events by case id."""
-    return db_session.query(Event).filter(Event.case_id == case_id)
+    return db_session.query(Event).filter(Event.case_id == case_id).order_by(Event.started_at)
 
 
 def get_by_incident_id(*, db_session, incident_id: int) -> list[Event | None]:
