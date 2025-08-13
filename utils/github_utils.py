@@ -10,7 +10,7 @@ import json
 import subprocess
 from datetime import datetime
 from time import sleep
-from typing import Dict, List, NoReturn
+from typing import NoReturn
 
 
 @click.group()
@@ -159,14 +159,14 @@ Documentation:
     )
 
 
-def fetch_pull_requests(repo: str = "Netflix/dispatch", limit: int = 2000) -> List[Dict]:
+def fetch_pull_requests(repo: str = "Netflix/dispatch", limit: int = 2000) -> list[dict]:
     """Fetch pull requests from repository using gh CLI."""
     gh_command = f'gh pr list --repo {repo} --state all --limit {limit} --json number,title,state,createdAt,author,url,headRefName,labels'
     output = run_command(gh_command)
     return json.loads(output)
 
 
-def categorize_pull_requests(prs: List[Dict]) -> Dict[str, List[Dict]]:
+def categorize_pull_requests(prs: list[dict]) -> dict[str, list[dict]]:
     """Categorize pull requests by their type."""
     categories = {
         'Fixes': [],
@@ -195,7 +195,7 @@ def clean_title(title: str) -> str:
     return title[0].upper() + title[1:] if title else title
 
 
-def format_deployment_prs(prs: List[Dict]) -> None:
+def format_deployment_prs(prs: list[dict]) -> None:
     """Format and print pull requests for deployment announcements."""
     if not prs:
         print("No pull requests found")
