@@ -293,6 +293,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             "project",
             "related",
             "reporter",
+            "resolved_by",
             "status",
             "tags",
             "visibility",
@@ -387,6 +388,14 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             dispatch_user_id=current_user.id,
             case_id=case.id,
         )
+
+        if case.status == CaseStatus.closed:
+            individual = individual_service.get_or_create(
+                db_session=db_session,
+                email=current_user.email,
+                project=case.project,
+            )
+            case.resolved_by = individual
 
     if case.visibility != case_in.visibility:
         case.visibility = case_in.visibility
