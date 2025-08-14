@@ -114,7 +114,7 @@
             <div>
               <strong>Consider reporting as a Security Event instead</strong>
               <br />
-              If this is a security-related event for SIRT, please consider using the
+              Please consider using the
               <router-link :to="{ name: 'eventReport' }" class="text-decoration-none">
                 Security Event reporting page
               </router-link>
