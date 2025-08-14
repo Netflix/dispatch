@@ -147,17 +147,21 @@ def create_case_message(case: Case, channel_id: str) -> list[Block]:
                 Section(
                     text=f"*Resolution description* \n {case.resolution}"[:MAX_SECTION_TEXT_LENGTH]
                 ),
-                Actions(
-                    elements=[
-                        Button(
-                            text="Re-open",
-                            action_id=CaseNotificationActions.reopen,
-                            style="primary",
-                            value=button_metadata,
-                        )
-                    ]
-                ),
             ]
+        )
+        if case.resolved_by:
+            blocks.append(Section(text=f"*Resolved by* \n {case.resolved_by.email}"))
+        blocks.append(
+            Actions(
+                elements=[
+                    Button(
+                        text="Re-open",
+                        action_id=CaseNotificationActions.reopen,
+                        style="primary",
+                        value=button_metadata,
+                    )
+                ]
+            ),
         )
     else:
         action_buttons = [

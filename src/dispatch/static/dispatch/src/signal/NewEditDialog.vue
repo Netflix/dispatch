@@ -140,6 +140,7 @@
                     :model-id="id"
                     :project="project"
                     show-copy
+                    :validate-required-tags="true"
                   />
                 </v-col>
               </v-row>
