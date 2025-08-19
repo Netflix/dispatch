@@ -16,7 +16,7 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('project', sa.Column('suggest_security_event_over_incident', sa.Boolean(), server_default='t', nullable=True))
+    op.add_column('project', sa.Column('suggest_security_event_over_incident', sa.Boolean(), server_default='f', nullable=True))
 
 
 def downgrade():
