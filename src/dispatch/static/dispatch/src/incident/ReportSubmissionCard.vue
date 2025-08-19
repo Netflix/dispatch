@@ -25,6 +25,26 @@
           If you suspect an incident and need help, please fill out this form to the best of your
           abilities.
         </p>
+        <v-alert
+          v-if="project?.suggest_security_event_over_incident"
+          type="warning"
+          variant="tonal"
+          class="mt-4 mb-4"
+          density="compact"
+        >
+          <template #prepend>
+            <v-icon>mdi-security</v-icon>
+          </template>
+          <div>
+            <strong>Consider reporting as a Security Event instead</strong>
+            <br />
+            Please consider using the
+            <router-link :to="{ name: 'eventReport' }" class="text-decoration-none">
+              Security Event reporting page
+            </router-link>
+            for better handling and response.
+          </div>
+        </v-alert>
         <p v-if="project_faq">
           If you have additional questions, please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
@@ -102,26 +122,6 @@
       </v-card-text>
       <v-card-actions>
         <div class="w-100">
-          <v-alert
-            v-if="project?.suggest_security_event_over_incident"
-            type="warning"
-            variant="tonal"
-            class="mb-4"
-            density="compact"
-          >
-            <template #prepend>
-              <v-icon>mdi-security</v-icon>
-            </template>
-            <div>
-              <strong>Consider reporting as a Security Event instead</strong>
-              <br />
-              Please consider using the
-              <router-link :to="{ name: 'eventReport' }" class="text-decoration-none">
-                Security Event reporting page
-              </router-link>
-              for better handling and response.
-            </div>
-          </v-alert>
           <v-btn
             color="info"
             block
