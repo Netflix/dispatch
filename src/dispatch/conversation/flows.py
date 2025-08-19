@@ -296,14 +296,14 @@ def get_topic_text(subject: Subject) -> str:
     """Returns the topic details based on subject"""
     if isinstance(subject, Incident):
         return (
-            f":helmet_with_white_cross: {subject.commander.individual.name}, {subject.commander.team} | "
+            f"⛑️ {subject.commander.individual.name}, {subject.commander.team} | "
             f"Status: {subject.status} | "
             f"Type: {subject.incident_type.name} | "
             f"Severity: {subject.incident_severity.name} | "
             f"Priority: {subject.incident_priority.name}"
         )
     return (
-        f":helmet_with_white_cross: {subject.assignee.individual.name}, {subject.assignee.team} | "
+        f"⛑️ {subject.assignee.individual.name}, {subject.assignee.team} | "
         f"Status: {subject.status} | "
         f"Type: {subject.case_type.name} | "
         f"Severity: {subject.case_severity.name} | "

@@ -190,17 +190,25 @@ For help please reach out to your Dispatch admins and provide them with the foll
 def format_default_text(item: dict):
     """Creates the correct Slack text string based on the item context."""
     if item.get("title_link"):
-        text_part = f"\n{item['text']}" if item.get('text') else ""
-        return f"*<{item['title_link']}|{item['title']}>*{text_part}"
+        return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
     if item.get("datetime"):
         return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
     if item.get("title"):
-        text_part = f"\n{item['text']}" if item.get('text') else ""
-        # Check if title already has formatting (contains asterisks)
-        if '*' in item['title']:
-            return f"{item['title']}{text_part}"
+        # Titles that should be combined on a single line with ": "
+        single_line_titles = {
+            "📝 Title",
+        }
+
+        if item.get('text'):
+            # Check if this title should be on a single line or text contains → (e.g. a state transition)
+            if item['title'] in single_line_titles or '→' in item['text']:
+                text_part = f": {item['text']}"
+            else:
+                text_part = f"\n{item['text']}"
         else:
-            return f"*{item['title']}*{text_part}"
+            text_part = ""
+
+        return f"*{item['title']}*{text_part}"
     return item.get("text", "")
 
 
