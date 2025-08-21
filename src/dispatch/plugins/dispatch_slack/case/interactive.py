@@ -469,7 +469,23 @@ def engage(
         return
 
     engagement = form_data[DefaultBlockIds.description_input]
-    user = client.users_lookupByEmail(email=user_email)
+
+    try:
+        user = client.users_lookupByEmail(email=user_email)
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(
+                f"Failed to find Slack user for email {user_email}. "
+                "User may have been deactivated or never had Slack access."
+            )
+            client.chat_postMessage(
+                text=f"Unable to engage user {user_email} - user not found in Slack workspace.",
+                channel=case.conversation.channel_id,
+                thread_ts=case.conversation.thread_id if case.has_thread else None,
+            )
+            return
+        else:
+            raise
 
     result = client.chat_postMessage(
         text="Engaging user...",
@@ -1983,9 +1999,19 @@ def edit_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
-    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
-        "user"
-    ]["id"]
+    try:
+        assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
+            "user"
+        ]["id"]
+    except SlackApiError as e:
+        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(
+                f"Assignee {case.assignee.individual.email} not found in Slack workspace. "
+                "Using None for initial assignee selection."
+            )
+            assignee_initial_user = None
+        else:
+            raise
 
     blocks = [
         title_input(initial_value=case.title),
