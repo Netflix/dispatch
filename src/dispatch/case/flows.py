@@ -184,55 +184,33 @@ def case_remove_participant_flow(
     )
 
     # we also try to remove the user from the Slack conversation
+    slack_conversation_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+
+    if not slack_conversation_plugin:
+        log.warning(f"{user_email} not updated. No conversation plugin enabled.")
+        return
+
+    if not case.conversation:
+        log.warning("No conversation enabled for this case.")
+        return
+
     try:
-        slack_conversation_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+        slack_conversation_plugin.instance.remove_user(
+            conversation_id=case.conversation.channel_id,
+            user_email=user_email
         )
 
-        if not slack_conversation_plugin:
-            log.warning(f"{user_email} not updated. No conversation plugin enabled.")
-            return
+        event_service.log_case_event(
+                db_session=db_session,
+                source=slack_conversation_plugin.plugin.title,
+                description=f"{user_email} removed from conversation (channel ID: {case.conversation.channel_id})",
+                case_id=case.id,
+                type=EventType.participant_updated,
+        )
 
-        if not case.conversation:
-            log.warning("No conversation enabled for this case.")
-            return
-
-        try:
-            slack_conversation_plugin.instance.remove_user(
-                conversation_id=case.conversation.channel_id,
-                user_email=user_email
-            )
-
-            event_service.log_case_event(
-                    db_session=db_session,
-                    source=slack_conversation_plugin.plugin.title,
-                    description=f"{user_email} removed from conversation (channel ID: {case.conversation.channel_id})",
-                    case_id=case.id,
-                    type=EventType.participant_updated,
-            )
-
-            log.info(f"Removed {user_email} from conversation in channel {case.conversation.channel_id}")
-
-        except Exception as slack_error:
-            # Check if this is a users_not_found error from Slack
-            error_msg = str(slack_error)
-            if "users_not_found" in error_msg:
-                log.warning(
-                    f"User {user_email} not found in Slack workspace. "
-                    f"They may have been deactivated or never had access. "
-                    f"Case conversation: {case.conversation.channel_id}"
-                )
-                # Still log the event to maintain audit trail
-                event_service.log_case_event(
-                    db_session=db_session,
-                    source=slack_conversation_plugin.plugin.title,
-                    description=f"Attempted to remove {user_email} from conversation but user not found in Slack",
-                    case_id=case.id,
-                    type=EventType.participant_updated,
-                )
-            else:
-                # Re-raise for other Slack errors
-                raise
+        log.info(f"Removed {user_email} from conversation in channel {case.conversation.channel_id}")
 
     except Exception as e:
         log.exception(f"Failed to remove user from Slack conversation: {e}")
