@@ -433,7 +433,7 @@ We received your feedback for your shift that ended {{ shift_end_at }} UTC. Than
 
 
 INCIDENT_NAME_WITH_ENGAGEMENT = {
-    "title": ":rotating_light: {{name}} Incident Notification",
+    "title": "🚨 {{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
@@ -469,7 +469,7 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
 }
 
 INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
-    "title": ":rotating_light: {{name}} Incident Notification",
+    "title": "🚨 {{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
@@ -482,13 +482,13 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
 }
 
 CASE_NAME = {
-    "title": ":briefcase: {{name}} Case Notification",
+    "title": "💼 {{name}} Case Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
 }
 
 CASE_NAME_WITH_ENGAGEMENT = {
-    "title": ":briefcase: {{name}} Case Notification",
+    "title": "💼 {{name}} Case Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
@@ -514,32 +514,39 @@ CASE_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
 }
 
 CASE_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
-    "title": ":briefcase: {{name}} Case Notification",
+    "title": "💼 {{name}} Case Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
 }
 
 
 CASE_STATUS_CHANGE = {
-    "title": "*{% set status_emojis = {'Closed': ':white_check_mark:', 'New': ':new:', 'Triage': ':mag:', 'Stable': ':shield:', 'Escalated': ':arrow_up:'} %}{{ status_emojis.get(case_status_new, ':arrows_counterclockwise:') }} Status Change:* {{ case_status_old }} → {{ case_status_new }}",
+    "title": "{% set status_emojis = {'Closed': '✅', 'New': '🆕', 'Triage': '🔍', 'Stable': '🛡️', 'Escalated': '⬆️'} %}{{ status_emojis.get(case_status_new, '🔄') }} Status Change",
+    "text": "{{ case_status_old }} → {{ case_status_new }}",
 }
 
-CASE_TYPE_CHANGE = {"title": "*:label: Case Type Change:* {{ case_type_old }} → {{ case_type_new }}"}
+CASE_TYPE_CHANGE = {
+    "title": "🏷️ Case Type Change",
+    "text": "{{ case_type_old }} → {{ case_type_new }}",
+}
 
 CASE_SEVERITY_CHANGE = {
-    "title": "*{% if case_severity_old.view_order < case_severity_new.view_order %}:arrow_up:{% elif case_severity_old.view_order > case_severity_new.view_order %}:arrow_down:{% else %}:left_right_arrow:{% endif %} Severity Change:* {{ case_severity_old.name }} → {{ case_severity_new.name }}",
+    "title": "{% if case_severity_old.view_order < case_severity_new.view_order %}⬆️{% elif case_severity_old.view_order > case_severity_new.view_order %}⬇️{% else %}↔️{% endif %} Severity Change",
+    "text": "{{ case_severity_old.name }} → {{ case_severity_new.name }}",
 }
 
 CASE_PRIORITY_CHANGE = {
-    "title": "*{% if case_priority_old.view_order < case_priority_new.view_order %}:arrow_up:{% elif case_priority_old.view_order > case_priority_new.view_order %}:arrow_down:{% else %}:left_right_arrow:{% endif %} Priority Change:* {{ case_priority_old.name }} → {{ case_priority_new.name }}",
+    "title": "{% if case_priority_old.view_order < case_priority_new.view_order %}⬆️{% elif case_priority_old.view_order > case_priority_new.view_order %}⬇️{% else %}↔️{% endif %} Priority Change",
+    "text": "{{ case_priority_old.name }} → {{ case_priority_new.name }}",
 }
 
 CASE_VISIBILITY_CHANGE = {
-    "title": "*{% set visibility_emojis = {'Open': ':unlock:', 'Restricted': ':lock:'} %}{{ visibility_emojis.get(case_visibility_new, ':eye:') }} Visibility Change:* {{ case_visibility_old }} → {{ case_visibility_new }}",
+    "title": "{% set visibility_emojis = {'Open': '🔓', 'Restricted': '🔒'} %}{{ visibility_emojis.get(case_visibility_new, '👁️') }} Visibility Change",
+    "text": "{{ case_visibility_old }} → {{ case_visibility_new }}",
 }
 
 INCIDENT_NAME = {
-    "title": ":rotating_light: {{name}} Incident Notification",
+    "title": "🚨 {{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
 }
@@ -552,9 +559,9 @@ INCIDENT_NAME_SUMMARY = {
 
 INCIDENT_SUMMARY = {"title": "Summary", "text": "{{summary}}"}
 
-INCIDENT_TITLE = {"title": "*:memo: Title:* {{title}}"}
+INCIDENT_TITLE = {"title": "📝 Title", "text": "{{title}}"}
 
-CASE_TITLE = {"title": "*:memo: Title:* {{title}}"}
+CASE_TITLE = {"title": "📝 Title", "text": "{{title}}"}
 
 CASE_STATUS = {
     "title": "Status - {{status}}",
@@ -615,7 +622,8 @@ INCIDENT_REPORTER = {
 }
 
 INCIDENT_COMMANDER = {
-    "title": ":firefighter: Commander: <{{commander_weblink}}|{{commander_fullname}}, {{commander_team}}>",
+    "title": "🧑‍🚒 Commander - {{commander_fullname}}, {{commander_team}}",
+    "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
 
@@ -662,17 +670,23 @@ INCIDENT_FAQ_DOCUMENT = {
 }
 
 INCIDENT_STATUS_CHANGE = {
-    "title": "*{% set status_emojis = {'Closed': ':white_check_mark:', 'Stable': ':shield:', 'Active': ':fire:'} %}{{ status_emojis.get(incident_status_new, ':arrows_counterclockwise:') }} Status Change:* {{ incident_status_old }} → {{ incident_status_new }}",
+    "title": "{% set status_emojis = {'Closed': '✅', 'Stable': '🛡️', 'Active': '🔥'} %}{{ status_emojis.get(incident_status_new, '🔄') }} Status Change",
+    "text": "{{ incident_status_old }} → {{ incident_status_new }}",
 }
 
-INCIDENT_TYPE_CHANGE = {"title": "*:label: Incident Type Change:* {{ incident_type_old }} → {{ incident_type_new }}"}
+INCIDENT_TYPE_CHANGE = {
+    "title": "🏷️ Incident Type Change",
+    "text": "{{ incident_type_old }} → {{ incident_type_new }}",
+}
 
 INCIDENT_SEVERITY_CHANGE = {
-    "title": "*{% if incident_severity_old.view_order < incident_severity_new.view_order %}:arrow_up:{% elif incident_severity_old.view_order > incident_severity_new.view_order %}:arrow_down:{% else %}:left_right_arrow:{% endif %} Severity Change:* {{ incident_severity_old.name }} → {{ incident_severity_new.name }}",
+    "title": "{% if incident_severity_old.view_order < incident_severity_new.view_order %}⬆️{% elif incident_severity_old.view_order > incident_severity_new.view_order %}⬇️{% else %}↔️{% endif %} Severity Change",
+    "text": "{{ incident_severity_old.name }} → {{ incident_severity_new.name }}",
 }
 
 INCIDENT_PRIORITY_CHANGE = {
-    "title": "*{% if incident_priority_old.view_order < incident_priority_new.view_order %}:arrow_up:{% elif incident_priority_old.view_order > incident_priority_new.view_order %}:arrow_down:{% else %}:left_right_arrow:{% endif %} Priority Change:* {{ incident_priority_old.name }} → {{ incident_priority_new.name }}",
+    "title": "{% if incident_priority_old.view_order < incident_priority_new.view_order %}⬆️{% elif incident_priority_old.view_order > incident_priority_new.view_order %}⬇️{% else %}↔️{% endif %} Priority Change",
+    "text": "{{ incident_priority_old.name }} → {{ incident_priority_new.name }}",
 }
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM = {
@@ -853,7 +867,8 @@ CASE_REPORTER = {
 }
 
 CASE_ASSIGNEE = {
-    "title": ":female-detective: Assignee: <{{assignee_weblink}}|{{assignee_fullname}}, {{assignee_team}}>",
+    "title": "🕵️‍♀️ Assignee - {{assignee_fullname}}, {{assignee_team}}",
+    "title_link": "{{assignee_weblink}}",
     "text": CASE_ASSIGNEE_DESCRIPTION,
 }
 

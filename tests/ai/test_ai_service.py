@@ -86,7 +86,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -152,7 +152,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -194,7 +194,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -248,7 +248,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -275,7 +275,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -313,7 +313,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -361,7 +361,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -412,7 +412,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -442,7 +442,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -465,7 +465,7 @@ class TestGenerateReadInSummary:
                 subject=mock_subject,
                 project=mock_project,
                 channel_id="test-channel",
-                important_reaction=":white_check_mark:",
+                important_reaction="✅",
                 participant_email="test@example.com",
             )
 
@@ -541,7 +541,7 @@ class TestGenerateTacticalReport:
                 db_session=session,
                 incident=mock_incident,
                 project=mock_project,
-                important_reaction=":fire:",
+                important_reaction="🔥",
             )
 
             # Assertions
@@ -579,7 +579,7 @@ class TestGenerateTacticalReport:
                 db_session=session,
                 incident=mock_incident,
                 project=mock_project,
-                important_reaction=":fire:",
+                important_reaction="🔥",
             )
             print(type(result))
             assert isinstance(result, TacticalReportResponse)
@@ -606,7 +606,7 @@ class TestGenerateTacticalReport:
                 db_session=session,
                 incident=mock_incident,
                 project=mock_project,
-                important_reaction=":fire:",
+                important_reaction="🔥",
             )
 
             assert isinstance(result, TacticalReportResponse)
@@ -642,7 +642,7 @@ class TestGenerateTacticalReport:
                 db_session=session,
                 incident=mock_incident,
                 project=mock_project,
-                important_reaction=":fire:",
+                important_reaction="🔥",
             )
 
             assert isinstance(result, TacticalReportResponse)
@@ -681,7 +681,7 @@ class TestGenerateTacticalReport:
                 db_session=session,
                 incident=mock_incident,
                 project=mock_project,
-                important_reaction=":fire:",
+                important_reaction="🔥",
             )
 
             assert isinstance(result, TacticalReportResponse)
