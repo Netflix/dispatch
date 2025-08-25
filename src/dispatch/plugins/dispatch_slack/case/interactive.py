@@ -2004,7 +2004,7 @@ def edit_button_click(
             "user"
         ]["id"]
     except SlackApiError as e:
-        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+        if e.response.get("error") == SlackAPIErrorCode.USERS_NOT_FOUND:
             log.warning(
                 f"Assignee {case.assignee.individual.email} not found in Slack workspace. "
                 "Using None for initial assignee selection."
