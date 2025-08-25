@@ -390,13 +390,48 @@ class SlackConversationPlugin(ConversationPlugin):
         return set_conversation_description(client, conversation_id, description)
 
     def remove_user(self, conversation_id: str, user_email: str):
-        """Removes a user from a conversation."""
+        """Removes a user from a conversation.
+
+        Args:
+            conversation_id: The Slack conversation/channel ID
+            user_email: The email address of the user to remove
+
+        Returns:
+            The API response if successful, None if user not found
+
+        Raises:
+            SlackApiError: For non-recoverable Slack API errors
+        """
         client = create_slack_client(self.configuration)
-        user_id = resolve_user(client, user_email).get("id")
-        if user_id:
-            return remove_member_from_channel(
-                client=client, conversation_id=conversation_id, user_id=user_id
-            )
+
+        try:
+            user_info = resolve_user(client, user_email)
+            user_id = user_info.get("id")
+
+            if user_id:
+                return remove_member_from_channel(
+                    client=client, conversation_id=conversation_id, user_id=user_id
+                )
+            else:
+                logger.warning(
+                    "Cannot remove user %s from conversation %s: "
+                    "User ID not found in resolve_user response",
+                    user_email, conversation_id
+                )
+                return None
+
+        except SlackApiError as e:
+            if e.response.get("error") == SlackAPIErrorCode.USERS_NOT_FOUND:
+                logger.warning(
+                    "User %s not found in Slack workspace. "
+                    "Cannot remove from conversation %s. "
+                    "User may have been deactivated or never had Slack access.",
+                    user_email, conversation_id
+                )
+                return None
+            else:
+                # Re-raise for other Slack API errors
+                raise
 
     def add_bookmark(self, conversation_id: str, weblink: str, title: str):
         """Adds a bookmark to the conversation."""
