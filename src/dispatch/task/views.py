@@ -1,8 +1,9 @@
 import json
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status, Depends
 
 
 from dispatch.auth.service import CurrentUser
+from dispatch.auth.permissions import PermissionsDependency, IncidentTaskCreateEditPermission
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -43,7 +44,12 @@ def get_tasks(common: CommonParameters, include: list[str] = Query([], alias="in
     return json.loads(TaskPagination(**pagination).json())
 
 
-@router.post("", response_model=TaskRead, tags=["tasks"])
+@router.post(
+    "",
+    response_model=TaskRead,
+    tags=["tasks"],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
+)
 def create_task(
     db_session: DbSession,
     task_in: TaskCreate,
@@ -64,11 +70,12 @@ def create_task(
     return task
 
 
-@router.post("/ticket/{task_id}", tags=["tasks"])
-def create_ticket(
-    db_session: DbSession,
-    task_id: PrimaryKey,
-):
+@router.post(
+    "/ticket/{task_id}",
+    tags=["tasks"],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
+)
+def create_ticket(db_session: DbSession, task_id: PrimaryKey, current_user: CurrentUser):
     """Creates a ticket for an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
@@ -79,8 +86,15 @@ def create_ticket(
     return create_task_ticket(task=task, db_session=db_session)
 
 
-@router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
-def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate):
+@router.put(
+    "/{task_id}",
+    response_model=TaskRead,
+    tags=["tasks"],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
+)
+def update_task(
+    db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate, current_user: CurrentUser
+):
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
@@ -104,8 +118,13 @@ def update_task(db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate)
     return task
 
 
-@router.delete("/{task_id}", response_model=None, tags=["tasks"])
-def delete_task(db_session: DbSession, task_id: PrimaryKey):
+@router.delete(
+    "/{task_id}",
+    response_model=None,
+    tags=["tasks"],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
+)
+def delete_task(db_session: DbSession, task_id: PrimaryKey, current_user: CurrentUser):
     """Deletes an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
