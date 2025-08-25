@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+import json
 
 from fastapi import HTTPException
 from starlette.requests import Request
@@ -16,6 +17,7 @@ from dispatch.models import PrimaryKeyModel
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
 from dispatch.participant_role.enums import ParticipantRoleType
+from dispatch.task import service as task_service
 
 log = logging.getLogger(__name__)
 
@@ -332,6 +334,51 @@ class IncidentEventPermission(BasePermission):
                 IncidentReporterPermission,
             ],
             request=request,
+        )
+
+
+class IncidentTaskCreateEditPermission(BasePermission):
+    """
+    Permissions dependency to apply incident edit permissions to task-based requests.
+    """
+
+    def has_required_permissions(self, request: Request) -> bool:
+        incident_id = None
+        # for task creation, retrieve the incident id from the payload
+        if request.method == "POST" and hasattr(request, "_body"):
+            try:
+                body = json.loads(request._body.decode())
+                incident_id = body["incident"]["id"]
+            except (json.JSONDecodeError, KeyError, AttributeError):
+                log.error(
+                    "Encountered create_task request without expected incident ID. Cannot properly ascertain incident permissions."
+                )
+                return False
+        else:  # otherwise, retrieve via the task id
+            pk = PrimaryKeyModel(id=request.path_params["task_id"])
+            current_task = task_service.get(db_session=request.state.db, task_id=pk.id)
+            if not current_task or not current_task.incident:
+                return False
+            incident_id = current_task.incident.id
+
+        # minimal object with the attributes required for IncidentViewPermission
+        incident_request = type(
+            "IncidentRequest",
+            (),
+            {
+                "path_params": {**request.path_params, "incident_id": incident_id},
+                "state": request.state,
+            },
+        )()
+
+        # copy necessary request attributes
+        for attr in ["headers", "method", "url", "query_params"]:
+            if hasattr(request, attr):
+                setattr(incident_request, attr, getattr(request, attr))
+
+        return any_permission(
+            permissions=[IncidentEditPermission],
+            request=incident_request,
         )
 
 

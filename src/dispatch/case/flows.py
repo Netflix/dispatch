@@ -184,19 +184,19 @@ def case_remove_participant_flow(
     )
 
     # we also try to remove the user from the Slack conversation
+    slack_conversation_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=case.project.id, plugin_type="conversation"
+    )
+
+    if not slack_conversation_plugin:
+        log.warning(f"{user_email} not updated. No conversation plugin enabled.")
+        return
+
+    if not case.conversation:
+        log.warning("No conversation enabled for this case.")
+        return
+
     try:
-        slack_conversation_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=case.project.id, plugin_type="conversation"
-        )
-
-        if not slack_conversation_plugin:
-            log.warning(f"{user_email} not updated. No conversation plugin enabled.")
-            return
-
-        if not case.conversation:
-            log.warning("No conversation enabled for this case.")
-            return
-
         slack_conversation_plugin.instance.remove_user(
             conversation_id=case.conversation.channel_id,
             user_email=user_email
