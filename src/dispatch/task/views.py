@@ -4,7 +4,6 @@ from fastapi import APIRouter, HTTPException, Query, status, Depends
 
 from dispatch.auth.service import CurrentUser
 from dispatch.auth.permissions import (
-    IncidentViewPermission,
     PermissionsDependency,
     IncidentViewPermissionForTasks
 )
