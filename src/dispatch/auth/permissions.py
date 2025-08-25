@@ -16,6 +16,7 @@ from dispatch.models import PrimaryKeyModel
 from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
 from dispatch.participant_role.enums import ParticipantRoleType
+from dispatch.task import service as task_service
 
 log = logging.getLogger(__name__)
 
@@ -303,6 +304,36 @@ class IncidentViewPermission(BasePermission):
                 request=request,
             )
         return True
+
+
+class IncidentViewPermissionForTasks(BasePermission):
+    """
+    Permissions dependency to apply incident view permissions to task-based requests.
+    """
+    def has_required_permissions(self, request: Request) -> bool:
+        pk = PrimaryKeyModel(id=request.path_params["task_id"])
+        current_task = task_service.get(db_session=request.state.db, task_id=pk.id)
+
+        if not current_task or not current_task.incident:
+            return False
+
+        # minimal object with the attributes required for IncidentViewPermission
+        incident_request = type('IncidentRequest', (), {
+            'path_params': {**request.path_params, 'incident_id': current_task.incident.id},
+            'state': request.state
+        })()
+
+        # copy necessary request attributes
+        for attr in ['headers', 'method', 'url', 'query_params']:
+            if hasattr(request, attr):
+                setattr(incident_request, attr, getattr(request, attr))
+
+        return any_permission(
+            permissions=[IncidentViewPermission],
+            request=incident_request,
+        )
+
+
 
 
 class IncidentEditPermission(BasePermission):
