@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+import json
 
 from fastapi import HTTPException
 from starlette.requests import Request
@@ -336,7 +337,7 @@ class IncidentEventPermission(BasePermission):
         )
 
 
-class IncidentEditPermissionForTasks(BasePermission):
+class IncidentTaskCreateEditPermission(BasePermission):
     """
     Permissions dependency to apply incident edit permissions to task-based requests.
     """
@@ -346,8 +347,6 @@ class IncidentEditPermissionForTasks(BasePermission):
         # for task creation, retrieve the incident id from the payload
         if request.method == "POST" and hasattr(request, "_body"):
             try:
-                import json
-
                 body = json.loads(request._body.decode())
                 incident_id = body["incident"]["id"]
             except (json.JSONDecodeError, KeyError, AttributeError):

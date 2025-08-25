@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Query, status, Depends
 
 
 from dispatch.auth.service import CurrentUser
-from dispatch.auth.permissions import PermissionsDependency, IncidentEditPermissionForTasks
+from dispatch.auth.permissions import PermissionsDependency, IncidentTaskCreateEditPermission
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import DbSession
 from dispatch.database.service import CommonParameters, search_filter_sort_paginate
@@ -48,7 +48,7 @@ def get_tasks(common: CommonParameters, include: list[str] = Query([], alias="in
     "",
     response_model=TaskRead,
     tags=["tasks"],
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermissionForTasks]))],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
 )
 def create_task(
     db_session: DbSession,
@@ -73,7 +73,7 @@ def create_task(
 @router.post(
     "/ticket/{task_id}",
     tags=["tasks"],
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermissionForTasks]))],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
 )
 def create_ticket(db_session: DbSession, task_id: PrimaryKey, current_user: CurrentUser):
     """Creates a ticket for an existing task."""
@@ -90,7 +90,7 @@ def create_ticket(db_session: DbSession, task_id: PrimaryKey, current_user: Curr
     "/{task_id}",
     response_model=TaskRead,
     tags=["tasks"],
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermissionForTasks]))],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
 )
 def update_task(
     db_session: DbSession, task_id: PrimaryKey, task_in: TaskUpdate, current_user: CurrentUser
@@ -122,7 +122,7 @@ def update_task(
     "/{task_id}",
     response_model=None,
     tags=["tasks"],
-    dependencies=[Depends(PermissionsDependency([IncidentEditPermissionForTasks]))],
+    dependencies=[Depends(PermissionsDependency([IncidentTaskCreateEditPermission]))],
 )
 def delete_task(db_session: DbSession, task_id: PrimaryKey, current_user: CurrentUser):
     """Deletes an existing task."""
