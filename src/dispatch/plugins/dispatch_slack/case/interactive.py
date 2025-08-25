@@ -473,7 +473,7 @@ def engage(
     try:
         user = client.users_lookupByEmail(email=user_email)
     except SlackApiError as e:
-        if e.response["error"] == SlackAPIErrorCode.USERS_NOT_FOUND:
+        if e.response.get("error") == SlackAPIErrorCode.USERS_NOT_FOUND:
             log.warning(
                 f"Failed to find Slack user for email {user_email}. "
                 "User may have been deactivated or never had Slack access."
