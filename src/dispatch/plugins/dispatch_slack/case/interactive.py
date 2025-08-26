@@ -18,7 +18,7 @@ from blockkit import (
     Section,
     UsersSelect,
 )
-from slack_bolt import Ack, BoltContext, Respond
+from slack_bolt import Ack, BoltContext, Respond, BoltRequest
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.exc import IntegrityError
@@ -100,6 +100,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     subject_middleware,
     user_middleware,
+    is_bot,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
@@ -1377,6 +1378,35 @@ def handle_case_after_hours_message(
                 thread_ts=payload["thread_ts"],
                 user=payload["user"],
             )
+
+
+@message_dispatcher.add(subject=CaseSubjects.case)
+def handle_thread_creation(
+    ack: Ack,
+    client: WebClient,
+    payload: dict,
+    db_session: Session,
+    context: BoltContext,
+    request: BoltRequest,
+) -> None:
+    """Sends the user an ephemeral message if they use threads in a dedicated case channel."""
+    ack()
+
+    if not context["config"].ban_threads:
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case.dedicated_channel:
+        return
+
+    if payload.get("thread_ts") and not is_bot(request):
+        message = "Please refrain from using threads in case channels. Threads make it harder for case participants to maintain context."
+        client.chat_postEphemeral(
+            text=message,
+            channel=payload["channel"],
+            thread_ts=payload["thread_ts"],
+            user=payload["user"],
+        )
 
 
 @app.action("button-link")
