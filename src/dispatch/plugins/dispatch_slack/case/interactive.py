@@ -18,7 +18,7 @@ from blockkit import (
     Section,
     UsersSelect,
 )
-from slack_bolt import Ack, BoltContext, Respond
+from slack_bolt import Ack, BoltContext, Respond, BoltRequest
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.client import WebClient
 from sqlalchemy.exc import IntegrityError
@@ -100,6 +100,7 @@ from dispatch.plugins.dispatch_slack.middleware import (
     shortcut_context_middleware,
     subject_middleware,
     user_middleware,
+    is_bot,
 )
 from dispatch.plugins.dispatch_slack.modals.common import send_success_modal
 from dispatch.plugins.dispatch_slack.models import (
@@ -469,7 +470,23 @@ def engage(
         return
 
     engagement = form_data[DefaultBlockIds.description_input]
-    user = client.users_lookupByEmail(email=user_email)
+
+    try:
+        user = client.users_lookupByEmail(email=user_email)
+    except SlackApiError as e:
+        if e.response.get("error") == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(
+                f"Failed to find Slack user for email {user_email}. "
+                "User may have been deactivated or never had Slack access."
+            )
+            client.chat_postMessage(
+                text=f"Unable to engage user {user_email} - user not found in Slack workspace.",
+                channel=case.conversation.channel_id,
+                thread_ts=case.conversation.thread_id if case.has_thread else None,
+            )
+            return
+        else:
+            raise
 
     result = client.chat_postMessage(
         text="Engaging user...",
@@ -1363,6 +1380,35 @@ def handle_case_after_hours_message(
             )
 
 
+@message_dispatcher.add(subject=CaseSubjects.case)
+def handle_thread_creation(
+    ack: Ack,
+    client: WebClient,
+    payload: dict,
+    db_session: Session,
+    context: BoltContext,
+    request: BoltRequest,
+) -> None:
+    """Sends the user an ephemeral message if they use threads in a dedicated case channel."""
+    ack()
+
+    if not context["config"].ban_threads:
+        return
+
+    case = case_service.get(db_session=db_session, case_id=context["subject"].id)
+    if not case.dedicated_channel:
+        return
+
+    if payload.get("thread_ts") and not is_bot(request):
+        message = "Please refrain from using threads in case channels. Threads make it harder for case participants to maintain context."
+        client.chat_postEphemeral(
+            text=message,
+            channel=payload["channel"],
+            thread_ts=payload["thread_ts"],
+            user=payload["user"],
+        )
+
+
 @app.action("button-link")
 def ack_button_link(ack: Ack):
     """Handles noop button link action."""
@@ -1983,9 +2029,19 @@ def edit_button_click(
     ack()
     case = case_service.get(db_session=db_session, case_id=int(context["subject"].id))
 
-    assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
-        "user"
-    ]["id"]
+    try:
+        assignee_initial_user = client.users_lookupByEmail(email=case.assignee.individual.email)[
+            "user"
+        ]["id"]
+    except SlackApiError as e:
+        if e.response.get("error") == SlackAPIErrorCode.USERS_NOT_FOUND:
+            log.warning(
+                f"Assignee {case.assignee.individual.email} not found in Slack workspace. "
+                "Using None for initial assignee selection."
+            )
+            assignee_initial_user = None
+        else:
+            raise
 
     blocks = [
         title_input(initial_value=case.title),

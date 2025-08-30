@@ -106,6 +106,27 @@ const handleResolutionUpdate = (newResolution) => {
 
         <v-row no-gutters align="center" class="pt-6">
           <v-col cols="1">
+            <div class="dispatch-font">Resolved By</div>
+          </v-col>
+          <v-col cols="10">
+            <div class="pl-8 d-flex align-center ml-3">
+              <v-icon size="14px" class="mr-2">mdi-account-check</v-icon>
+              <span
+                style="
+                  font-weight: 500;
+                  color: rgb(60, 65, 73);
+                  font-size: 0.8125rem;
+                  margin-left: 2px;
+                "
+              >
+                {{ modelValue.resolved_by?.name || "Not specified" }}
+              </span>
+            </div>
+          </v-col>
+        </v-row>
+
+        <v-row no-gutters align="center" class="pt-6">
+          <v-col cols="1">
             <div class="dispatch-font">Priority</div>
           </v-col>
           <v-col cols="10">

@@ -734,7 +734,7 @@ def create_genai_message_metadata_blocks(
         message = json_to_slack_format(message)
 
     # Truncate the text if it exceeds Block Kit's maximum length of 3000 characters
-    text = f":magic_wand: *{title}*\n\n{message}"
+    text = f"🪄 *{title}*\n\n{message}"
     text = f"{text[:2997]}..." if len(text) > 3000 else text
     blocks.append(
         Section(text=text),

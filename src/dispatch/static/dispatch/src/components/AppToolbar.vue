@@ -23,6 +23,17 @@
     />
     <v-spacer />
     <v-toolbar-items>
+      <v-btn
+        v-if="shouldShowSecurityEventButton"
+        nav
+        variant="text"
+        @click="navigateToEventReport"
+        class="ml-2"
+        hide-details
+      >
+        <v-icon start color="error">mdi-shield-search</v-icon>
+        <span class="text-uppercase text-body-2 font-weight-bold">Report Security Event</span>
+      </v-btn>
       <v-btn icon variant="text" @click="toggleDarkTheme">
         <v-icon :icon="dark_theme ? 'mdi-white-balance-sunny' : 'mdi-moon-waxing-crescent'" />
         <v-tooltip activator="parent" location="bottom">
@@ -47,11 +58,17 @@
             />
             <v-list-item
               v-if="currentVersion()"
-              @click="showCommitMessage"
-              append-icon="mdi-page-next-outline"
+              :href="`https://github.com/Netflix/dispatch/commit/${currentVersion()}`"
+              target="_blank"
+              append-icon="mdi-open-in-new"
             >
               <v-list-item-title>
-                Current version: {{ formatHash(currentVersion()) }}
+                Current version: {{ formatHash(currentVersion())
+                }}{{
+                  currentVersionDate() && currentVersionDate() !== "Unknown"
+                    ? ` (${currentVersionDate()})`
+                    : ""
+                }}
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -147,6 +164,7 @@ import OrganizationApi from "@/organization/api"
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
 import UserApi from "@/auth/api"
 import CurrentUserAvatar from "@/atomics/CurrentUserAvatar.vue"
+import { mapFields } from "vuex-map-fields"
 
 export default {
   name: "AppToolbar",
@@ -163,6 +181,7 @@ export default {
     CurrentUserAvatar,
   },
   computed: {
+    ...mapFields("auth", ["currentUser.projects"]),
     queryString: {
       set(query) {
         this.$store.dispatch("search/setQuery", query)
@@ -191,6 +210,18 @@ export default {
             this.$store.dispatch("auth/refreshCurrentUser")
           })
       },
+    },
+    defaultUserProjects() {
+      if (!this.projects || this.projects.length === 0) {
+        return []
+      }
+      return this.projects.filter((v) => v.default === true).map((v) => v.project)
+    },
+    shouldShowSecurityEventButton() {
+      // Check if any of the default projects have the security event suggestion enabled
+      return this.defaultUserProjects.some(
+        (project) => project.suggest_security_event_over_incident === true
+      )
     },
   },
   methods: {
@@ -224,14 +255,17 @@ export default {
       localStorage.setItem("dark_theme", this.$vuetify.theme.global.current.dark.toString())
       this.dark_theme = !this.dark_theme
     },
+    navigateToEventReport() {
+      this.$router.push({ name: "eventReport" })
+    },
     switchOrganizations(slug) {
       this.$router.push({ params: { organization: slug } }).then(() => {
         this.$router.go()
       })
     },
     ...mapState("auth", ["currentUser"]),
-    ...mapState("app", ["currentVersion"]),
-    ...mapActions("auth", ["logout", "getExperimentalFeatures"]),
+    ...mapState("app", ["currentVersion", "currentVersionDate"]),
+    ...mapActions("auth", ["logout", "getExperimentalFeatures", "refreshCurrentUser"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapActions("app", ["showCommitMessage"]),
@@ -265,6 +299,13 @@ export default {
       this.organizations = response.data.items
       this.loading = false
     })
+
+    // Fetch user projects if they're not loaded
+    if (!this.projects || this.projects.length === 0) {
+      this.refreshCurrentUser().catch((error) => {
+        console.error("Failed to refresh user projects:", error)
+      })
+    }
 
     this.getExperimentalFeatures()
   },

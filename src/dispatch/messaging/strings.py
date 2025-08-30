@@ -431,28 +431,9 @@ Hi {{ individual_name }}, it appears that your {{ oncall_service_name }} shift r
 ONCALL_SHIFT_FEEDBACK_RECEIVED_DESCRIPTION = """
 We received your feedback for your shift that ended {{ shift_end_at }} UTC. Thank you!"""
 
-INCIDENT_STATUS_CHANGE_DESCRIPTION = """
-The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_TYPE_CHANGE_DESCRIPTION = """
-The incident type has been changed from {{ incident_type_old }} to {{ incident_type_new }}.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_SEVERITY_CHANGE_DESCRIPTION = """
-The incident severity has been changed from {{ incident_severity_old }} to {{ incident_severity_new }}.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_PRIORITY_CHANGE_DESCRIPTION = """
-The incident priority has been changed from {{ incident_priority_old }} to {{ incident_priority_new }}.""".replace(
-    "\n", " "
-).strip()
 
 INCIDENT_NAME_WITH_ENGAGEMENT = {
-    "title": "{{name}} Incident Notification",
+    "title": "🚨 {{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
@@ -488,7 +469,7 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
 }
 
 INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
-    "title": "{{name}} Incident Notification",
+    "title": "🚨 {{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
@@ -501,13 +482,13 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
 }
 
 CASE_NAME = {
-    "title": "{{name}} Case Notification",
+    "title": "💼 {{name}} Case Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
 }
 
 CASE_NAME_WITH_ENGAGEMENT = {
-    "title": "{{name}} Case Notification",
+    "title": "💼 {{name}} Case Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
     "buttons": [
@@ -533,60 +514,39 @@ CASE_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
 }
 
 CASE_NAME_WITH_ENGAGEMENT_NO_SELF_JOIN = {
-    "title": "{{name}} Case Notification",
+    "title": "💼 {{name}} Case Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
 }
 
-CASE_STATUS_CHANGE_DESCRIPTION = """
-The case status has been changed from {{ case_status_old }} to {{ case_status_new }}.""".replace(
-    "\n", " "
-).strip()
-
-CASE_TYPE_CHANGE_DESCRIPTION = """
-The case type has been changed from {{ case_type_old }} to {{ case_type_new }}.""".replace(
-    "\n", " "
-).strip()
-
-CASE_SEVERITY_CHANGE_DESCRIPTION = """
-The case severity has been changed from {{ case_severity_old }} to {{ case_severity_new }}.""".replace(
-    "\n", " "
-).strip()
-
-CASE_PRIORITY_CHANGE_DESCRIPTION = """
-The case priority has been changed from {{ case_priority_old }} to {{ case_priority_new }}.""".replace(
-    "\n", " "
-).strip()
-
-CASE_VISIBILITY_CHANGE_DESCRIPTION = """
-The case visibility has been changed from {{ case_visibility_old }} to {{ case_visibility_new }}.""".replace(
-    "\n", " "
-).strip()
 
 CASE_STATUS_CHANGE = {
-    "title": "Status Change",
-    "text": CASE_STATUS_CHANGE_DESCRIPTION,
+    "title": "{% set status_emojis = {'Closed': '✅', 'New': '🆕', 'Triage': '🔍', 'Stable': '🛡️', 'Escalated': '⬆️'} %}{{ status_emojis.get(case_status_new, '🔄') }} Status Change",
+    "text": "{{ case_status_old }} → {{ case_status_new }}",
 }
 
-CASE_TYPE_CHANGE = {"title": "Case Type Change", "text": CASE_TYPE_CHANGE_DESCRIPTION}
+CASE_TYPE_CHANGE = {
+    "title": "🏷️ Case Type Change",
+    "text": "{{ case_type_old }} → {{ case_type_new }}",
+}
 
 CASE_SEVERITY_CHANGE = {
-    "title": "Severity Change",
-    "text": CASE_SEVERITY_CHANGE_DESCRIPTION,
+    "title": "{% if case_severity_old.view_order < case_severity_new.view_order %}⬆️{% elif case_severity_old.view_order > case_severity_new.view_order %}⬇️{% else %}↔️{% endif %} Severity Change",
+    "text": "{{ case_severity_old.name }} → {{ case_severity_new.name }}",
 }
 
 CASE_PRIORITY_CHANGE = {
-    "title": "Priority Change",
-    "text": CASE_PRIORITY_CHANGE_DESCRIPTION,
+    "title": "{% if case_priority_old.view_order < case_priority_new.view_order %}⬆️{% elif case_priority_old.view_order > case_priority_new.view_order %}⬇️{% else %}↔️{% endif %} Priority Change",
+    "text": "{{ case_priority_old.name }} → {{ case_priority_new.name }}",
 }
 
 CASE_VISIBILITY_CHANGE = {
-    "title": "Visibility Change",
-    "text": CASE_VISIBILITY_CHANGE_DESCRIPTION,
+    "title": "{% set visibility_emojis = {'Open': '🔓', 'Restricted': '🔒'} %}{{ visibility_emojis.get(case_visibility_new, '👁️') }} Visibility Change",
+    "text": "{{ case_visibility_old }} → {{ case_visibility_new }}",
 }
 
 INCIDENT_NAME = {
-    "title": "{{name}} Incident Notification",
+    "title": "🚨 {{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": NOTIFICATION_PURPOSES_FYI,
 }
@@ -599,9 +559,9 @@ INCIDENT_NAME_SUMMARY = {
 
 INCIDENT_SUMMARY = {"title": "Summary", "text": "{{summary}}"}
 
-INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
+INCIDENT_TITLE = {"title": "📝 Title", "text": "{{title}}"}
 
-CASE_TITLE = {"title": "Title", "text": "{{title}}"}
+CASE_TITLE = {"title": "📝 Title", "text": "{{title}}"}
 
 CASE_STATUS = {
     "title": "Status - {{status}}",
@@ -662,7 +622,7 @@ INCIDENT_REPORTER = {
 }
 
 INCIDENT_COMMANDER = {
-    "title": "Commander - {{commander_fullname}}, {{commander_team}}",
+    "title": "🧑‍🚒 Commander - {{commander_fullname}}, {{commander_team}}",
     "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
@@ -710,20 +670,23 @@ INCIDENT_FAQ_DOCUMENT = {
 }
 
 INCIDENT_STATUS_CHANGE = {
-    "title": "Status Change",
-    "text": INCIDENT_STATUS_CHANGE_DESCRIPTION,
+    "title": "{% set status_emojis = {'Closed': '✅', 'Stable': '🛡️', 'Active': '🔥'} %}{{ status_emojis.get(incident_status_new, '🔄') }} Status Change",
+    "text": "{{ incident_status_old }} → {{ incident_status_new }}",
 }
 
-INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
+INCIDENT_TYPE_CHANGE = {
+    "title": "🏷️ Incident Type Change",
+    "text": "{{ incident_type_old }} → {{ incident_type_new }}",
+}
 
 INCIDENT_SEVERITY_CHANGE = {
-    "title": "Severity Change",
-    "text": INCIDENT_SEVERITY_CHANGE_DESCRIPTION,
+    "title": "{% if incident_severity_old.view_order < incident_severity_new.view_order %}⬆️{% elif incident_severity_old.view_order > incident_severity_new.view_order %}⬇️{% else %}↔️{% endif %} Severity Change",
+    "text": "{{ incident_severity_old.name }} → {{ incident_severity_new.name }}",
 }
 
 INCIDENT_PRIORITY_CHANGE = {
-    "title": "Priority Change",
-    "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
+    "title": "{% if incident_priority_old.view_order < incident_priority_new.view_order %}⬆️{% elif incident_priority_old.view_order > incident_priority_new.view_order %}⬇️{% else %}↔️{% endif %} Priority Change",
+    "text": "{{ incident_priority_old.name }} → {{ incident_priority_new.name }}",
 }
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM = {
@@ -904,7 +867,7 @@ CASE_REPORTER = {
 }
 
 CASE_ASSIGNEE = {
-    "title": "Assignee - {{assignee_fullname}}, {{assignee_team}}",
+    "title": "🕵️‍♀️ Assignee - {{assignee_fullname}}, {{assignee_team}}",
     "title_link": "{{assignee_weblink}}",
     "text": CASE_ASSIGNEE_DESCRIPTION,
 }

@@ -25,6 +25,26 @@
           If you suspect an incident and need help, please fill out this form to the best of your
           abilities.
         </p>
+        <v-alert
+          v-if="project?.suggest_security_event_over_incident"
+          type="warning"
+          variant="tonal"
+          class="mt-4 mb-4"
+          density="compact"
+        >
+          <template #prepend>
+            <v-icon>mdi-security</v-icon>
+          </template>
+          <div>
+            <strong>Consider reporting as a Security Event instead</strong>
+            <br />
+            Please consider using the
+            <router-link :to="{ name: 'eventReport' }" class="text-decoration-none">
+              Security Event reporting page
+            </router-link>
+            for better handling and response.
+          </div>
+        </v-alert>
         <p v-if="project_faq">
           If you have additional questions, please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
@@ -83,6 +103,7 @@
               v-model="tags"
               label="Tags"
               model="incident"
+              :validate-required-tags="true"
             />
           </v-col>
 
@@ -100,19 +121,21 @@
         </v-row>
       </v-card-text>
       <v-card-actions>
-        <v-btn
-          color="info"
-          block
-          variant="flat"
-          :loading="loading"
-          :disabled="!isValid.value"
-          type="submit"
-        >
-          Submit
-          <template #loader>
-            <v-progress-linear indeterminate color="white" />
-          </template>
-        </v-btn>
+        <div class="w-100">
+          <v-btn
+            color="info"
+            block
+            variant="flat"
+            :loading="loading"
+            :disabled="!isValid.value"
+            type="submit"
+          >
+            Submit
+            <template #loader>
+              <v-progress-linear indeterminate color="white" />
+            </template>
+          </v-btn>
+        </div>
       </v-card-actions>
     </v-card>
   </v-form>

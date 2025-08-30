@@ -33,9 +33,7 @@ log = logging.getLogger(__name__)
 def case_close_reminder(db_session: Session, project: Project):
     """Sends a reminder to the case assignee to close out their case."""
     cases = get_all_by_status(
-        db_session=db_session,
-        project_id=project.id,
-        statuses=[CaseStatus.triage]
+        db_session=db_session, project_id=project.id, statuses=[CaseStatus.triage]
     )
 
     for case in cases:
@@ -61,12 +59,7 @@ def case_triage_reminder(db_session: Session, project: Project):
         db_session.query(Case)
         .filter(Case.project_id == project.id)
         .filter(Case.status != CaseStatus.closed)
-        .filter(
-            or_(
-                Case.title == "Security Event Triage",
-                Case.status == CaseStatus.new
-            )
-        )
+        .filter(or_(Case.title == "Security Event Triage", Case.status == CaseStatus.new))
         .all()
     )
 
@@ -90,12 +83,13 @@ def case_stable_reminder(db_session: Session, project: Project):
 
     for case in cases:
         try:
-            span = datetime.utcnow() - case.stable_at
-            q, r = divmod(span.days, 7)
-            if q >= 1 and date.today().isoweekday() == 1:
-                # we only send the reminder for cases that have been stable
-                # longer than a week and only on Mondays
-                send_case_close_reminder(case, db_session)
+            if case.stable_at:
+                span = datetime.utcnow() - case.stable_at
+                q, r = divmod(span.days, 7)
+                if q >= 1 and date.today().isoweekday() == 1:
+                    # we only send the reminder for cases that have been stable
+                    # longer than a week and only on Mondays
+                    send_case_close_reminder(case, db_session)
         except Exception as e:
             # if one fails we don't want all to fail
             log.exception(e)

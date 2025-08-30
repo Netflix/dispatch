@@ -183,6 +183,13 @@
               </v-col>
               <span class="text-body-1 text-medium-emphasis">Report incident card settings</span>
               <v-col cols="12">
+                <v-checkbox
+                  v-model="suggest_security_event_over_incident"
+                  label="Suggest Security Event Over Incident"
+                  hint="Controls whether to suggest security events over incidents for regular users. When enabled, security events are prioritized in the UI."
+                />
+              </v-col>
+              <v-col cols="12">
                 <v-text-field
                   v-model="report_incident_instructions"
                   label="Instructions for report incident card"
@@ -264,6 +271,7 @@ export default {
       "selected.report_incident_instructions",
       "selected.report_incident_title_hint",
       "selected.report_incident_description_hint",
+      "selected.suggest_security_event_over_incident",
       "selected.snooze_extension_oncall_service",
       "dialogs.showCreateEdit",
     ]),

@@ -194,8 +194,22 @@ def format_default_text(item: dict):
     if item.get("datetime"):
         return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
     if item.get("title"):
-        return f"*{item['title']}*\n{item['text']}"
-    return item["text"]
+        # Titles that should be combined on a single line with ": "
+        single_line_titles = {
+            "📝 Title",
+        }
+
+        if item.get('text'):
+            # Check if this title should be on a single line or text contains → (e.g. a state transition)
+            if item['title'] in single_line_titles or '→' in item['text']:
+                text_part = f": {item['text']}"
+            else:
+                text_part = f"\n{item['text']}"
+        else:
+            text_part = ""
+
+        return f"*{item['title']}*{text_part}"
+    return item.get("text", "")
 
 
 def default_notification(items: list):

@@ -60,6 +60,7 @@
                   :project="project"
                   v-model="policy.tags"
                   model="incident"
+                  :validate-exclusive-tags="false"
                 />
               </v-list-item>
               <v-list-item>

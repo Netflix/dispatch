@@ -104,6 +104,7 @@
           show-copy
           :showGenAISuggestions="true"
           modelType="incident"
+          :validate-required-tags="true"
         />
       </v-col>
       <v-col cols="12">
