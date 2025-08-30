@@ -35,6 +35,7 @@ from dispatch.service import service as service_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
+from dispatch.canvas import flows as canvas_flows
 
 from .enums import CaseResolutionReason, CaseStatus
 from .messaging import (
@@ -149,6 +150,13 @@ def case_add_or_reactivate_participant_flow(
                 welcome_template=welcome_template,
             )
 
+        # Update the participants canvas since a new participant was added
+        try:
+            canvas_flows.update_participants_canvas(case=case, db_session=db_session)
+            log.info(f"Updated participants canvas for case {case.id} after adding {user_email}")
+        except Exception as e:
+            log.exception(f"Failed to update participants canvas for case {case.id}: {e}")
+
     return participant
 
 
@@ -183,6 +191,13 @@ def case_remove_participant_flow(
         db_session=db_session,
     )
 
+    # Update the participants canvas since a participant was removed
+    try:
+        canvas_flows.update_participants_canvas(case=case, db_session=db_session)
+        log.info(f"Updated participants canvas for case {case.id} after removing {user_email}")
+    except Exception as e:
+        log.exception(f"Failed to update participants canvas for case {case.id}: {e}")
+
     # we also try to remove the user from the Slack conversation
     slack_conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=case.project.id, plugin_type="conversation"
@@ -198,19 +213,20 @@ def case_remove_participant_flow(
 
     try:
         slack_conversation_plugin.instance.remove_user(
-            conversation_id=case.conversation.channel_id,
-            user_email=user_email
+            conversation_id=case.conversation.channel_id, user_email=user_email
         )
 
         event_service.log_case_event(
-                db_session=db_session,
-                source=slack_conversation_plugin.plugin.title,
-                description=f"{user_email} removed from conversation (channel ID: {case.conversation.channel_id})",
-                case_id=case.id,
-                type=EventType.participant_updated,
+            db_session=db_session,
+            source=slack_conversation_plugin.plugin.title,
+            description=f"{user_email} removed from conversation (channel ID: {case.conversation.channel_id})",
+            case_id=case.id,
+            type=EventType.participant_updated,
         )
 
-        log.info(f"Removed {user_email} from conversation in channel {case.conversation.channel_id}")
+        log.info(
+            f"Removed {user_email} from conversation in channel {case.conversation.channel_id}"
+        )
 
     except Exception as e:
         log.exception(f"Failed to remove user from Slack conversation: {e}")
@@ -534,7 +550,11 @@ def case_update_flow(
         # we send the case updated notification
         update_conversation(case, db_session)
 
-    if case.has_channel and not case.has_thread and case.status not in [CaseStatus.escalated, CaseStatus.closed]:
+    if (
+        case.has_channel
+        and not case.has_thread
+        and case.status not in [CaseStatus.escalated, CaseStatus.closed]
+    ):
         # determine if case channel topic needs to be updated
         if case_details_changed(case, previous_case):
             conversation_flows.set_conversation_topic(case, db_session)
@@ -1144,6 +1164,15 @@ def case_assign_role_flow(
         # update the conversation topic
         conversation_flows.set_conversation_topic(case, db_session)
 
+    # Update the participants canvas since a role was assigned
+    try:
+        canvas_flows.update_participants_canvas(case=case, db_session=db_session)
+        log.info(
+            f"Updated participants canvas for case {case.id} after assigning {participant_role} to {participant_email}"
+        )
+    except Exception as e:
+        log.exception(f"Failed to update participants canvas for case {case.id}: {e}")
+
 
 def case_create_conversation_flow(
     db_session: Session,
@@ -1165,19 +1194,45 @@ def case_create_conversation_flow(
     for email in participant_emails:
         # we don't rely on on this flow to add folks to the conversation because in this case
         # we want to do it in bulk
-        case_add_or_reactivate_participant_flow(
-            db_session=db_session,
-            user_email=email,
-            case_id=case.id,
-            add_to_conversation=False,
-        )
+        try:
+            case_add_or_reactivate_participant_flow(
+                db_session=db_session,
+                user_email=email,
+                case_id=case.id,
+                add_to_conversation=False,
+            )
+        except Exception as e:
+            log.warning(
+                f"Failed to add participant {email} to case {case.id}: {e}. "
+                f"Continuing with other participants..."
+            )
+            # Log the event but don't fail the case creation
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Failed to add participant {email}: {e}",
+                case_id=case.id,
+            )
 
     # we add the participant to the conversation
-    conversation_flows.add_case_participants(
-        case=case,
-        participant_emails=participant_emails,
-        db_session=db_session,
-    )
+    try:
+        conversation_flows.add_case_participants(
+            case=case,
+            participant_emails=participant_emails,
+            db_session=db_session,
+        )
+    except Exception as e:
+        log.warning(
+            f"Failed to add participants to conversation for case {case.id}: {e}. "
+            f"Continuing with case creation..."
+        )
+        # Log the event but don't fail the case creation
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"Failed to add participants to conversation: {e}",
+            case_id=case.id,
+        )
 
 
 def case_create_resources_flow(
@@ -1279,6 +1334,7 @@ def case_create_resources_flow(
             description="Case participants added to conversation.",
             case_id=case.id,
         )
+
     except Exception as e:
         event_service.log_case_event(
             db_session=db_session,
@@ -1289,6 +1345,11 @@ def case_create_resources_flow(
         log.exception(e)
 
     if case.has_channel:
+        try:
+            canvas_flows.create_participants_canvas(case=case, db_session=db_session)
+        except Exception as e:
+            log.exception(f"Failed to create participants canvas for case {case.id}: {e}")
+
         bookmarks = [
             # resource, title
             (case.case_document, None),

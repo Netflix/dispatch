@@ -645,7 +645,7 @@ def get_channel_activity(
         user_id = user_match.group(1)
         try:
             user_info = get_user_info_by_id(client, user_id)
-            return user_info.get('real_name', f"{user_id} (name not found)")
+            return user_info.get("real_name", f"{user_id} (name not found)")
         except SlackApiError as e:
             log.warning(f"Error resolving mentioned Slack user: {e}")
             # fall back on id
@@ -680,16 +680,18 @@ def get_channel_activity(
                         message_text = f"IMPORTANT!: {message_text}"
 
                     if include_user_details:  # attempt to resolve mentioned users
-                        message_text = re.sub(r'<@(\w+)>', mention_resolver, message_text)
+                        message_text = re.sub(r"<@(\w+)>", mention_resolver, message_text)
 
                     message_result.append(message_text)
 
                 if include_user_details:
                     user_details = get_user_info_by_id(client, user_id)
-                    user_name = user_details.get('real_name', "Name not found")
-                    user_profile = user_details.get('profile', {})
-                    user_display_name = user_profile.get('display_name_normalized', "DisplayName not found")
-                    user_email = user_profile.get('email', "Email not found")
+                    user_name = user_details.get("real_name", "Name not found")
+                    user_profile = user_details.get("profile", {})
+                    user_display_name = user_profile.get(
+                        "display_name_normalized", "DisplayName not found"
+                    )
+                    user_email = user_profile.get("email", "Email not found")
                     message_result.extend([user_name, user_display_name, user_email])
 
                 heapq.heappush(result, tuple(message_result))
@@ -770,12 +772,153 @@ def is_member_in_channel(client: WebClient, conversation_id: str, user_id: str) 
 
     except SlackApiError as e:
         if e.response["error"] == SlackAPIErrorCode.CHANNEL_NOT_FOUND:
-            log.warning(f"Channel {conversation_id} not found when checking membership for user {user_id}")
+            log.warning(
+                f"Channel {conversation_id} not found when checking membership for user {user_id}"
+            )
             return False
         elif e.response["error"] == SlackAPIErrorCode.USER_NOT_IN_CHANNEL:
             # The bot itself is not in the channel, so it can't check membership
-            log.warning(f"Bot not in channel {conversation_id}, cannot check membership for user {user_id}")
+            log.warning(
+                f"Bot not in channel {conversation_id}, cannot check membership for user {user_id}"
+            )
             return False
         else:
-            log.exception(f"Error checking channel membership for user {user_id} in channel {conversation_id}: {e}")
+            log.exception(
+                f"Error checking channel membership for user {user_id} in channel {conversation_id}: {e}"
+            )
             raise
+
+
+def canvas_set_access(
+    client: WebClient, conversation_id: str, canvas_id: str, user_ids: list[str] = []
+) -> bool:
+    """
+    Locks the canvas to read-only by the channel but allows the Dispatch bot to edit the canvas.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        conversation_id (str): The ID of the Slack conversation where the canvas will be created.
+        canvas_id (str): The ID of the canvas to update.
+        user_ids (list[str]): The IDs of the users to allow to edit the canvas.
+
+    Returns:
+        bool: True if the canvas was successfully updated, False otherwise.
+    """
+    response = make_call(
+        client,
+        SlackAPIPostEndpoints.canvas_access_set,
+        access_level="read",
+        canvas_id=canvas_id,
+        channel_ids=[conversation_id],
+    )
+    if user_ids:
+        response = response and make_call(
+            client,
+            SlackAPIPostEndpoints.canvas_access_set,
+            access_level="write",
+            canvas_id=canvas_id,
+            user_ids=user_ids,
+        )
+    return response
+
+
+def create_canvas(
+    client: WebClient,
+    conversation_id: str,
+    title: str,
+    user_ids: list[str] = [],
+    content: str = None,
+) -> str:
+    """
+    Creates a new Slack canvas in the specified conversation.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        conversation_id (str): The ID of the Slack conversation where the canvas will be created.
+        title (str): The title of the canvas.
+        user_ids (list[str]): The IDs of the user(s) who will have write access to the canvas.
+        content (str, optional): The markdown content of the canvas. Defaults to None.
+
+    Returns:
+        str | None: The ID of the created canvas, or None if creation failed.
+    """
+    try:
+        kwargs = {
+            "channel_id": conversation_id,
+            "title": title,
+        }
+        if content is not None:
+            kwargs["document_content"] = {"type": "markdown", "markdown": content}
+
+        response = make_call(
+            client,
+            SlackAPIPostEndpoints.canvas_create,
+            **kwargs,
+        )
+        canvas_id = response.get("canvas_id")
+        canvas_set_access(
+            client=client, conversation_id=conversation_id, canvas_id=canvas_id, user_ids=user_ids
+        )
+        return canvas_id
+    except SlackApiError as e:
+        log.exception(f"Error creating canvas in conversation {conversation_id}: {e}")
+        return None
+
+
+def update_canvas(
+    client: WebClient,
+    canvas_id: str,
+    content: str,
+) -> bool:
+    """
+    Updates an existing Slack canvas.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        canvas_id (str): The ID of the canvas to update.
+        content (str): The new markdown content for the canvas.
+
+    Returns:
+        bool: True if the canvas was successfully updated, False otherwise.
+    """
+    try:
+        changes = [
+            {
+                "operation": "replace",
+                "document_content": {"type": "markdown", "markdown": content},
+            }
+        ]
+
+        make_call(
+            client,
+            SlackAPIPostEndpoints.canvas_update,
+            canvas_id=canvas_id,
+            changes=changes,
+        )
+        return True
+    except SlackApiError as e:
+        log.exception(f"Error updating canvas {canvas_id}: {e}")
+        return False
+
+
+def delete_canvas(client: WebClient, canvas_id: str) -> bool:
+    """
+    Deletes a Slack canvas.
+
+    Args:
+        client (WebClient): A Slack WebClient object used to interact with the Slack API.
+        canvas_id (str): The ID of the canvas to delete.
+
+    Returns:
+        bool: True if the canvas was successfully deleted, False otherwise.
+    """
+    try:
+        make_call(
+            client,
+            SlackAPIPostEndpoints.canvas_delete,
+            canvas_id=canvas_id,
+        )
+        return True
+    except SlackApiError as e:
+        log.exception(f"Error deleting canvas {canvas_id}: {e}")
+        return False

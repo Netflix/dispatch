@@ -191,6 +191,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     workflow_instances = relationship(
         "WorkflowInstance", backref="incident", cascade="all, delete-orphan"
     )
+    canvases = relationship("Canvas", back_populates="incident", cascade="all, delete-orphan")
 
     duplicate_id = Column(Integer, ForeignKey("incident.id"))
     duplicates = relationship(
