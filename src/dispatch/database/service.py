@@ -10,7 +10,7 @@ from pydantic import StringConstraints
 from pydantic import Json
 from six import string_types
 from sortedcontainers import SortedSet
-from sqlalchemy import Table, and_, desc, func, not_, or_, orm
+from sqlalchemy import Table, and_, desc, func, not_, or_, orm, exists
 from sqlalchemy.exc import InvalidRequestError, ProgrammingError
 from sqlalchemy.orm import mapperlib, Query as SQLAlchemyQuery
 from sqlalchemy_filters import apply_pagination, apply_sort
@@ -721,8 +721,6 @@ def search_filter_sort_paginate(
         # Handle security_event_only filter for Case model
         if model == "Case" and security_event_only:
             # Use NOT EXISTS to find cases that do NOT have signal instances
-            from sqlalchemy import exists
-
             query = query.filter(~exists().where(SignalInstance.case_id == Case.id))
 
         # Apply tag_all filters using intersect only when necessary
