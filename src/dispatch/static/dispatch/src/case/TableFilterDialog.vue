@@ -83,7 +83,7 @@
           <v-list-item>
             <v-card class="mx-auto">
               <v-card-title>Security Events</v-card-title>
-              <v-card-subtitle>Filter cases based on signal instances</v-card-subtitle>
+              <v-card-subtitle>Show only cases with a dedicated channel</v-card-subtitle>
               <v-checkbox
                 class="ml-10 mr-5"
                 v-model="local_security_event_only"
