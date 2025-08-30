@@ -569,7 +569,7 @@ class SlackConversationPlugin(ConversationPlugin):
         return member_emails
 
     def create_canvas(
-        self, conversation_id: str, title: str, user_emails: list[str] = [], content: str = None
+        self, conversation_id: str, title: str, user_emails: list[str] = None, content: str = None
     ) -> str:
         """
         Creates a new Slack canvas in the specified conversation.
@@ -583,6 +583,9 @@ class SlackConversationPlugin(ConversationPlugin):
         Returns:
             str | None: The ID of the created canvas, or None if creation failed.
         """
+        if user_emails is None:
+            user_emails = []
+
         client = create_slack_client(self.configuration)
 
         user_ids = emails_to_user_ids(client, user_emails)

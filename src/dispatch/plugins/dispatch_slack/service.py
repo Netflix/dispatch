@@ -790,7 +790,7 @@ def is_member_in_channel(client: WebClient, conversation_id: str, user_id: str) 
 
 
 def canvas_set_access(
-    client: WebClient, conversation_id: str, canvas_id: str, user_ids: list[str] = []
+    client: WebClient, conversation_id: str, canvas_id: str, user_ids: list[str] = None
 ) -> bool:
     """
     Locks the canvas to read-only by the channel but allows the Dispatch bot to edit the canvas.
@@ -804,6 +804,9 @@ def canvas_set_access(
     Returns:
         bool: True if the canvas was successfully updated, False otherwise.
     """
+    if user_ids is None:
+        user_ids = []
+
     try:
         make_call(
             client,
@@ -831,7 +834,7 @@ def create_canvas(
     client: WebClient,
     conversation_id: str,
     title: str,
-    user_ids: list[str] = [],
+    user_ids: list[str] = None,
     content: str = None,
 ) -> str:
     """
@@ -847,6 +850,9 @@ def create_canvas(
     Returns:
         str | None: The ID of the created canvas, or None if creation failed.
     """
+    if user_ids is None:
+        user_ids = []
+
     try:
         kwargs = {
             "channel_id": conversation_id,
