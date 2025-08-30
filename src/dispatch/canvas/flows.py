@@ -147,7 +147,7 @@ def _create_case_participants_canvas(case: Case, db_session: Session) -> Optiona
             title="Participants",
             user_emails=(
                 [case.assignee.individual.email] if case.assignee else []
-            ),  # Give assginee edit permissions
+            ),  # Give assignee edit permissions
             content=table_content,
         )
 

@@ -804,22 +804,27 @@ def canvas_set_access(
     Returns:
         bool: True if the canvas was successfully updated, False otherwise.
     """
-    response = make_call(
-        client,
-        SlackAPIPostEndpoints.canvas_access_set,
-        access_level="read",
-        canvas_id=canvas_id,
-        channel_ids=[conversation_id],
-    )
-    if user_ids:
-        response = response and make_call(
+    try:
+        make_call(
             client,
             SlackAPIPostEndpoints.canvas_access_set,
-            access_level="write",
+            access_level="read",
             canvas_id=canvas_id,
-            user_ids=user_ids,
+            channel_ids=[conversation_id],
         )
-    return response
+        if user_ids:
+            make_call(
+                client,
+                SlackAPIPostEndpoints.canvas_access_set,
+                access_level="write",
+                canvas_id=canvas_id,
+                user_ids=user_ids,
+            )
+
+        return True
+    except SlackApiError as e:
+        log.exception(f"Error setting canvas access for canvas {canvas_id}: {e}")
+        return False
 
 
 def create_canvas(
