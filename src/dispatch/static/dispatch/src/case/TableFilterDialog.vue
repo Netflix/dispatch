@@ -88,7 +88,7 @@
                 class="ml-10 mr-5"
                 v-model="local_security_event_only"
                 label="Show only Security Event cases"
-                hint="Show only cases that have signal instances attached"
+                hint="Show only cases that have a dedicated channel"
               />
             </v-card>
           </v-list-item>
