@@ -29,6 +29,15 @@ export default {
   createParametersFromTableOptions(options, model, rawFilters) {
     let [sortBy, descending] = this.createSortExpression(options.sortBy, options.descending)
     let expression = this.createFilterExpression(options.filters, model)
+
+    // Extract boolean filters (like security_event_only) and pass them as separate parameters
+    let booleanFilters = {}
+    forEach(options.filters, function (value, key) {
+      if (typeof value === "boolean") {
+        booleanFilters[key] = value
+      }
+    })
+
     delete options.filters
     delete options.sortBy
 
@@ -37,12 +46,13 @@ export default {
         expression = { and: [...rawFilters] }
         return {
           ...options,
+          ...booleanFilters,
           sortBy: sortBy,
           descending: descending,
           filter: JSON.stringify(expression),
         }
       } else {
-        return { ...options, sortBy: sortBy, descending: descending }
+        return { ...options, ...booleanFilters, sortBy: sortBy, descending: descending }
       }
     }
 
@@ -54,6 +64,7 @@ export default {
 
     return {
       ...options,
+      ...booleanFilters,
       sortBy: sortBy,
       descending: descending,
       filter: JSON.stringify(expression),
@@ -131,6 +142,11 @@ export default {
             ],
           })
         }
+      } else if (typeof value === "boolean") {
+        // Handle boolean values (like security_event_only)
+        // For boolean filters, we'll pass them as raw filters to be handled by the backend
+        // This is a special case that bypasses the normal filter expression creation
+        return
       } else {
         each(value, function (value) {
           // filter null/undefined values but allow false

@@ -134,6 +134,7 @@ const state = {
           end: null,
         },
         participant: null,
+        security_event_only: false,
       },
       q: "",
       page: 1,

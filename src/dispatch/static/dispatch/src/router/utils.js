@@ -13,6 +13,13 @@ export default {
         flatFilters = { ...flatFilters, ...{ [startKey]: value.start, [endKey]: value.end } }
         return
       }
+
+      // handle boolean values (like security_event_only)
+      if (typeof value === "boolean") {
+        flatFilters[key] = value
+        return
+      }
+
       each(value, function (item) {
         if (["commander", "participant", "assignee"].includes(key)) {
           if (has(flatFilters, key)) {
@@ -69,6 +76,12 @@ export default {
         if (key.includes("end")) {
           filters[root]["end"] = value
         }
+        return
+      }
+
+      // handle boolean values (like security_event_only)
+      if (typeof value === "boolean" || value === "true" || value === "false") {
+        filters[key] = value === "true" || value === true
         return
       }
       if (["status"].includes(key)) {
