@@ -156,6 +156,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     workflow_instances = relationship(
         "WorkflowInstance", backref="case", cascade="all, delete-orphan"
     )
+    canvases = relationship("Canvas", back_populates="case", cascade="all, delete-orphan")
 
     conversation = relationship(
         "Conversation", uselist=False, backref="case", cascade="all, delete-orphan"

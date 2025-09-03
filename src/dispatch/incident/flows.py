@@ -39,6 +39,7 @@ from dispatch.tag.flows import check_for_tag_change
 from dispatch.task.enums import TaskStatus
 from dispatch.team.models import TeamContact
 from dispatch.ticket import flows as ticket_flows
+from dispatch.canvas import flows as canvas_flows
 
 from .messaging import (
     bulk_participant_announcement_message,
@@ -59,7 +60,9 @@ from .models import Incident, IncidentStatus
 log = logging.getLogger(__name__)
 
 
-def filter_participants_for_bridge(participant_emails: list[str], project_id: int, db_session: Session) -> list[str]:
+def filter_participants_for_bridge(
+    participant_emails: list[str], project_id: int, db_session: Session
+) -> list[str]:
     """Filter participant emails to only include those who have opted into bridge participation."""
     filtered_emails = []
     for email in participant_emails:
@@ -351,6 +354,13 @@ def incident_create_resources(
             db_session=db_session,
             send_announcement_message=False,
         )
+
+    # Create the participants canvas after all participants have been resolved
+    try:
+        canvas_flows.create_participants_canvas(incident=incident, db_session=db_session)
+        log.info(f"Created participants canvas for incident {incident.id}")
+    except Exception as e:
+        log.exception(f"Failed to create participants canvas for incident {incident.id}: {e}")
 
     event_service.log_incident_event(
         db_session=db_session,
@@ -921,6 +931,15 @@ def incident_assign_role_flow(
             # we send a message to the incident commander with tips on how to manage the incident
             send_incident_management_help_tips_message(incident, db_session)
 
+        # Update the participants canvas since a role was assigned
+        try:
+            canvas_flows.update_participants_canvas(incident=incident, db_session=db_session)
+            log.info(
+                f"Updated participants canvas for incident {incident.id} after assigning {assignee_role} to {assignee_email}"
+            )
+        except Exception as e:
+            log.exception(f"Failed to update participants canvas for incident {incident.id}: {e}")
+
 
 @background_task
 def incident_engage_oncall_flow(
@@ -1089,14 +1108,16 @@ def incident_add_or_reactivate_participant_flow(
                 return
 
             event_service.log_incident_event(
-                    db_session=db_session,
-                    source=slack_conversation_plugin.plugin.title,
-                    description=f"{user_email} added to conversation (channel ID: {incident.conversation.channel_id})",
-                    incident_id=incident.id,
-                    type=EventType.participant_updated,
+                db_session=db_session,
+                source=slack_conversation_plugin.plugin.title,
+                description=f"{user_email} added to conversation (channel ID: {incident.conversation.channel_id})",
+                incident_id=incident.id,
+                type=EventType.participant_updated,
             )
 
-            log.info(f"Added {user_email} to conversation in (channel ID: {incident.conversation.channel_id})")
+            log.info(
+                f"Added {user_email} to conversation in (channel ID: {incident.conversation.channel_id})"
+            )
 
         except Exception as e:
             log.exception(f"Failed to add user to Slack conversation: {e}")
@@ -1111,6 +1132,15 @@ def incident_add_or_reactivate_participant_flow(
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident, db_session)
+
+        # Update the participants canvas since a new participant was added
+        try:
+            canvas_flows.update_participants_canvas(incident=incident, db_session=db_session)
+            log.info(
+                f"Updated participants canvas for incident {incident.id} after adding {user_email}"
+            )
+        except Exception as e:
+            log.exception(f"Failed to update participants canvas for incident {incident.id}: {e}")
 
     return participant
 
@@ -1177,6 +1207,15 @@ def incident_remove_participant_flow(
         db_session=db_session,
     )
 
+    # Update the participants canvas since a participant was removed
+    try:
+        canvas_flows.update_participants_canvas(incident=incident, db_session=db_session)
+        log.info(
+            f"Updated participants canvas for incident {incident.id} after removing {user_email}"
+        )
+    except Exception as e:
+        log.exception(f"Failed to update participants canvas for incident {incident.id}: {e}")
+
     # we also try to remove the user from the Slack conversation
     slack_conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
@@ -1192,19 +1231,20 @@ def incident_remove_participant_flow(
 
     try:
         slack_conversation_plugin.instance.remove_user(
-            conversation_id=incident.conversation.channel_id,
-            user_email=user_email
+            conversation_id=incident.conversation.channel_id, user_email=user_email
         )
 
         event_service.log_incident_event(
-                db_session=db_session,
-                source=slack_conversation_plugin.plugin.title,
-                description=f"{user_email} removed from conversation (channel ID: {incident.conversation.channel_id})",
-                incident_id=incident.id,
-                type=EventType.participant_updated,
+            db_session=db_session,
+            source=slack_conversation_plugin.plugin.title,
+            description=f"{user_email} removed from conversation (channel ID: {incident.conversation.channel_id})",
+            incident_id=incident.id,
+            type=EventType.participant_updated,
         )
 
-        log.info(f"Removed {user_email} from conversation in channel {incident.conversation.channel_id}")
+        log.info(
+            f"Removed {user_email} from conversation in channel {incident.conversation.channel_id}"
+        )
 
     except Exception as e:
         log.exception(f"Failed to remove user from Slack conversation: {e}")

@@ -16,6 +16,10 @@ class SlackAPIGetEndpoints(DispatchEnum):
 
 class SlackAPIPostEndpoints(DispatchEnum):
     bookmarks_add = "bookmarks.add"
+    canvas_access_set = "canvases.access.set"
+    canvas_create = "canvases.create"
+    canvas_delete = "canvases.delete"
+    canvas_update = "canvases.edit"
     chat_post_message = "chat.postMessage"
     chat_post_ephemeral = "chat.postEphemeral"
     chat_update = "chat.update"

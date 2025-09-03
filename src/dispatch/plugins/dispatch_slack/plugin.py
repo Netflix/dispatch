@@ -65,6 +65,9 @@ from .service import (
     set_conversation_topic,
     unarchive_conversation,
     update_message,
+    create_canvas,
+    update_canvas,
+    delete_canvas,
 )
 
 logger = logging.getLogger(__name__)
@@ -287,7 +290,11 @@ class SlackConversationPlugin(ConversationPlugin):
             error = exception.response["error"]
             if error == SlackAPIErrorCode.IS_ARCHIVED:
                 # swallow send errors if the channel is archived
-                message = f"SlackAPIError trying to send: {exception.response}. Message: {text}. Type: {notification_type}. Template: {message_template}"
+                message = (
+                    f"SlackAPIError trying to send: {exception.response}. "
+                    f"Message: {text}. Type: {notification_type}. "
+                    f"Template: {message_template}"
+                )
                 logger.error(message)
             else:
                 raise exception
@@ -416,7 +423,8 @@ class SlackConversationPlugin(ConversationPlugin):
                 logger.warning(
                     "Cannot remove user %s from conversation %s: "
                     "User ID not found in resolve_user response",
-                    user_email, conversation_id
+                    user_email,
+                    conversation_id,
                 )
                 return None
 
@@ -426,7 +434,8 @@ class SlackConversationPlugin(ConversationPlugin):
                     "User %s not found in Slack workspace. "
                     "Cannot remove from conversation %s. "
                     "User may have been deactivated or never had Slack access.",
-                    user_email, conversation_id
+                    user_email,
+                    conversation_id,
                 )
                 return None
             else:
@@ -485,7 +494,11 @@ class SlackConversationPlugin(ConversationPlugin):
             raise
 
     def get_conversation(
-        self, conversation_id: str, oldest: str = "0", include_user_details = False, important_reaction: str | None = None
+        self,
+        conversation_id: str,
+        oldest: str = "0",
+        include_user_details=False,
+        important_reaction: str | None = None,
     ) -> list:
         """
         Fetches the top-level posts from a Slack conversation.
@@ -554,6 +567,66 @@ class SlackConversationPlugin(ConversationPlugin):
                     member_emails.append(email)
 
         return member_emails
+
+    def create_canvas(
+        self, conversation_id: str, title: str, user_emails: list[str] = None, content: str = None
+    ) -> str:
+        """
+        Creates a new Slack canvas in the specified conversation.
+
+        Args:
+            conversation_id (str): The ID of the Slack conversation where the canvas will be created.
+            title (str): The title of the canvas.
+            user_emails (list[str], optional): List of email addresses to grant editing permissions to.
+            content (str, optional): The markdown content of the canvas. Defaults to None.
+
+        Returns:
+            str | None: The ID of the created canvas, or None if creation failed.
+        """
+        if user_emails is None:
+            user_emails = []
+
+        client = create_slack_client(self.configuration)
+
+        user_ids = emails_to_user_ids(client, user_emails)
+
+        result = create_canvas(
+            client=client,
+            conversation_id=conversation_id,
+            title=title,
+            user_ids=user_ids,
+            content=content,
+        )
+        if result is None:
+            logger.exception(f"Failed to create canvas in conversation {conversation_id}")
+        return result
+
+    def edit_canvas(self, canvas_id: str, content: str) -> bool:
+        """
+        Edits an existing Slack canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas to edit.
+            content (str): The new markdown content for the canvas.
+
+        Returns:
+            bool: True if the canvas was successfully edited, False otherwise.
+        """
+        client = create_slack_client(self.configuration)
+        return update_canvas(client=client, canvas_id=canvas_id, content=content)
+
+    def delete_canvas(self, canvas_id: str) -> bool:
+        """
+        Deletes a Slack canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas to delete.
+
+        Returns:
+            bool: True if the canvas was successfully deleted, False otherwise.
+        """
+        client = create_slack_client(self.configuration)
+        return delete_canvas(client=client, canvas_id=canvas_id)
 
 
 @apply(counter, exclude=["__init__"])
